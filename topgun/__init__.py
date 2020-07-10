@@ -11,17 +11,7 @@ HongXiongMao
 # https://towardsdatascience.com/whats-init-for-me-d70a312da583
 
 # General
-import hongxiongmao.utilities
-import hongxiongmao.download
-import hongxiongmao.config
-
-# Plotting
-import hongxiongmao.overplot
+import topgun.utilities
 
 # Modelling
-import hongxiongmao.correlation
-import hongxiongmao.pokemon
-
-# Optimisation
-import hongxiongmao.optimisation
-
+from models import ddm
