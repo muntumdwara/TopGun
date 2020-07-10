@@ -14,4 +14,3 @@ HongXiongMao
 import topgun.utilities
 
 # Modelling
-import topgun.models
