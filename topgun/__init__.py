@@ -14,4 +14,4 @@ HongXiongMao
 from .utilities import *
 
 # Modelling
-from .models.ddm import *
+from .models.ddm import dividend_discount_models
