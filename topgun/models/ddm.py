@@ -18,7 +18,7 @@ from scipy.optimize import minimize_scalar
 # %% DDM Solver Functions - given dividend stream
 # Build a dividend stream using another function - solve it here
 
-def dividend_discount_model_irr(px, vDividend, G):
+def ddm_irr(px, vDividend, G):
     """ IRR finder for Dividend Discount Model in SciPy
     
     Uses the scipy.optimise minimize_scalar optimisation function
@@ -92,7 +92,7 @@ def multi_stage_irr(dv,
     ddm.loc[ddm.index[-1], 'g'] = dv['G']    # set Terminal Growth Rate in table
     
     # solve for IRR using homemade function
-    r = dividend_discount_model_irr(dv.PX, ddm.D, dv.G)
+    r = ddm_irr(dv.PX, ddm.D, dv.G)
     
     # Show present value in table    
     for i, v in enumerate(ddm.index):
