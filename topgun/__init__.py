@@ -14,4 +14,4 @@ HongXiongMao
 import topgun.utilities
 
 # Modelling
-from models import ddm
+from topgun.models import ddm
