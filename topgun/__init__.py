@@ -11,7 +11,7 @@ HongXiongMao
 # https://towardsdatascience.com/whats-init-for-me-d70a312da583
 
 # General
-from .utilities import *
+from topgun.utilities import *
 
-# Modelling
-from .models.ddm import dividend_discount_models
+
+from .models import *

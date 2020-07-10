@@ -19,7 +19,7 @@ import numpy as np
 
 class dividend_discount_models(object):
     
-    def __init__():
+    def __init__(self):
         return
     
     def TEST(self):
