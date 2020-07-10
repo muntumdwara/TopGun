@@ -14,4 +14,4 @@ HongXiongMao
 from .utilities import *
 
 # Modelling
-from .models import *
+from .models.ddm import *
