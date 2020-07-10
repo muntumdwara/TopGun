@@ -14,4 +14,4 @@ HongXiongMao
 from .utilities import *
 
 # Modelling
-from .models.ddn import ddm_irr, multi_stage_irr
+from .models.ddm import ddm_irr, multi_stage_irr
