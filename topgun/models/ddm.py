@@ -13,8 +13,18 @@ Series of functions for solving dividend discount model problems. Primarily
 
 import pandas as pd
 import numpy as np
-from scipy.optimize import minimize_scalar
 
+
+# %% Class Module Test
+
+class dividend_discount_models(object):
+    
+    def __init__():
+        return
+    
+    def TEST(self):
+        return "badgers"
+    
 # %% DDM Solver Functions - given dividend stream
 # Build a dividend stream using another function - solve it here
 
@@ -28,7 +38,7 @@ def ddm_irr(px, vDividend, G):
           px - current index level associated with dividend stream
           G = perpetual growth rate
     """
-    
+    from scipy.optimize import minimize_scalar
     return minimize_scalar(_solver_ddm_irr, args=(px, vDividend, G)).x
 
 def _solver_ddm_irr(x, px, d, G):
