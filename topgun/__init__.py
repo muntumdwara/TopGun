@@ -11,6 +11,7 @@ HongXiongMao
 # https://towardsdatascience.com/whats-init-for-me-d70a312da583
 
 # General
-import topgun.utilities
+from .utilities import *
 
 # Modelling
+from .models import *
