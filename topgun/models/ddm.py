@@ -142,7 +142,14 @@ class dividend_discount_models(object):
         
         """
         
-        df = self.ticker_data if df == None else df
+        # determine input dataframe to use
+        if df == None:
+            df = self.ticker_data             # class attribute
+        elif isinstance(df, str):
+            df = self.data_from_ticker(df)    # build from ticker (assumes self.data)
+        else:
+            df
+        
         x = df.copy()
         
         # Update Column Name to make indexing easier later (FwdPE is optional)
@@ -247,7 +254,7 @@ class dividend_discount_models(object):
             
         return ddm, r
      
-# # %% TESTING
+ # %% TESTING
     
 # import xlwings as xlw
 # wb = xlw.Book('DM Chartbook.xlsm')
