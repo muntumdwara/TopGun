@@ -132,17 +132,7 @@ class dividend_discount_models(object):
         return np.abs(px - pv)    # minimise in optimiser
     
     # %% Sustainable Return Model
-    
-    def sustainable_rtn_group(self, ticker_map=None):
-        """ Sustainable Return Model Run for Multiple-Tickers """
         
-        
-        
-        
-        
-        
-        return
-    
     # Full timeseries for SINGLE Ticker
     def sustainable_rtn_ts(self, df=None, G_fx='USD',
                            roe_trend=120, po_trend=120,
@@ -209,10 +199,7 @@ class dividend_discount_models(object):
             ddm, res = self.sustainable_return_calc(x.iloc[i,:],
                                                     trend_start=trend_start,
                                                     terminal=terminal)
-            try:
-                x.loc[v, 'ExRtn'] = res        # populate table
-            except:
-                print(v)
+            x.loc[v, 'ExRtn'] = res        # populate table
         
         return x
     
