@@ -115,7 +115,7 @@ class dividend_discount_models(object):
                 x = self.data[k]
                 for t in x:
                     x[t] = winsorize(x[t], winsorize_lim)
-                self.data[k] = y
+                self.data[k] = x
             
         return self.data
 
