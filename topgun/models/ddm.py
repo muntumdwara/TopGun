@@ -91,6 +91,7 @@ class dividend_discount_models(object):
         from scipy.stats.mstats import winsorize
         
         # ensure all data are floats
+        # Replace None with np.nan & set all data to floats (maybe more later)
         for k in self.data.keys():
             self.data[k] = self.data[k].replace('None', np.nan).astype(float)
         
@@ -107,7 +108,10 @@ class dividend_discount_models(object):
         
         # Winsorize if available
         for k in ['ROE', 'PE', 'FwdPE']:
+            # first check if field is a key in the data dict
             if k in self.data.keys():
+                
+                # then iterate over columns winsorising (doesn't work in 2D)
                 x = self.data[k]
                 for t in x:
                     x[t] = winsorize(x[t], winsorize_lim)
