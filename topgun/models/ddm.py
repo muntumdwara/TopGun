@@ -92,7 +92,7 @@ class dividend_discount_models(object):
         
         # ensure all data are floats
         for k in self.data.keys():
-            self.data[k].replace('None', np.nan).astype(float)
+            self.data[k] = self.data[k].replace('None', np.nan).astype(float)
         
         # Limit Dividend Yields to 0-100%
         DY = self.data['DY']
@@ -108,8 +108,11 @@ class dividend_discount_models(object):
         # Winsorize if available
         for k in ['ROE', 'PE', 'FwdPE']:
             if k in self.data.keys():
-                self.data[k] = winsorize(self.data[k], winsorize_lim)
-        
+                x = self.data[k]
+                for t in x:
+                    x[t] = winsorize(x[t], winsorize_lim)
+                self.data[k] = y
+            
         return self.data
 
     # %% DDM Solver Functions - GIVEN DIVIDEND STREAM
@@ -334,16 +337,18 @@ class dividend_discount_models(object):
      
  # %% TESTING
     
-# import xlwings as xlw
-# wb = xlw.Book('DM Chartbook.xlsm')
-# pxlw = lambda a, b: wb.sheets[a].range(b).options(pd.DataFrame, expand='table').value
-# px = pxlw('MSCI_PX', 'D1').iloc[3:,:]
-# pe = pxlw('MSCI_PE', 'D1').iloc[3:,:]
-# dy = pxlw('MSCI_DY', 'D1').iloc[3:,:]
-# roe = pxlw('MSCI_ROE', 'D1').iloc[3:,:]
-# gdp = pxlw('GDP_PC', 'D1').iloc[3:,:]
+import xlwings as xlw
+wb = xlw.Book('DM Chartbook.xlsm')
+pxlw = lambda a, b: wb.sheets[a].range(b).options(pd.DataFrame, expand='table').value
+px = pxlw('MSCI_PX', 'D1').iloc[3:,:]
+pe = pxlw('MSCI_PE', 'D1').iloc[3:,:]
+dy = pxlw('MSCI_DY', 'D1').iloc[3:,:]
+roe = pxlw('MSCI_ROE', 'D1').iloc[3:,:]
+gdp = pxlw('GDP_PC', 'D1').iloc[3:,:]
 
-# dd = {'PX': px, 'DY': dy, 'PE': pe, 'ROE': roe}
-# ddm = dividend_discount_models(data=dd, data_gdp=gdp)
-# ddm.terminal_gdp_per_capita()
-# x = ddm.sustainable_rtn_ts('MXWO', 'USD')
+dd = {'PX': px, 'DY': dy, 'PE': pe, 'ROE': roe}
+ddm = dividend_discount_models(data=dd, data_gdp=gdp)
+ddm.terminal_gdp_per_capita()
+ddm._scrub_field_data()
+
+#x = ddm.sustainable_rtn_ts('MXWO', 'USD')
