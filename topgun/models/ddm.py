@@ -90,6 +90,10 @@ class dividend_discount_models(object):
         
         from scipy.stats.mstats import winsorize
         
+        # ensure all data are floats
+        for k in self.data.keys():
+            self.data[k].replace('None', np.nan).astype(float)
+        
         # Limit Dividend Yields to 0-100%
         DY = self.data['DY']
         DY[DY < lim_dy[0]] = lim_dy[0]
