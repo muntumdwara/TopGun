@@ -36,7 +36,7 @@ fig = go.Figure(layout=dict(
                               'zeroline':True, 'zerolinewidth':1 , 'zerolinecolor':'whitesmoke',
                               'showgrid': True, 'gridcolor': 'whitesmoke',
                               },
-                      yaxis= {'anchor': 'x1', 'title': '', 'hoverformat':'.2%', 'tickformat':'.1%',
+                      yaxis= {'anchor': 'x1', 'title': '', 'hoverformat':'.1f', 'tickformat':'.1f',
                               'showline':True, 'linecolor':'gray',
                               'zeroline':True, 'zerolinewidth':1 , 'zerolinecolor':'whitesmoke',
                               'showgrid': True, 'gridcolor': 'whitesmoke'},
@@ -54,7 +54,7 @@ pio.templates['multi_strat'] = templated_fig.layout.template
 
 # %%
 
-def line_stacker(df, subset=False, template='multi_strat',
+def line_stacker(df, template='multi_strat',
                  yaxis_title= '', source='', source_posn=[0.85, 0.08],
                  **kwargs):
     """ Line plot with columns as lines
@@ -67,16 +67,12 @@ def line_stacker(df, subset=False, template='multi_strat',
     
     INPUT:
         df - dataframe with dates as index; column headers as legend titles
-        subset - False (default) or list of varnames if whole df not required
         kwargs - ONLY use arguments you could normally pass to plotly express
     """
     
     # set up the 3 columns we need
     vn = ['date', 'value', 'index']
     z = pd.DataFrame(columns = vn)
-    
-    # deal with subsetting
-    df = df[subset] if subset else df
         
     # itserate through df concatinating to silly long vector
     for ticker in df:

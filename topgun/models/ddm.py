@@ -119,6 +119,56 @@ class dividend_discount_models(object):
         return np.abs(px - pv)    # minimise in optimiser
     
     # %% Sustainable Return Model
+    
+    # Multi-Ticker Latest
+    def sustainable_rtn_latest(self, ticker_list=['MXUS'],
+                               roe_trend=120, po_trend=120,
+                               trend_start=10, terminal=21,
+                               fwd_pe = False):
+        
+        """ Table of Most Recent Observations for MULTI tickers
+        
+        NB/ This is NOT an efficient method for doing this FURTHER WORK """
+        
+        ### MOVE THIS ELSEWHERE
+        mapping = dict(MXWO = {'toto':'World', 'fx':'USD'},
+                       MXEF = {'toto':'World', 'fx':'EM'},
+                       MXUS = {'toto':'United States', 'fx':'USD'},
+                       MXEA = {'toto':'', 'fx':'USD'},
+                       MXGB = {'toto':'United Kingdom', 'fx':'GBP'},
+                       MXEUG = {'toto':'Europe', 'fx':'EUR'},
+                       MXEU = {'toto':'Europe', 'fx':'EUR'},
+                       MXZA = {'toto':'South Africa', 'fx':'ZAR'},
+                       MXJP = {'toto':'Japan', 'fx':'JPY'},
+                       SPX = {'toto':'United States', 'fx':'USD'},
+                       UKX = {'toto':'United Kingdom', 'fx':'GBP'},
+                       JALSH = {'toto':'South Africa', 'fx':'ZAR'},
+                       SXXP = {'toto':'Europe', 'fx':'EUR'},
+                       TPX = {'toto':'Japan', 'fx':'JPY'},) 
+        
+        # Dummy Dataframes
+        ExRtn, ERP = [pd.DataFrame(columns=ticker_list)] * 2
+        vn = ['PX','ExRtn','DY','PE','ROE','PO','g','G','ROE_trend','PO_trend']
+        t0 = pd.DataFrame(index=ticker_list, columns=vn)
+        
+        # iterate through each ticker
+        for t in ticker_list:
+            
+            fx = mapping[t]['fx']
+            df = self.data_from_ticker(t)
+            ddm, _ = self.sustainable_rtn_ts(df=df, G_fx=fx,
+                                             roe_trend=roe_trend,
+                                             po_trend=po_trend,
+                                             trend_start=trend_start,
+                                             terminal=terminal,
+                                             fwd_pe = False)
+            
+            #populate ts ExRtns & ERP as well as t0 current input data
+            ExRtn.loc[:, t] = ddm['ExRtn']
+            vn = ['PX','ExRtn','DY','PE','ROE','PO','g','G','ROE_trend','PO_trend']
+            t0.loc[t, vn] = ddm.loc[ddm.index[-1], vn]
+                
+        return t0, ExRtn
         
     # Full timeseries for SINGLE Ticker
     def sustainable_rtn_ts(self, df=None, G_fx='USD',
@@ -199,7 +249,7 @@ class dividend_discount_models(object):
                                                     terminal=terminal)
             x.loc[v, 'ExRtn'] = res        # populate table
         
-        return x
+        return x, ddm
     
     def sustainable_return_calc(self, dv,
                                 trend_start=10,
