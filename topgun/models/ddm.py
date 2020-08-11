@@ -85,6 +85,28 @@ class dividend_discount_models(object):
         
         self.terminal_G = x
         return x
+    
+    def _scrub_field_data(self, lim_dy=[0, 100], lim_roe=0, winsorize_lim=[0.05, 0.05]):
+        
+        from scipy.stats.mstats import winsorize
+        
+        # Limit Dividend Yields to 0-100%
+        DY = self.data['DY']
+        DY[DY < lim_dy[0]] = lim_dy[0]
+        DY[DY > lim_dy[1]] = lim_dy[1]
+        self.data['DY'] = DY
+        
+        # Floor ROE at 0
+        ROE = self.data['ROE']
+        ROE[ROE < lim_roe] = lim_roe
+        self.data['ROE'] = ROE
+        
+        # Winsorize if available
+        for k in ['ROE', 'PE', 'FwdPE']:
+            if k in self.data.keys():
+                self.data[k] = winsorize(self.data[k], winsorize_lim)
+        
+        return self.data
 
     # %% DDM Solver Functions - GIVEN DIVIDEND STREAM
     # Build a dividend stream using another function - solve it here
@@ -99,9 +121,7 @@ class dividend_discount_models(object):
               px - current index level associated with dividend stream
               G = perpetual growth rate
         """
-        
         x = minimize_scalar(self._solver_ddm_irr, args=(px, vDividend, G)).x
-        
         return x
     
     def _solver_ddm_irr(self, x, px, d, G):
@@ -203,7 +223,6 @@ class dividend_discount_models(object):
             # class attribute - comes 3rd or will fail if string input (above)     
             df = self.ticker_data             # class attribute
 
-        
         x = df.copy()    # avoid editing original data
         
         # Update Column Name to make indexing easier later (FwdPE is optional)
