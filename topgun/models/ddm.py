@@ -143,7 +143,7 @@ class dividend_discount_models(object):
         """
         
         # determine input dataframe to use - order of if's important here
-        if isinstance(df, str):
+        if type(df) == str:
             # if a string provided assumes its a ticker & build from scratch
             # will require self.data dictionary to have been populated!!!
             df = self.data_from_ticker(df) 
