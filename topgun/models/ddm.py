@@ -260,16 +260,16 @@ class dividend_discount_models(object):
      
  # %% TESTING
     
-import xlwings as xlw
-wb = xlw.Book('DM Chartbook.xlsm')
-pxlw = lambda a, b: wb.sheets[a].range(b).options(pd.DataFrame, expand='table').value
-px = pxlw('MSCI_PX', 'D1').iloc[3:,:]
-pe = pxlw('MSCI_PE', 'D1').iloc[3:,:]
-dy = pxlw('MSCI_DY', 'D1').iloc[3:,:]
-roe = pxlw('MSCI_ROE', 'D1').iloc[3:,:]
-gdp = pxlw('GDP_PC', 'D1').iloc[3:,:]
+# import xlwings as xlw
+# wb = xlw.Book('DM Chartbook.xlsm')
+# pxlw = lambda a, b: wb.sheets[a].range(b).options(pd.DataFrame, expand='table').value
+# px = pxlw('MSCI_PX', 'D1').iloc[3:,:]
+# pe = pxlw('MSCI_PE', 'D1').iloc[3:,:]
+# dy = pxlw('MSCI_DY', 'D1').iloc[3:,:]
+# roe = pxlw('MSCI_ROE', 'D1').iloc[3:,:]
+# gdp = pxlw('GDP_PC', 'D1').iloc[3:,:]
 
-dd = {'PX': px, 'DY': dy, 'PE': pe, 'ROE': roe}
-ddm = dividend_discount_models(data=dd, data_gdp=gdp)
-ddm.terminal_gdp_per_capita()
-x = ddm.sustainable_rtn_ts('MXWO', 'USD')
+# dd = {'PX': px, 'DY': dy, 'PE': pe, 'ROE': roe}
+# ddm = dividend_discount_models(data=dd, data_gdp=gdp)
+# ddm.terminal_gdp_per_capita()
+# x = ddm.sustainable_rtn_ts('MXWO', 'USD')
