@@ -142,15 +142,19 @@ class dividend_discount_models(object):
         
         """
         
-        # determine input dataframe to use
-        if df == None:
+        # determine input dataframe to use - order of if's important here
+        if isinstance(df, str):
+            # if a string provided assumes its a ticker & build from scratch
+            # will require self.data dictionary to have been populated!!!
+            df = self.data_from_ticker(df) 
+        elif df == None:
+            # class attribute - comes 2nd or will fail if string input (above)     
             df = self.ticker_data             # class attribute
-        elif isinstance(df, str):
-            df = self.data_from_ticker(df)    # build from ticker (assumes self.data)
         else:
-            df
+            # otherwise user has input df
+            df    
         
-        x = df.copy()
+        x = df.copy()    # avoid editing original data
         
         # Update Column Name to make indexing easier later (FwdPE is optional)
         vn = ['PX', 'DY', 'PE', 'ROE', 'FwdPE']
