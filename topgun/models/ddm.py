@@ -152,10 +152,10 @@ class dividend_discount_models(object):
     # %% Sustainable Return Model
     
     # Multi-Ticker Latest
-    def sustainable_rtn_latest(self, ticker_list=['MXUS'],
-                               roe_trend=120, po_trend=120,
-                               trend_start=10, terminal=21,
-                               fwd_pe = False):
+    def sustainable_rtn_multi(self, ticker_list=['MXUS'],
+                              roe_trend=120, po_trend=120,
+                              trend_start=10, terminal=21,
+                              fwd_pe = False):
         
         """ Table of Most Recent Observations for MULTI tickers
         
