@@ -34,6 +34,19 @@ class dividend_discount_models(object):
         self.eom = kwargs['eom'] if 'eom' in kwargs else True
         
         return
+    
+    # Potentially useful mapping
+    tickermap = dict(
+        MXWD = {'fx':'USD'},
+        MXWO = {'fx':'USD'},
+        MXUS = {'fx':'USD'},
+        MXEA = {'fx':'USD'},
+        MXGB = {'fx':'GBP'},
+        MXEUG = {'fx':'EUR'},
+        MXEU = {'fx':'EUR'},
+        MXJP = {'fx':'JPY'},
+        MXZA = {'fx':'ZAR'},
+        )
         
     # %% Admin & Data Srubbing
     
@@ -64,8 +77,11 @@ class dividend_discount_models(object):
         return df
     
     # Terminal Growth Trends
-    def terminal_gdp_per_capita(self, gdp, w=10, smoothing=3, pull2us=0):
+    def terminal_gdp_per_capita(self, gdp=None, w=10, smoothing=3, pull2us=0):
         """ Calculate Terminal Growth Rates from GDP Per Capita """
+        
+        # use class attribute if available (and None specified)        
+        gdp = self.data_gdp if gdp == None else gdp
         
         # Calculate geo mean of Real GDP per capita & smooth if req.
         x = (1 + gdp.pct_change(1)).rolling(w).apply(np.prod).apply(lambda x: np.power(x, 1/w))-1
@@ -116,6 +132,16 @@ class dividend_discount_models(object):
         return np.abs(px - pv)    # minimise in optimiser
     
     # %% Sustainable Return Model
+    
+    def sustainable_rtn_group(self, ticker_map=None):
+        """ Sustainable Return Model Run for Multiple-Tickers """
+        
+        
+        
+        
+        
+        
+        return
     
     # Full timeseries for SINGLE Ticker
     def sustainable_rtn_ts(self, df=None, G_fx='USD',
