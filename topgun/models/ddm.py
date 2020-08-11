@@ -197,12 +197,12 @@ class dividend_discount_models(object):
             # if a string provided assumes its a ticker & build from scratch
             # will require self.data dictionary to have been populated!!!
             df = self.data_from_ticker(df) 
-        elif df == None:
-            # class attribute - comes 2nd or will fail if string input (above)     
-            df = self.ticker_data             # class attribute
+        elif isinstance(df, pd.DataFrame):
+            df = df   # THIS MAKES NO SENSE (HOW TO KILL THIS LINE?)
         else:
-            # otherwise user has input df
-            df    
+            # class attribute - comes 3rd or will fail if string input (above)     
+            df = self.ticker_data             # class attribute
+
         
         x = df.copy()    # avoid editing original data
         
@@ -249,6 +249,7 @@ class dividend_discount_models(object):
                                                     terminal=terminal)
             x.loc[v, 'ExRtn'] = res        # populate table
         
+        # x is the summary table; ddm is the actual dividend calculation
         return x, ddm
     
     def sustainable_return_calc(self, dv,
