@@ -131,7 +131,13 @@ class dividend_discount_models(object):
                 for t in x:
                     x[t] = winsorize(x[t], winsorize_lim)
                 self.data[k] = x
-            
+        
+        
+        # Interpolate Missing Data
+        for k in self.data.keys():
+            self.data[k] = self.data[k].interpolate(method='linear', limit=6,
+                                                    axis=0, limit_area='inside')
+        
         return self.data
 
     # %% DDM Solver Functions - GIVEN DIVIDEND STREAM
@@ -355,14 +361,14 @@ def _sustainable_equity_return_testing():
     
     # import test data from Excel
     import xlwings as xlw
-    wb = xlw.Book('DM Chartbook.xlsm')
+    wb = xlw.Book('Expected Returns.xlsm')
     pxlw = lambda a, b: wb.sheets[a].range(b).options(pd.DataFrame, expand='table').value
-    px = pxlw('MSCI_PX', 'D1').iloc[3:,:]
-    pe = pxlw('MSCI_PE', 'D1').iloc[3:,:]
-    dy = pxlw('MSCI_DY', 'D1').iloc[3:,:]
-    roe = pxlw('MSCI_ROE', 'D1').iloc[3:,:]
+    px = pxlw('PX', 'D1').iloc[3:,:]
+    pe = pxlw('PE', 'D1').iloc[3:,:]
+    dy = pxlw('DY', 'D1').iloc[3:,:]
+    roe = pxlw('ROE', 'D1').iloc[3:,:]
     fwdpe = pxlw('MSCI_FwdPE', 'D1').iloc[3:,:]
-    tr = pxlw('MSCI_TR', 'D1').iloc[3:,:]
+    tr = pxlw('TR', 'D1').iloc[3:,:]
     gdp_real = pxlw('GDP_RealPerCap', 'D1').iloc[3:,:]
     gdp_nom = pxlw('GDP_NomPerCap', 'D1').iloc[3:,:]
     
@@ -373,7 +379,7 @@ def _sustainable_equity_return_testing():
     # Test Area
     ddm.terminal_gdp_per_capita(gdp=gdp_nom, w=10, smoothing=1)
     ddm._scrub_data_dict_fields()
-    x, y = ddm.sustainable_rtn_ts('MXWO', 'USD')
+    x, y = ddm.sustainable_rtn_ts('MXZA', 'ZAR')
     
     return x, y
 
