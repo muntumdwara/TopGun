@@ -135,7 +135,7 @@ class dividend_discount_models(object):
         
         # Interpolate Missing Data
         for k in self.data.keys():
-            self.data[k] = self.data[k].interpolate(method='linear', limit=6,
+            self.data[k] = self.data[k].interpolate(method='linear', limit=3,
                                                     axis=0, limit_area='inside')
         
         return self.data
