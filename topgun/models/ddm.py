@@ -33,6 +33,15 @@ class dividend_discount_models(object):
         self.data_gdp = kwargs['data_gdp'] if 'data_gdp' in kwargs else None
         self.eom = kwargs['eom'] if 'eom' in kwargs else True
         
+        # Do some data scrubbing if requested
+        # Options for a few different types
+        if 'scrub' in kwargs:
+            
+            # data_dict_fields is where data has multi df's for each field
+            # minor statistical adjustments
+            if kwargs['scrub'] == 'data_dict_fields':
+                self._scrub_data_dict_fields()
+        
         return
             
     # %% Admin & Data Srubbing
@@ -86,7 +95,13 @@ class dividend_discount_models(object):
         self.terminal_G = x
         return x
     
-    def _scrub_field_data(self, lim_dy=[0, 100], lim_roe=0, winsorize_lim=[0.05, 0.05]):
+    def _scrub_data_dict_fields(self, lim_dy=[0, 100], lim_roe=0, winsorize_lim=[0.05, 0.05]):
+        """ Helper function for MSCI Equity Field (ROE, DY etc..) data
+        
+        Function uses self.data when a dict and makes a few minor adjustments, 
+        such as winsorising, no negative dividends etc... 
+        
+        NB/ May need multiple data scrubbing functions """
         
         from scipy.stats.mstats import winsorize
         
@@ -236,11 +251,6 @@ class dividend_discount_models(object):
 
         x = df.copy()    # avoid editing original data
         
-        # Update Column Name to make indexing easier later (FwdPE is optional)
-        vn = ['PX', 'DY', 'PE', 'ROE', 'FwdPE']
-        vn = vn[0:-1] if len(x.columns)==4 else vn    
-        x.columns = vn
-    
         x['E0'] = x.PX / x.PE        # PE implied Earnings (pre-Inflation adj)
         
         # Dividend Stuff
@@ -340,18 +350,31 @@ class dividend_discount_models(object):
         return ddm, r
      
  # %% TESTING
-    
-# import xlwings as xlw
-# wb = xlw.Book('DM Chartbook.xlsm')
-# pxlw = lambda a, b: wb.sheets[a].range(b).options(pd.DataFrame, expand='table').value
-# px = pxlw('MSCI_PX', 'D1').iloc[3:,:]
-# pe = pxlw('MSCI_PE', 'D1').iloc[3:,:]
-# dy = pxlw('MSCI_DY', 'D1').iloc[3:,:]
-# roe = pxlw('MSCI_ROE', 'D1').iloc[3:,:]
-# gdp = pxlw('GDP_PC', 'D1').iloc[3:,:]
 
-# dd = {'PX': px, 'DY': dy, 'PE': pe, 'ROE': roe}
-# ddm = dividend_discount_models(data=dd, data_gdp=gdp)
-# ddm.terminal_gdp_per_capita()
-# ddm._scrub_field_data()
-#x = ddm.sustainable_rtn_ts('MXWO', 'USD')
+def _sustainable_equity_return_testing():
+    
+    # import test data from Excel
+    import xlwings as xlw
+    wb = xlw.Book('DM Chartbook.xlsm')
+    pxlw = lambda a, b: wb.sheets[a].range(b).options(pd.DataFrame, expand='table').value
+    px = pxlw('MSCI_PX', 'D1').iloc[3:,:]
+    pe = pxlw('MSCI_PE', 'D1').iloc[3:,:]
+    dy = pxlw('MSCI_DY', 'D1').iloc[3:,:]
+    roe = pxlw('MSCI_ROE', 'D1').iloc[3:,:]
+    fwdpe = pxlw('MSCI_FwdPE', 'D1').iloc[3:,:]
+    tr = pxlw('MSCI_TR', 'D1').iloc[3:,:]
+    gdp_real = pxlw('GDP_RealPerCap', 'D1').iloc[3:,:]
+    gdp_nom = pxlw('GDP_NomPerCap', 'D1').iloc[3:,:]
+    
+    # setup DDM instance
+    dd = {'PX': px, 'DY': dy, 'PE': pe, 'ROE': roe, 'TR':tr, 'FwdPE':fwdpe}
+    ddm = dividend_discount_models(data=dd) # scrub='data_dict_fields'
+    
+    # Test Area
+    ddm.terminal_gdp_per_capita(gdp=gdp_nom, w=10, smoothing=1)
+    ddm._scrub_data_dict_fields()
+    x, y = ddm.sustainable_rtn_ts('MXWO', 'USD')
+    
+    return x, y
+
+x, y = _sustainable_equity_return_testing()
