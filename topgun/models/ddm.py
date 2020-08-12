@@ -68,7 +68,7 @@ class dividend_discount_models(object):
         """ Calculate Terminal Growth Rates from GDP Per Capita """
         
         # use class attribute if available (and None specified)        
-        gdp = self.data_gdp if gdp == None else gdp
+        gdp = gdp if isinstance(gdp, pd.DataFrame) else self.data_gdp
         
         # Calculate geo mean of Real GDP per capita & smooth if req.
         x = (1 + gdp.pct_change(1)).rolling(w).apply(np.prod).apply(lambda x: np.power(x, 1/w))-1
