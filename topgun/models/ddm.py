@@ -73,7 +73,8 @@ class dividend_discount_models(object):
         return df
     
     # Terminal Growth Trends
-    def terminal_gdp_per_capita(self, gdp=None, w=10, smoothing=3, pull2us=0):
+    def terminal_gdp_per_capita(self, gdp=None, w=10, smoothing=3,
+                                pull2us=0, pull2par=0, par=0.02):
         """ Calculate Terminal Growth Rates from GDP Per Capita """
         
         # use class attribute if available (and None specified)        
@@ -87,11 +88,17 @@ class dividend_discount_models(object):
         wgtCNY = 0.4    # China Weight
         x['EM'] = (1-wgtCNY)*x.loc[:,['BRL','RUB','INR','MXN','ZAR']].mean(axis=1) + x['CNY']*wgtCNY
         
+        # Pull-to-par if required
+        if pull2par > 0:
+            for c in x:
+                x.loc[:,c] = (x.loc[:, c]*(1-pull2par)) + ((pull2par * par))
+        
+        
         # pull-to-US if specified
         if pull2us > 0:
             for c in x:
                 x.loc[:,c] = (x.loc[:, c]*(1-pull2us)) + ((pull2us * x.loc[:,'USD']))
-        
+                
         self.terminal_G = x
         return x
     
@@ -219,7 +226,11 @@ class dividend_discount_models(object):
             ExRtn.loc[:, t] = ddm['ExRtn']
             vn = ['PX','ExRtn','DY','PE','ROE','PO','g','G','ROE_trend','PO_trend']
             t0.loc[t, vn] = ddm.loc[ddm.index[-1], vn]
-                
+        
+        # Save to self for useful storage
+        self.output_table = t0
+        self.output_ExRtn = ExRtn
+        
         return t0, ExRtn
         
     # Full timeseries for SINGLE Ticker
@@ -296,6 +307,9 @@ class dividend_discount_models(object):
             x.loc[v, 'ExRtn'] = res        # populate table
         
         # x is the summary table; ddm is the actual dividend calculation
+        self.output_table = x
+        self.output_divstream = ddm
+        
         return x, ddm
     
     def sustainable_return_calc(self, dv,
