@@ -8,11 +8,40 @@ HongXiongMao utility functions
 #import hongxiongmao.config as config        # API Keys
 
 # Dependencies
-import os
-import pickle
 import numpy as np
 import pandas as pd
 import datetime as dt
+
+
+# %% Rebase Indices
+
+def rtn2px(df, rebase=100, freq=12, method='percent'):
+    """ Convert returns to an index stream
+    
+    INPUTS:
+        rebase - index start price
+        freq - smoothing for example monthly YoY CPI
+        method - number|percentage(default)
+    
+    """
+    
+    df = df.to_frame() if isinstance(df, pd.Series) else df    # ensure df
+    
+    if method == 'number':
+        df = 1 + (df / (100 * freq))    # divide no return by 100
+    else:
+        df = 1 + (df / freq)            # default assumes percentage input
+    
+    # Find index of first non-nan in each column
+    idx = df.notna().idxmax()
+    for i, c in enumerate(df):
+        
+        # add rebase number to last nan (if available) or 1st number
+        ix = df.index.get_loc(idx[0]) 
+        ix = ix - 1 if ix != 0 else 0
+        df.iloc[ix, i] = rebase
+    
+    return df.cumprod()
 
 # %% DATAFRAME MERGER
 
@@ -124,70 +153,3 @@ def daily2weekly(ts, day=4, date_str_format='%Y-%m-%d'):
     idx = dt.values == day    # Reindex using desired day of week
     new = ts.iloc[idx] if isinstance(ts, pd.Series) else ts.iloc[idx,:]
     return new
-
-# %% FILE SAVING & UNLOADING
-
-# Pickle Merger
-def picklemerger(filename, b, blend='left', path=None,
-                 create_new=False, output=False):
-    """
-    Merges a pickle file with another dictionary where the new dictionary
-    is of the form {'variable':pd.DateFrame}
-     * Will add keys from dict b if those keys aren't in a already.
-     * can create_new file or replace original completely if required
-     * can select blend method 'left' or 'right' for common non-NaN index
-
-    INPUTS:
-        b - dictionary being appended
-        blend - 'left'(default)|'right'
-                decides if a or b is master where there is common index
-        create_new - False (default) | True | 'replace'
-                     True builds new file (and dir) from b if non exists
-                     replace will replace current file with b
-        output - False (default)|True if we want function to return pickle
-                     
-    """
-    
-    # Make a full filepath from the path & filename
-    if path == None:
-        filepath = filename.lower()
-    else:
-        path = path+'/' if path[-1] != '/' else path
-        filepath = (path+filename).lower()
-            
-    # Unpickle packed file
-    # If replacing don't open, create new dir & set a = b
-    if create_new == 'replace':
-        os.makedirs(os.path.dirname(path.lower()), exist_ok=True)
-        a = b
-    else:
-        try:
-            infile = open(filepath, 'rb')
-            a = pickle.load(infile)
-            infile.close()
-        except:
-            if create_new:
-                os.makedirs(os.path.dirname(path.lower()), exist_ok=True)
-                a = b
-            else:
-                raise ValueError('ERR: no file {} at path ./{}'.format(filename, path))
-    
-    # Iterate through each key in original file
-    for k in list(a.keys()):
-        if k in list(b.keys()):
-            a[k] = df_merger(a[k], b[k], blend=blend)
-            
-    # Add new dictionaries keys from b that aren't in a
-    for k in list(b.keys()):
-        if k not in list(b.keys()):
-            a[k] = b[k]
-    
-    # Re-pickle & save
-    picklefile = open(filepath, 'wb')
-    pickle.dump(a, picklefile)
-    picklefile.close()
-    
-    print('{} updated & Pickled in {}'.format(filename, path))
-    
-    if output: return a
-    else: return

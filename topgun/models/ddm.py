@@ -381,7 +381,7 @@ def _sustainable_equity_return_testing():
     pe = pxlw('PE', 'D1').iloc[3:,:]
     dy = pxlw('DY', 'D1').iloc[3:,:]
     roe = pxlw('ROE', 'D1').iloc[3:,:]
-    fwdpe = pxlw('MSCI_FwdPE', 'D1').iloc[3:,:]
+    fwdpe = pxlw('MX_FwdPE', 'D1').iloc[3:,:]
     tr = pxlw('TR', 'D1').iloc[3:,:]
     gdp_real = pxlw('GDP_RealPerCap', 'D1').iloc[3:,:]
     gdp_nom = pxlw('GDP_NomPerCap', 'D1').iloc[3:,:]
@@ -397,4 +397,4 @@ def _sustainable_equity_return_testing():
     
     return x, y
 
-#x, y = _sustainable_equity_return_testing()
+x, y = _sustainable_equity_return_testing()
