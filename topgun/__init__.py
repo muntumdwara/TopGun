@@ -12,7 +12,7 @@ TopGun
 ### DON'T FORGET TO UPDATE SUB __INIT__.py files ###
 
 # General
-from topgun.utilities import *
+from .utilities import *
 
 # Models
 from .models import *

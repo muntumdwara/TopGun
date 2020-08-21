@@ -64,9 +64,6 @@ def rebase_index(df, rebase=100, method='log'):
     df.iloc[0,:] = rebase
     return df.cumprod()
 
-
-
-
 # %% DATAFRAME MERGER
 
 # Dataframe Merger
