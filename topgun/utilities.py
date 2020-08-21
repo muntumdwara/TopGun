@@ -43,6 +43,30 @@ def rtn2px(df, rebase=100, freq=12, method='percent'):
     
     return df.cumprod()
 
+
+def rebase_index(df, rebase=100, method='log'):
+    """ Align one (or more) index series and rebase
+    
+    methods:
+        log is continuously compounded returns [ln(t1 / t0)]
+        pct_change (default) 
+    
+    """
+    
+    df = df.to_frame() if isinstance(df, pd.Series) else df    # ensure df
+    df.dropna(inplace=True)
+    
+    if method == 'log':
+        df = 1 + np.log(df / df.shift(1))
+    else:
+        df = 1 + df.pct_change(1)
+    
+    df.iloc[0,:] = rebase
+    return df.cumprod()
+
+
+
+
 # %% DATAFRAME MERGER
 
 # Dataframe Merger
