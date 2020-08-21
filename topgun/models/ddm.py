@@ -39,7 +39,7 @@ class dividend_discount_models(object):
             
             # data_dict_fields is where data has multi df's for each field
             # minor statistical adjustments
-            if kwargs['scrub'] == 'data_dict_fields':
+            if kwargs['scrub'] == 'data_dict_fields':   
                 self._scrub_data_dict_fields()
         
         return
@@ -375,6 +375,7 @@ def _sustainable_equity_return_testing():
     
     # import test data from Excel
     import xlwings as xlw
+    
     wb = xlw.Book('Expected Returns.xlsm')
     pxlw = lambda a, b: wb.sheets[a].range(b).options(pd.DataFrame, expand='table').value
     px = pxlw('PX', 'D1').iloc[3:,:]
@@ -397,4 +398,4 @@ def _sustainable_equity_return_testing():
     
     return x, y
 
-x, y = _sustainable_equity_return_testing()
+# x, y = _sustainable_equity_return_testing()
