@@ -135,7 +135,7 @@ class bootstrap(object):
                                          buttons=[])],
                       annotations=[{'text': 'Source: STANLIB Multi-Strategy',
                                     'xref': 'paper', 'x': 0.9, 'ax': 0,
-                                    'yref': 'paper', 'y': -0.05, 'ay': 0,}],))
+                                    'yref': 'paper', 'y': 0.05, 'ay': 0,}],))
         
         # Save template
         pio.templates['multi_strat'] = pio.to_templated(fig).layout.template
@@ -993,6 +993,131 @@ class bootstrap(object):
         
         return fig
     
+    # %% PLOTLY TABLES
+    ### I REALLY HATE THESE AND WE NEED A BETTER METHOD OF SHOWING TABLES
+    
+    def plot_table(self, method='wgts', port=None, title=""):
+        """ Table with Headers, Index & Totals Row
+        
+        INPUT:
+            method: None|'risk'|'wgts'(default)
+                None will assume port is dataframe and use that
+                'risk' takes the inputs from self.results for a given port
+                'wgts' takes the inputs from self.wgts
+            
+            port: should be a string with the name of a port for 'risk'
+                  otherwise it's a dataframe if no method provided
+        """
+    
+        # where no method provided assume port is a dataframe    
+        if method is None:
+            df = port
+        
+        # useful methods for reporting
+        # here we build a table with w, mu, risk etc.. inc. totals
+        elif method == 'risk':
+            
+            # grab modellling inputs table from self.results
+            df = self.results[port]['inputs']
+            df = df[df.w != 0]
+            
+            # need to add a totals row
+            tot = df.sum(axis=0)
+            tot.name = 'TOTAL'
+            
+            # portfolio expected return & alpha 
+            tot.loc['mu'] = df.w.multiply(df.mu, axis=0).sum()
+            tot.loc['alpha'] = df.alpha.multiply(df.mu, axis=0).sum()
+            
+            # set volatility and mcr to zero - the sum is meaningless
+            tot.loc['vol', 'mcr'] = 0
+            
+            df = df.append(tot)    # append to dataframe
+        
+        elif method == 'wgts':
+            df = self.wgts                    # pull weights from class
+            df = df[df.sum(axis=1) != 0]    # remove assets with zero wgt
+            df = df.append(pd.Series(df.sum(axis=0), name='TOTAL'))
+            
+        ### MAKE PLOTLY TABLE
+        
+        # Alternating Row Colours
+        # create repeating pattern of desired length
+        # make a grey total row as well
+        if df.shape[0] % 2 == 0:    # even
+            rc = ['white', 'whitesmoke'] * int((df.shape[0]+1)/2)
+            rc[-1] = 'grey'
+        else:                       # odds
+            rc = ['white', 'whitesmoke'] * int(df.shape[0]/2)
+            rc = rc + ['grey']
+        
+        # Form table 
+        fig = go.Figure(data=[go.Table(
+            columnwidth = [100, 50],
+            header=dict(values=list(df.reset_index().columns),
+                        fill_color='black',
+                        line_color='darkslategray',
+                        font={'color':'white', 'size':11},
+                        align=['left', 'center']),
+             cells=dict(values=df.reset_index().T,
+                        format=[[], ['.2%']],    # column text formatting
+                        fill_color = ['teal', rc,],
+                        line_color='darkslategray',
+                        align=['left', 'center'],
+                        font={'color':['white', 'black'], 'size':11},))])
+        
+        # formattingn updates
+        fig.update_layout(title=title,
+                          height=((df.shape[0] + 1) * 30),     # change height
+                          margin = {'l':50, 'r':50, 'b':5, 't':50})   
+        
+        return fig
+    
+    def plot_stats_table(self, port, periods=[52, 156, 260], title=''):
+        
+        """
+        REFERENCES:
+            https://plotly.com/python/table/
+            
+        AUTHOR: David - but don't ask him to fix it
+        """
+        
+        stats = self.results[port]['stats']
+        stats = stats.loc[:, periods]
+        
+        # Index & Formatting for Stats Table
+        z = [('mean', '.1%'), ('median', '.1%'),
+             ('prob', '.0%'), ('std', '.1%'),
+             ('skew', '.2f'), ('kurtosis', '.2f'),
+             ('5%', '.1%'), ('10%', '.1%'), ('25%', '.1%'), ('40%', '.1%'), ('50%', '.1%'),
+             ('60%', '.1%'),('75%', '.1%'), ('90%', '.1%'), ('95%', '.1%'),]
+    
+        idx, fmt = zip(*z)             # unzip
+        stats = stats.loc[idx, :].T    # susbset stats table & flip horizontal
+            
+        # plotly table
+        fig = go.Figure(data=[go.Table(
+            columnwidth = [150, 60],
+            header=dict(values=['Sim Period'] + list(stats.columns),
+                        fill_color='black',
+                        line_color='darkslategray',
+                        font={'color':'white', 'size':11},
+                        align=['left', 'center']),
+            cells=dict(values=stats.reset_index().T,
+                       format=[[], [list(fmt)]],    # column text formatting
+                       fill_color = ['teal', ['white','whitesmoke']*50],
+                       line_color='darkslategray',
+                       align=['left', 'center'],
+                       font={'color':['white', 'black'], 'size':11},))])
+    
+        fig.update_layout(title=title,
+                          width=((stats.shape[1] + 1) * 60), 
+                          height=((stats.shape[0] + 1) * 40),
+                          margin = {'l':50, 'r':50, 'b':5, 't':50})    # change width
+        
+        return fig
+        
+    
 # %% TESTING
 
 def unit_test():
@@ -1016,10 +1141,11 @@ def unit_test():
     
     # Historical Returns for Emperical Analysis
     rtns = pullxlw('STATIC ZAR', 'D5').reset_index()
-    cor = rtns.corr()
 
     # set up bootstrap class
-    bs = bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns, cor=cor, nsims=100)
+    bs = bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns, 
+                   #alpha=alpha, te=te,
+                   nsims=100)
     
     sim0 = bs.emperical(w=wgts.iloc[:,0])        # run a sim on 1st port
     sst0 = bs.sim_stats(sims=sim0)               # run sim stats on 1st port   
@@ -1041,6 +1167,10 @@ def unit_test():
     #bs.plot_histogram().show()
     #bs.plot_histogram('MS4').show()
     
+    #bs.plot_table(method='risk', port='MS4').show()
+    bs.plot_table(method='wgts').show()
+    #bs.plot_stats_table(port='MS4').show()
+    
     return bs
 
-#bs = unit_test()
+bs = unit_test()
