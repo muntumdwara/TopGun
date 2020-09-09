@@ -19,8 +19,6 @@ import plotly
 import plotly.express as px
 import plotly.graph_objs as go
 import plotly.io as pio
-#from plotly.offline import plot
-pio.renderers.default='browser'
 
 # %% CLASS MODULE
 
@@ -977,6 +975,9 @@ def unit_test():
     bs.emperical_frontier(alpha=False, tgts=0)   # run emperical frontier
     
     # Chart Tests
+    
+    #from plotly.offline import plot
+    pio.renderers.default='browser'
     
     #bs.plot_paths('MS4_v1').show()
     #bs.plot_wgts_bar_stacked().show()
