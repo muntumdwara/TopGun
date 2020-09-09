@@ -737,46 +737,54 @@ class bootstrap(object):
         
         """
         
+        # number of colours on ridge line - silly point
+        ncolours = len(traces)
+        
         # annsims can be the actual sims to be plotted on the ridgeline or
         # a string with the name of a port in self.results or
         # None in which case we assume a single period, but the whole frontier
+        # frontier is defined by self.port_names which is normally the same
+        # as self.results.keys() but allows a subset if we have lots of ports
+        # and only want a smaller number of those results on the frontier
         if annsims is None:
             
             # if going across frontier we can't have more than 1 period
-            traces = max(traces) if len(traces) > 0 else traces
-            
-            # iterate through portfolios in the list
-            for i, k in enumerate(self.results):
-                x = pd.Series(self.results[k]['annsims'].loc[:,traces], name=k)
+            # then we iterate through the frontier
+            # grab the period vector from the ith port & concat to a dataframe
+            traces = [max(traces)] if len(traces) > 0 else traces
+            for i, k in enumerate(self.port_names):
+                
+                x = self.results[k]['annsims'].iloc[:, traces]
                 if i == 0:
                     df = pd.DataFrame(x)
                 else:
-                    df = pd.concat([df, x], axis=1)
+                    df = pd.concat([df, x], axis=1) 
             
+            df.columns = self.port_names
             annsims = df    # set annsims as the dataframe of sims now
-        
-        # grab from self if a string input provided for annualised simulations
+            ncolours = len(annsims.columns)    # update ncolours
+            
         elif isinstance(annsims, str):
-            annsims = self.results[annsims]['annsims']
+            # grab from self if a string input provided for annualised simulations
+            annsims = self.results[annsims]['annsims'].iloc[:, traces]
         
-        # subset the data, there is a funny here is the trace list is numerical
-        # we first try an iloc and then do a loc if the iloc fails
-        annsims = annsims.loc[:, traces]
-        #try:
-        #    annsims = annsims.iloc[:, traces]    # subset data
-        #except:
-        #    annsims = annsims.loc[:, traces]
+        else:
+            # subset the data, there is a funny here is the trace list is numerical
+            # we first try an iloc and then do a loc if the iloc fails
+            try:
+                annsims = annsims.iloc[:, traces]    # iloc for numerical
+            except:
+                annsims = annsims.loc[:, traces]     # loc for string list
             
         # create a blended colours list- here is teal to purple
         from plotly.colors import n_colors
         colors = n_colors('rgb(0, 128, 128)',
                           'rgb(128, 0, 128)',
-                          len(traces),
+                          ncolours,
                           colortype='rgb')
         
         # blank plotly express template
         fig = px.scatter(title=title, template=template)    
-        
         for i, v in enumerate(annsims):             # add violin plots as traces
             vn = "p-{:.0f}".format(v) if type(v) == int else v
             fig.add_trace(go.Violin(x=annsims.iloc[:,i],
@@ -1006,9 +1014,9 @@ def unit_test():
     #bs.plot_correl().show()
     #bs.plot_frontier().show()
     #bs.plot_densitymap('MS4_v1').show()
-    bs.plot_ridgeline('MS4_v2').show()
-    bs.plot_histogram('MS4_v2').show()
+    bs.plot_ridgeline('MS4').show()
+    #bs.plot_histogram('MS4_v2').show()
     
     return bs
 
-#bs = unit_test()
+bs = unit_test()
