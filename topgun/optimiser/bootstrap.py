@@ -631,7 +631,7 @@ class bootstrap(object):
     
     def plot_histogram(self, annsims=None, portrange=False, tgt=0, 
                        periods=[52], nbins=100,  
-                       opacity=0.5, f=None,
+                       opacity=0.5, 
                        title='Probability Return Distributions',
                        template='multi_strat',
                        **kwargs):
@@ -651,7 +651,6 @@ class bootstrap(object):
             nbins: number of bins for historgram
             title: obvious
             opacity: 0-1 (default = 0.5) go lower with more histos on plot
-            f: annualisation factor; default is None which uses self.f
             template: (default multi_strat)
             **kwargs: will feed directly into px.histogram()
         """
@@ -679,16 +678,14 @@ class bootstrap(object):
             df.columns = self.port_names
             annsims = df    # set annsims as the dataframe of sims now
             
+            # using frontier also means portrange must be true
+            portrange = True
+            
         elif isinstance(annsims, str):
-            annsims = self.results[annsims]['annsims']
-        else:
-            annsims = annsims      
-  
-        if f is None:
-            f = self.f
-        
-        #subset data
-        annsims = annsims.loc[:, periods]
+            # If input was a str assume its a portfolio from self.results
+            annsims = self.results[annsims]['annsims'].iloc[:, periods]
+        else:     
+            annsims = annsims.loc[:, periods]    #subset data
         
         # reshape for plotly express (stacked format)        
         df = annsims.stack().reset_index()
@@ -1039,9 +1036,11 @@ def unit_test():
     #bs.plot_correl().show()
     #bs.plot_frontier().show()
     #bs.plot_densitymap('MS4_v1').show()
-    bs.plot_ridgeline().show()
-    bs.plot_histogram().show()
+    #bs.plot_ridgeline().show()
+    #bs.plot_ridgeline('MS4).show()
+    #bs.plot_histogram().show()
+    #bs.plot_histogram('MS4').show()
     
     return bs
 
-bs = unit_test()
+#bs = unit_test()
