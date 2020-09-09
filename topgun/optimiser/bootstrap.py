@@ -893,6 +893,100 @@ class bootstrap(object):
             
         return fig
 
+    def plot_convergence(bs, frontier=True, port=None, opacity = 0.2,
+                         title='Simulated Confidence Funnel', 
+                         template='multi_strat', **kwargs):
+        """ Area fill showing confidence intervals over time 
+        
+        INPUTS:
+            frontier: True(default)|False
+                when True we use self.port_names & the 25%-75% confidence
+                when False we need port to be a string with a portfolio name
+            port: str() portfolio name only used if frontier == False
+        
+        """
+        
+        
+        # In collecting data we need to know if this is a frontier or single port
+        # frontier - 25%-75% range for multiple portfolios
+        # port - more pairs but only 1 port
+        if frontier:
+            
+            # create 2 dataframes for the upper & lower quartiles of data
+            # iterate through results
+            for i, port in enumerate(bs.port_names):
+                u0 = bs.results[port]['stats'].T.loc[:,'25%']
+                l0 = bs.results[port]['stats'].T.loc[:,'75%']
+    
+                if i == 0:
+                    u = pd.DataFrame(u0)
+                    l = pd.DataFrame(l0)
+                else:
+                    u = pd.concat([u, u0], axis=1)
+                    l = pd.concat([l, l0], axis=1)
+            
+            # update column headers (which will say eg. 25% ) to port_names
+            u.columns = bs.port_names
+            l.columns = bs.port_names
+            
+            # when we build the chart we iterate to add traces
+            # zip to ensure tuples for upper and lower
+            pairs = zip(bs.port_names, bs.port_names)
+            ncolours = len(u.columns)    # number of colours we need
+    
+        else:
+            
+            # on a single port this isn't required, but to have a single function we do
+            u = bs.results[port]['stats'].T
+            l = bs.results[port]['stats'].T
+            pairs = [('5%', '95%'), ('10%', '90%'), ('25%', '75%'), ('40%', '60%'), ('50%', '50%')]
+            ncolours = len(pairs)
+        
+        # use plotlys gradient thing to get colours between teal and purple
+        # go.Scatter won't let us change opacity directly but we can via rgba
+        # plotly colours gives rga NOT rgba - append an opacity alpha to the output
+        from plotly.colors import n_colors
+    
+        colors = n_colors('rgb(0, 128, 128)',
+                          'rgba(128, 0, 128)',
+                          ncolours,
+                          colortype='rgb')
+        
+        for i, c in enumerate(colors):
+            c = c[:3] + 'a' + c[3:]    # convert from rgb to rgba  
+            
+            # insert opacity alpha into the string
+            idx = c.find(')')
+            colors[i] = c[:idx] + ", {}".format(opacity) + c[idx:]
+        
+        ### BUILD THE PLOT
+        
+        # Set up dummy figure
+        fig = px.line(title='Confidence Convergence', template='multi_strat', **kwargs)
+        fig.update_layout(
+            yaxis= {'anchor':'x1','title':'Annualised Return', 'hoverformat':':.1%', 'tickformat':':.1%',},
+            xaxis= {'anchor':'y1','title':'Simulation Period', 'hoverformat':':.0f', 'tickformat':':.0f',}, )
+    
+        for i, v in enumerate(pairs):
+    
+            # Add upper trace 
+            fig.add_trace(go.Scatter(x=l.index, y=l.loc[:,v[0]],
+                                     line={'width':0}, fill=None,
+                                     showlegend=False,
+                                     name="{}".format(str(v[0])),))
+    
+            fig.add_trace(go.Scatter(x=u.index, y=u.loc[:,v[1]],
+                                     line={'width':0},
+                                     fill='tonexty',
+                                     fillcolor=colors[i],
+                                     name="{}".format(str(v[1])),)) 
+    
+        fig.update_layout(
+            yaxis= {'anchor':'x1','title':'Annualised Return', 'hoverformat':'.1%', 'tickformat':'.0%',},
+            xaxis= {'anchor':'y1','title':'Simulation Period', 'hoverformat':'.0f', 'tickformat':'.0f',}, )
+        
+        return fig
+
 
     # Risk Return of Assets & Plotted Efficient Frontier
     def plot_frontier(self, w=None, mu=None, vol=None, cor=None, template='multi_strat'):
@@ -1118,6 +1212,12 @@ class bootstrap(object):
         return fig
         
     
+    # %% BOOTSTRAP REPORT WRITING FUNCTIONS
+    
+    
+    
+    
+    
 # %% TESTING
 
 def unit_test():
@@ -1166,11 +1266,13 @@ def unit_test():
     #bs.plot_ridgeline('MS4).show()
     #bs.plot_histogram().show()
     #bs.plot_histogram('MS4').show()
+    bs.plot_convergence(frontier=False, port='MS4').show()
+    bs.plot_convergence(frontier=True).show()
     
     #bs.plot_table(method='risk', port='MS4').show()
-    bs.plot_table(method='wgts').show()
+    #bs.plot_table(method='wgts').show()
     #bs.plot_stats_table(port='MS4').show()
     
     return bs
 
-#bs = unit_test()
+bs = unit_test()
