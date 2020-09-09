@@ -629,7 +629,7 @@ class bootstrap(object):
         
         return fig
     
-    def plot_histogram(self, annsims, portrange=False, tgt=0, 
+    def plot_histogram(self, annsims=None, portrange=False, tgt=0, 
                        periods=[52], nbins=100,  
                        opacity=0.5, f=None,
                        title='Probability Return Distributions',
@@ -638,7 +638,8 @@ class bootstrap(object):
         """ Histogram of Return Distributions with Boxpot Overlay
         
         INPUTS:
-            annsims: dataframe of simulations with annualised returns OR
+            annsims: None implies entire frontier defined by self.port_names
+                     dataframe of simulations with annualised returns OR
                      str() name of port in self.results
             tgt: (default tgt = 0) for return bogie; will plot vertical line
             portrange:
@@ -646,6 +647,7 @@ class bootstrap(object):
                          hist for 1 of more periods
                 True - annsims is a df with multiple portfolio & single period
             periods: [52] (default) but multiple periods available in list
+                     if going across frontier will set to MAX value in periods
             nbins: number of bins for historgram
             title: obvious
             opacity: 0-1 (default = 0.5) go lower with more histos on plot
@@ -653,12 +655,35 @@ class bootstrap(object):
             template: (default multi_strat)
             **kwargs: will feed directly into px.histogram()
         """
-        
-        if isinstance(annsims, str):
+
+        # annsims can be the actual sims to be plotted on histrogram or
+        # a string with the name of a port in self.results or
+        # None in which case we assume a single period, but the whole frontier
+        # frontier is defined by self.port_names which is normally the same
+        # as self.results.keys() but allows a subset if we have lots of ports
+        # and only want a smaller number of those results on the frontier
+        if annsims is None:
+            
+            # if going across frontier we can't have more than 1 period
+            # then we iterate through the frontier
+            # grab the period vector from the ith port & concat to a dataframe
+            periods = [max(periods)] if len(periods) > 0 else periods
+            for i, k in enumerate(self.port_names):
+                
+                x = self.results[k]['annsims'].iloc[:, periods]
+                if i == 0:
+                    df = pd.DataFrame(x)
+                else:
+                    df = pd.concat([df, x], axis=1) 
+            
+            df.columns = self.port_names
+            annsims = df    # set annsims as the dataframe of sims now
+            
+        elif isinstance(annsims, str):
             annsims = self.results[annsims]['annsims']
         else:
-            annsims = annsims
-        
+            annsims = annsims      
+  
         if f is None:
             f = self.f
         
@@ -1014,8 +1039,8 @@ def unit_test():
     #bs.plot_correl().show()
     #bs.plot_frontier().show()
     #bs.plot_densitymap('MS4_v1').show()
-    bs.plot_ridgeline('MS4').show()
-    #bs.plot_histogram('MS4_v2').show()
+    bs.plot_ridgeline().show()
+    bs.plot_histogram().show()
     
     return bs
 
