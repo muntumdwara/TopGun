@@ -825,7 +825,6 @@ class bootstrap(object):
         return fig
 
 
-
     # Risk Return of Assets & Plotted Efficient Frontier
     def plot_frontier(self, w=None, mu=None, vol=None, cor=None, template='multi_strat'):
         """ Risk Return Scatter Plot with Efficient Frontier of Portfolios """
@@ -965,9 +964,12 @@ def unit_test():
     #bs.plot_correl().show()
     #bs.plot_frontier().show()
     #bs.plot_densitymap('MS4_v1').show()
-    bs.plot_ridgeline('MS4_v1').show()
-    bs.plot_histogram('MS4_v1').show()
+    bs.plot_ridgeline('MS4_v2').show()
+    bs.plot_histogram('MS4_v2').show()
     
     return bs
 
 bs = unit_test()
+
+# %%
+
