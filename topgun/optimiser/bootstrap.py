@@ -931,7 +931,7 @@ class bootstrap(object):
             
             # when we build the chart we iterate to add traces
             # zip to ensure tuples for upper and lower
-            pairs = zip(bs.port_names, bs.port_names)
+            pairs = zip(bs.port_names[::-1], bs.port_names[::-1])
             ncolours = len(u.columns)    # number of colours we need
     
         else:
@@ -962,7 +962,7 @@ class bootstrap(object):
         ### BUILD THE PLOT
         
         # Set up dummy figure
-        fig = px.line(title='Confidence Convergence', template='multi_strat', **kwargs)
+        fig = px.line(title=title, template='multi_strat', **kwargs)
         fig.update_layout(
             yaxis= {'anchor':'x1','title':'Annualised Return', 'hoverformat':':.1%', 'tickformat':':.1%',},
             xaxis= {'anchor':'y1','title':'Simulation Period', 'hoverformat':':.0f', 'tickformat':':.0f',}, )
