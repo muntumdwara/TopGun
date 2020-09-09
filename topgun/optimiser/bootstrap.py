@@ -27,6 +27,8 @@ pio.renderers.default='browser'
 class bootstrap(object):
     """ Portfolio Stochastic Modelling Class Modules
     
+    
+    
     MAIN FUNCTIONS:
         emperical() - runs emperical sims for 1 vector of weights
         sim_stats() - calc descriptive stats for 1 simulation output
@@ -36,9 +38,6 @@ class bootstrap(object):
                     a dictionary with all the outputs (stored as self.results)
         correl_rmt_filtered() - allows us to build RMT filtered correl matrix
                     for other correl work look at correls module
-    
-    CHARTING FUNCTIONS:
-        
     
     INPUTS:
         wgts - dataframe where indices are asset classes & cols are portfolios
@@ -57,40 +56,60 @@ class bootstrap(object):
     """
 
     ## Initialise class
-    def __init__(self,
-                 wgts=None,
-                 tgts=None,
-                 mu=None,
-                 alpha=None,
-                 vol=None,
-                 te=None,
-                 hist=None, 
-                 cor=None,
-                 nsims=1000,
-                 f=52,
-                 psims=260,
+    def __init__(self, wgts, mu, vol,                # these aren't optional 
+                 alpha=None, te=None, tgts=None,     # optional
+                 hist=None, cor=None,                # Need something
+                 nsims=1000, f=52, psims=260,        # standard params
                  **kwargs):
         
-        # ORDER OF INITIALISATION IS IMPORTANT
+        ### ORDER OF INITIALISATION IS IMPORTANT ###
+
+        ### Non-optional class inputs
         self.wgts = wgts
-        self.tgts = tgts
         self.mu = mu          # vector check in properties
-        self.alpha = alpha
         self.vol = vol        # vector check in properties
-        self.te = te
-        self.hist = hist
-        self.cor = cor        # check symmetrical
+
+        # From required inputs we set these
+        self.universe = mu.index          # list of asset classes
+        self.port_names = wgts.columns    # useful to have names of portfolios
+
+        ### Optional class inputs
         
-        # TOOLS
+        # alpha - set to vector of zeros of None passed 
+        if alpha is None:
+            alpha = pd.Series(np.zeros(len(mu)), index=mu.index, name='alpha')
+        self.alpha = alpha
+
+        # tracking error - set to vector of zeros if None passed 
+        if te is None:
+            te = pd.Series(np.zeros(len(mu)), index=mu.index, name='te')
+        self.te = te
+        
+        # tgts set to vector of of zeros of length the numper of portfolios
+        if tgts is None:
+            tgts = pd.Series(np.zeros(len(wgts.columns)),
+                             index=wgts.columns,
+                             name='tgts')
+        self.tgts = tgts
+
+        # Historical Timeseries Data & Correlation
+        # ORDER IMPORTANT HERE
+        # if hist provided set a default correlation matrix as RMT
+        # if cor also provided we then override the default
+        # this is a little inefficient, but meh... hardly matters
+        if hist is not None:
+            self.cor = self.correl_rmt_filtered(hist.corr())
+            self.hist = hist
+        
+        # Override default correl (from hist) if cor specifically passed
+        if cor is not None:
+            self.cor = cor        # check symmetrical in properties
+        
+        ### STANDARD SETTINGS
         self.nsims = nsims    # number of simulations
         self.f = f            # annualisation factor
         self.psims = psims    # no of periods in MC simulation
-        
-        # Inputs with some re-jigging
-        if cor is None and hist is not None:
-            self.cor = hist.corr()                 # basic covariance matrix
-            self.cor = self.correl_rmt_filtered()  # run RMT filter as default
-            
+
         ## Update Plotly template
         colourmap = ['grey', 'teal', 'purple', 'green','grey', 'teal', 'purple', 'green','grey', 'teal', 'purple', 'green',]
         fig = go.Figure(layout=dict(
