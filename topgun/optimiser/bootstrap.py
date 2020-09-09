@@ -706,8 +706,8 @@ class bootstrap(object):
 
         return fig
     
-    def plot_ridgeline(self, annsims, traces=[52, 104, 156, 208, 260], width=3,
-                 side='positive', meanline=True, box=False,
+    def plot_ridgeline(self, annsims=None, traces=[52, 104, 156, 208, 260],
+                 side='positive', meanline=True, box=False, width=3,
                  title='Ridgeline KDE Distributions', 
                  template='multi_strat', **kwargs):
         """ Ridgeline Plot
@@ -716,9 +716,12 @@ class bootstrap(object):
         ploted as seperate trace going up the y-axis 
         
         INPUTS:
-            annsims: dataframe of simulations with annualised returns OR
+            annsims: None implies single period across all self.results
+                     dataframe of simulations with annualised returns OR
                      str() name of port in self.results
             traces: columns from annsims to turn into ridgelines
+                    for whole frontier we can only have a single period - if
+                    traces list len() > 1 we'll pick the MAX len period
             width: (default = 3) is the height
             meanline: True(default)|False - pops a vertical mean in ridge
             box: True|False(default) - box-plot within ridge
@@ -734,16 +737,35 @@ class bootstrap(object):
         
         """
         
+        # annsims can be the actual sims to be plotted on the ridgeline or
+        # a string with the name of a port in self.results or
+        # None in which case we assume a single period, but the whole frontier
+        if annsims is None:
+            
+            # if going across frontier we can't have more than 1 period
+            traces = max(traces) if len(traces) > 0 else traces
+            
+            # iterate through portfolios in the list
+            for i, k in enumerate(self.results):
+                x = pd.Series(self.results[k]['annsims'].loc[:,traces], name=k)
+                if i == 0:
+                    df = pd.DataFrame(x)
+                else:
+                    df = pd.concat([df, x], axis=1)
+            
+            annsims = df    # set annsims as the dataframe of sims now
+        
         # grab from self if a string input provided for annualised simulations
-        if isinstance(annsims, str):
+        elif isinstance(annsims, str):
             annsims = self.results[annsims]['annsims']
         
         # subset the data, there is a funny here is the trace list is numerical
         # we first try an iloc and then do a loc if the iloc fails
-        try:
-            annsims = annsims.iloc[:, traces]    # subset data
-        except:
-            annsims = annsims.loc[:, traces]
+        annsims = annsims.loc[:, traces]
+        #try:
+        #    annsims = annsims.iloc[:, traces]    # subset data
+        #except:
+        #    annsims = annsims.loc[:, traces]
             
         # create a blended colours list- here is teal to purple
         from plotly.colors import n_colors
