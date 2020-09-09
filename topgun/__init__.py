@@ -20,4 +20,5 @@ from .models import *
 # Charting
 from .charting import *
 
-from .optimiser import *
+# Optimisation
+from .optimiser.bootstrap import bootstrap as bootstrap
