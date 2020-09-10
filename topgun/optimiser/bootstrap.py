@@ -1243,6 +1243,30 @@ class bootstrap(object):
     
     # %% Plot Collections - saves lots of plots to self.plots()
     
+    def plot_collection_all(self):
+        """ Run port_collection functions for frontier & all portfolios
+        
+        In each case plots will be returned to self.plots which is a dictionary
+        frontier will be at self.plots['frontier'] while the rest will have the
+        port_name as the key.
+        
+        look at guide for plot_collection_frontier() & plot_collection_port()
+        for details of exactly which plots are run... this function is just
+        for the default settings.        
+        """
+        
+        # Run frontier & digest
+        self.port_collection_frontier(plotly2html=True, digest=True)
+        
+        # Now iterate through all plots in the self.results dictionary
+        for port in self.results.keys():
+            self.plot_collection_port(port=port,
+                                      plotly2html=True,
+                                      digest=True)
+        
+        return self.plots
+    
+    
     def plot_collection_frontier(self, showplots=False,
                                  plotly2html=True, plotlyjs='cdn',
                                  digest=True):
