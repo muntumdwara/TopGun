@@ -55,6 +55,9 @@ class bootstrap(object):
         plot_collection_frontier(): runs plots to analyse across portfolios
         plot_collection_port(): runs plots to analyse timeseries of simulations
         
+        NB/ for details of individual charts go look below, or run collection
+        then load each plotly figures from the collection to see what it is
+    
     DEVELOPMENT:
         - check correlation matrix PSD in class properties
 
