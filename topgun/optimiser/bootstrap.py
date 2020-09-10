@@ -1573,9 +1573,22 @@ def bootstrap_unit_test():
     bs = bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns,
                   alpha=alpha, te=te, nsims=100, f=52, psims=260,)
     
+    # run emperical bootstrap
+    bs.emperical_frontier()
+    
+    ### Now we test all the things - remember to test both frontier & port
+    # by making sure the charts work we cover
+    #   self.emperical()
+    #   self.port_stats()
+    #   self.sim_stats()
+    
+    #from plotly.offline import plot
+    pio.renderers.default='browser'
+    
+    bs.plot_frontier()
     
     
     
     return bs
 
-#x = bootstrap_unit_test()
+#bootstrap_unit_test()
