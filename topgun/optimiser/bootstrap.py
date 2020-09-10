@@ -1342,7 +1342,7 @@ class bootstrap(object):
                 stats.append(v)
                 
         stats = '\n \n'.join(stats)    # make long str with line-breaks
-        plots[stats] = stats
+        plots['stats'] = stats
             
         # save to self.plots() dictionary by default
         if digest:
@@ -1618,7 +1618,7 @@ def bootstrap_unit_test():
     #   self.port_stats()
     #   self.sim_stats()
     
-    #from plotly.offline import plot
+    # render plotly plots to new tab on browser
     pio.renderers.default='browser'
     
     bs.plot_collection_all()
