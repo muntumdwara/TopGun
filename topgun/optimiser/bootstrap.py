@@ -1266,15 +1266,22 @@ class bootstrap(object):
         for the default settings.        
         """
         
-        # Run frontier & digest
-        f = self.plot_collection_frontier(plotly2html=True, digest=True)
-        self.plots['frontier'] = f 
+        # python seems to prefer grabing ones self, manipulating & stuffing back 
+        # create dict of plots from self
+        plots = self.plots
         
-        # Now iterate through all plots in the self.results dictionary
+        # iterate through all plots in the self.results dictionary
         for port in self.results.keys():
             p = self.plot_collection_port(port=port, plotly2html=True, digest=True)
-            self.plots[port] = p 
+            plots[port] = p 
         
+        
+        # Run frontier & digest
+        f = self.plot_collection_frontier(plotly2html=True, digest=True)
+        plots['frontier'] = f 
+        
+        # ingest plots back to self
+        self.plots = plots
         return "Mega plot run smashed - look in self.plots"
     
     
@@ -1585,10 +1592,10 @@ def bootstrap_unit_test():
     #from plotly.offline import plot
     pio.renderers.default='browser'
     
-    bs.plot_frontier()
+    bs.plot_collection_all()
     
-    
-    
+
     return bs
 
-#bootstrap_unit_test()
+bs = bootstrap_unit_test()
+x = bs.plots.keys()
