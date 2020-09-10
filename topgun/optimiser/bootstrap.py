@@ -1409,13 +1409,14 @@ class bootstrap(object):
     def markdown_frontier_report(self, plots=None, title='TEST'):
         """ Markdown report created by appending lines """
         
+        # grab oneself
         if plots is None:
             plots = self.plots['frontier']
     
-        md = []
+        md = []     # dummy list container - convert to strings later
         
         md.append("# STANLIB Multi-Strategy Bootstrap Report")
-        md.append("### Frontier Analysis: {}".format(title))
+        md.append("## Frontier Analysis: {}".format(title))
         md.append("{}".format(plots['frontier']))
         md.append("{}".format(plots['wgts']))
         md.append("{}".format(plots['wgts_bar']))
@@ -1424,8 +1425,8 @@ class bootstrap(object):
         md.append("{}".format(plots['ridgeline']))
         md.append("{}".format(plots['convergence']))
         md.append("{}".format(plots['hist']))
-    
-        return "\n ".join(md)
+        
+        return "\n \n".join(md)    # NEEDS double line-break to render plots
     
     def markdown_port_report(self, port):
         """ Markdown report created by appending lines """
@@ -1438,7 +1439,7 @@ class bootstrap(object):
         
         # Append markdown
         md.append("# STANLIB Multi-Strategy Bootstrap Report")
-        md.append("### Simulated Portfolio: {}".format(port))
+        md.append("## Simulated Portfolio: {}".format(port))
         md.append("{}".format(plots['risk_table']))
         md.append("{}".format(plots['paths']))
         md.append("{}".format(plots['stats']))
@@ -1447,7 +1448,7 @@ class bootstrap(object):
         md.append("{}".format(plots['convergence']))
         md.append("{}".format(plots['hist_multi']))
         
-        return "\n \n".join(md)
+        return "\n \n".join(md)    # NEEDS double line-break to render plots
     
     def report_writer(self, title="TEST_REPORT", md="# TEST", path=""):
         """ Template Report Writer
@@ -1615,9 +1616,12 @@ def bootstrap_unit_test():
     # render plotly plots to new tab on browser
     pio.renderers.default='browser'
     
+    # This will run plot_collection_frontier() & plot_collection_port()
+    # Therefore a good test if all the plotting functions are working
     bs.plot_collection_all()
     
-
+    
+    
     return bs
 
 #bs = bootstrap_unit_test()
