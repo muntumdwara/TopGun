@@ -21,7 +21,7 @@ class reporting(object):
         
         return
 
-    def md2html(title="TEST_REPORT", md="# TEST", path=""):
+    def md2html(self, title="TEST_REPORT", md="# TEST", path=""):
             """ Template Report Writer
             
             Takes a markdown document and title & converts to static HTML file
