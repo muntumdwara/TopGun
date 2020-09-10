@@ -1597,5 +1597,5 @@ def bootstrap_unit_test():
 
     return bs
 
-bs = bootstrap_unit_test()
-x = bs.plots.keys()
+#bs = bootstrap_unit_test()
+#x = bs.plots.keys()
