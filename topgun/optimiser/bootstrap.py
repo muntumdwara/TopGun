@@ -107,6 +107,7 @@ class bootstrap(object):
         self.nsims = nsims    # number of simulations
         self.f = f            # annualisation factor
         self.psims = psims    # no of periods in MC simulation
+        self.plots = dict()   # initisalise dict for plotly plots (useful later)
 
         ## Update Plotly template
         colourmap = ['grey', 'teal', 'purple', 'green','grey', 'teal', 'purple', 'green','grey', 'teal', 'purple', 'green',]
@@ -1238,14 +1239,213 @@ class bootstrap(object):
                           height=((stats.shape[0] + 1) * 40),
                           margin = {'l':50, 'r':50, 'b':5, 't':50})    # change width
         
-        return fig
+        return fig    
+    
+    # %% Plot Collections - saves lots of plots to self.plots()
+    
+    def plot_collection_frontier(self, showplots=False,
+                                 plotly2html=True, plotlyjs='cdn',
+                                 digest=True):
+        """ Create Dictionary of Frontier Plots for use in Reporting 
         
-    # %% BOOTSTRAP REPORT WRITING FUNCTIONS
+        REFERENCES:
+            https://stackoverflow.com/questions/59868987/plotly-saving-multiple-plots-into-a-single-html-python
+            https://plotly.com/python-api-reference/generated/plotly.io.to_html.html
+        """
+        
+        plots=dict()    # create empty dictionary
     
+        plots['frontier']= self.plot_frontier()          
+        plots['wgts']= self.plot_table(method='wgts')      # table of frontier wgts
+        plots['wgts_bar']= self.plot_wgts_bar_stacked()    # stacked wgts bar chart
+        plots['correl']= self.plot_correl()                # correlation matrix
+        
+        # iterate adding stats tables for each portfolio
+        for p in self.port_names:
+            plots['stats_' + p] = self.plot_stats_table(
+                                        port=p,
+                                        periods=[52, 156, 260],
+                                        title="Simulation Stats: {}".format(p))
+        
+        plots['ridgeline'] = self.plot_ridgeline()    # ridgeline frontier
+        plots['hist'] = self.plot_histogram()         # TV histogram of frontier
+        
+        # convergence plot of inter-quartile range through time for each port
+        plots['convergence'] = self.plot_convergence(frontier=True)
+        
+        # useful in Jupyter Notebooks - just an option to show the plots
+        if showplots:
+            for p in plots:
+                p.show()
+        
+        # option to convert to html
+        # very useful as it allows us to strip the javascript from plotly plots
+        # see reference for more info
+        for k, v in plots.items():
+            plots[k] = v.to_html(full_html=False,
+                                 include_plotlyjs=plotlyjs,
+                                 default_height=550,
+                                 default_width=1000)
+        
+        # save to self.plots() dictionary by default
+        if digest:
+            self.plots['frontier'] = plots
+        
+        return plots
+        
+    def plot_collection_port(self, port,
+                            showplots=False,
+                            plotly2html=True, plotlyjs='cdn',
+                            digest=True):
+        """ Create Dictionary of Single Portfolio Plots for use in Reporting 
+        
+        REFERENCES:
+            https://stackoverflow.com/questions/59868987/plotly-saving-multiple-plots-into-a-single-html-python
+            https://plotly.com/python-api-reference/generated/plotly.io.to_html.html
+        """
+        
+        plots=dict()
+        
+        # Port Risk Table with MCR, TCR etc..
+        plots['risk_table'] = self.plot_table(method='risk', port=port, title="{}".format(port))
+        
+        # Simulation paths - these make file sizes 
+        plots['paths'] = self.plot_paths(port)
+        plots['stats'] = self.plot_stats_table(
+            port=port,
+            periods=[52, 156, 260],
+            title="Simulation Stats: {}".format(port))
+        
+        # single period histogram
+        plots['hist'] = self.plot_histogram(port, periods=[260])
+        plots['ridgeline'] = self.plot_ridgeline(port)
+        
+        # convergence shows port and 5%, 10%, 25%, 40% & 50% bands
+        plots['convergence'] = self.plot_convergence(frontier=False, port=port)
+        
+        # multi-period histogram
+        plots['hist_multi'] = self.plot_histogram(port, periods=[52, 156, 260])
+        
+        # useful in Jupyter Notebooks - just an option to show the plots
+        if showplots:
+            for p in plots:
+                p.show()
+        
+        # option to convert to html
+        # very useful as it allows us to strip the javascript from plotly plots
+        # see reference for more info    
+        for k, v in plots.items():
+            plots[k] = v.to_html(full_html=False,
+                                 include_plotlyjs=plotlyjs,
+                                 default_height=550,
+                                 default_width=1000)
     
+        # save to self.plots() dictionary by default
+        if digest:
+            self.plots['frontier'] = plots
     
+        return plots 
     
+    # %% Bootstrap Reporting
+    # VERY MUCH WORK IN PROGRESS
     
+    def markdown_frontier_report(self, plots=None, title='TEST'):
+        
+        if plots is None:
+            plots = self.plots['frontier']
+        
+        # REALLY IMPORTANT NOT TO CHANGE THE FORMATTING
+        # Markdown text MUST be aligned far left and NOT INDENTED or will not
+        # render as markdown text in Jinja2 templates
+        md = \
+"""## STANLIB Multi-Strategy Bootstrap Report \n
+### Frontier: {title} \n \n
+{frontier} \n 
+{wgts} \n
+{wgts_bar} \n
+{correl} \n
+{ridgeline} \n
+{convergence} \n
+
+For the Frontier Confidence funnel we show the 25th and 95th percentile of 
+simulated results over time.
+
+{hist} \n
+
+""".format(title=title,
+           frontier=plots['frontier'],
+           wgts=plots['wgts'],
+           wgts_bar = plots['wgts_bar'],
+           correl = plots['correl'],
+           ridgeline = plots['ridgeline'],
+           hist = plots['hist'],
+           convergence = plots['convergence'],
+           )
+            
+        return md
+    
+    def report_writer(self, title="TEST_REPORT", md="# TEST", path=""):
+        """ Template Report Writer
+        
+        Takes a markdown document and title & converts to static HTML file
+        
+        NB/ if markdown isn't rendering as expected look at the spaces in the
+        markdown input file. Few known issues:
+            1. # HEADER must be the first char on line or it craps out
+            2. need at least 1 line break between plots
+            3. '  ' double space is new line (which is obviously invisible);
+               can use \n but sometimes doesn't work 
+        
+        DEVELOPMENT:
+            Really could do with some CSS or something to style the page
+        
+        REFERENCES:
+            https://guides.github.com/pdfs/markdown-cheatsheet-online.pdf
+            http://zetcode.com/python/jinja/
+            
+        Author: A very exhausted David McNay started Sept '20
+        """    
+        
+        from jinja2 import Template
+        from markdown import markdown
+        from datetime import date
+        
+        # this is the boiler plate HTML used by jinja2 in the report
+        # Note {{ report_title }} and {{ report_markdown }}
+        base_template = """
+            <!DOCTYPE html><html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                <title>{{ report_title }}</title>
+            </head>
+            <body>
+                {{ report_markdown }}
+                <br><br>
+                {{ disclaimer }}
+            </body></html>"""
+        
+        disclaimer = "Report generated on {}".format(date.today().strftime("%d %B %Y"))
+        
+        # set up base template in jinja2 then render report to HTML
+        # zetcode blog was quite usful for an HTML rookie to learn
+        template = Template(base_template)
+        report = template.render(report_title=title,
+                                 report_markdown=markdown(md),
+                                 disclaimer=markdown(disclaimer))
+        
+        # full name and filepath to save report
+        full_path = path + title + '.html'
+        
+        # open text file, clear current data & append report
+        with open(full_path, 'w+') as f:
+            f.truncate(0)      # clear any data currently in file
+            f.write(report)    # write report to file
+            f.close()          # close file
+            
+        return "REPORT WRITTEN: {}".format(title)
+
 # %% TESTING
 
 def unit_test():
@@ -1300,6 +1500,14 @@ def unit_test():
     #bs.plot_table(method='wgts').show()
     #bs.plot_stats_table(port='MS4').show()
     
+    bs.plot_collection_frontier()
+    md = bs.markdown_frontier_report()
+    bs.report_writer(md=md)
+    
     return bs
 
 #bs = unit_test()
+
+# %%
+
+#x = bs.plots['frontier'].keys()
