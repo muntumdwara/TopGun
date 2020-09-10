@@ -1273,7 +1273,7 @@ class bootstrap(object):
         
         # Now iterate through all plots in the self.results dictionary
         for port in self.results.keys():
-            self.plots['port'] = self.plot_collection_port(
+            self.plots[port] = self.plot_collection_port(
                                             port=port,
                                             plotly2html=True,
                                             digest=True)
@@ -1543,8 +1543,29 @@ def unit_test():
     
     return bs
 
-bs = unit_test()
+#bs = unit_test()
 
 # %%
 
-#x = bs.plots['frontier'].keys()
+def bootstrap_unit_test():
+    
+    ### Setup a theoretical 3 Asset Class Portfolio
+    
+    # Returns & Vols
+    mu= pd.Series(data=[0.1, 0.05, 0.005], index=['EQ', 'FI', 'LQ'], name='ExRtn')
+    vol= pd.Series(data=[0.15, 0.08, 0.01], index=['EQ', 'FI', 'LQ'], name='Std')
+    alpha= pd.Series(data=[0.02, 0.01, 0.01], index=['EQ', 'FI', 'LQ'], name='active')
+    te = pd.Series(data=[0.03, 0.03, 0.01], index=['EQ', 'FI', 'LQ'], name='tracking')
+    
+    
+    wgts=[]
+    rtns=[]
+    
+    # Setup bootsrap class with theoretical 3-asset class portfolio
+    bs = bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns,
+                   alpha=alpha, te=te,
+                   nsims=100, f=52, psims=260,)
+    
+    
+    
+    return
