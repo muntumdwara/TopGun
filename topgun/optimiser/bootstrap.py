@@ -1267,7 +1267,7 @@ class bootstrap(object):
         """
         
         # Run frontier & digest
-        self.port_collection_frontier(plotly2html=True, digest=True)
+        self.plot_collection_frontier(plotly2html=True, digest=True)
         
         # Now iterate through all plots in the self.results dictionary
         for port in self.results.keys():
@@ -1535,13 +1535,13 @@ def unit_test():
     #bs.plot_table(method='wgts').show()
     #bs.plot_stats_table(port='MS4').show()
     
-    bs.plot_collection_frontier()
-    md = bs.markdown_frontier_report()
-    bs.report_writer(md=md)
+    bs.plot_collection_all()
+    #md = bs.markdown_frontier_report()
+    #bs.report_writer(md=md)
     
     return bs
 
-#bs = unit_test()
+bs = unit_test()
 
 # %%
 
