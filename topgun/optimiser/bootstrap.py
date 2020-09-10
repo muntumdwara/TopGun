@@ -1396,6 +1396,18 @@ class bootstrap(object):
         if plots is None:
             plots = self.plots['frontier']
         
+        
+        # could be multiple stats table which would be labelled 
+        # 'stats_RP2', 'stats_RP3' etc..
+        # create a list and append plotly html if key starts 'stats_'
+        # then convert to long html string with double line break between each
+        stats = []
+        for k, v in plots.items():
+            if k[:6] == 'stats_':
+                stats.append(v)
+        
+        stats = '\n \n'.join(stats)    # convert 2 long str with 2 line breaks
+        
         # REALLY IMPORTANT NOT TO CHANGE THE FORMATTING
         # Markdown text MUST be aligned far left and NOT INDENTED or will not
         # render as markdown text in Jinja2 templates
@@ -1406,6 +1418,7 @@ class bootstrap(object):
 {wgts} \n
 {wgts_bar} \n
 {correl} \n
+{stats} \n
 {ridgeline} \n
 {convergence} \n
 
@@ -1419,6 +1432,7 @@ simulated results over time.
            wgts=plots['wgts'],
            wgts_bar = plots['wgts_bar'],
            correl = plots['correl'],
+           stats=stats,
            ridgeline = plots['ridgeline'],
            hist = plots['hist'],
            convergence = plots['convergence'],
