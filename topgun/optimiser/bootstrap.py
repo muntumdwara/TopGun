@@ -1288,7 +1288,10 @@ class bootstrap(object):
     def plot_collection_frontier(self, showplots=False,
                                  plotly2html=True, plotlyjs='cdn',
                                  digest=True):
-        """ Create Dictionary of Frontier Plots for use in Reporting 
+        """ Create Dictionary of Frontier Plots for use in Reporting
+        
+        NB/ This includes tables (which require some hacks) remember to remove
+        the plotly table if we find a better way of presenting tabular data
         
         REFERENCES:
             https://stackoverflow.com/questions/59868987/plotly-saving-multiple-plots-into-a-single-html-python
@@ -1328,7 +1331,19 @@ class bootstrap(object):
                                  include_plotlyjs=plotlyjs,
                                  default_height=550,
                                  default_width=1000)
-        
+            
+            # Multiple keys is a bit of a pain in markdown later
+            # Create a single 'stats' plot which merges the plotly stats tables
+            # look for string 'stats_' in keys & append to dummy list
+            # then convert to long html str with double line break between each
+            stats = []
+            for k, v in plots.items():
+                if k[:6] == 'stats_':
+                    stats.append(v)
+                    
+            stats = '\n \n'.join(stats)    # make long str with line-breaks
+            plots[stats] = stats
+            
         # save to self.plots() dictionary by default
         if digest:
             self.plots['frontier'] = plots
@@ -1401,12 +1416,12 @@ class bootstrap(object):
         # 'stats_RP2', 'stats_RP3' etc..
         # create a list and append plotly html if key starts 'stats_'
         # then convert to long html string with double line break between each
-        stats = []
-        for k, v in plots.items():
-            if k[:6] == 'stats_':
-                stats.append(v)
-        
-        stats = '\n \n'.join(stats)    # convert 2 long str with 2 line breaks
+        #stats = []
+        #for k, v in plots.items():
+        #    if k[:6] == 'stats_':
+        #        stats.append(v)
+       # 
+        #stats = '\n \n'.join(stats)    # convert 2 long str with 2 line breaks
         
         # REALLY IMPORTANT NOT TO CHANGE THE FORMATTING
         # Markdown text MUST be aligned far left and NOT INDENTED or will not
@@ -1432,7 +1447,7 @@ simulated results over time.
            wgts=plots['wgts'],
            wgts_bar = plots['wgts_bar'],
            correl = plots['correl'],
-           stats=stats,
+           stats=plots['stats'],
            ridgeline = plots['ridgeline'],
            hist = plots['hist'],
            convergence = plots['convergence'],
