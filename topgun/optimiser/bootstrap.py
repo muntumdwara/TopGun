@@ -1267,17 +1267,15 @@ class bootstrap(object):
         """
         
         # Run frontier & digest
-        self.plots['frontier'] = self.plot_collection_frontier(
-                                            plotly2html=True,
-                                            digest=True)
+        f = self.plot_collection_frontier(plotly2html=True, digest=True)
+        self.plots['frontier'] = f 
         
         # Now iterate through all plots in the self.results dictionary
         for port in self.results.keys():
-            self.plots[port] = self.plot_collection_port(
-                                            port=port,
-                                            plotly2html=True,
-                                            digest=True)
-        return self.plots
+            p = self.plot_collection_port(port=port, plotly2html=True, digest=True)
+            self.plots[port] = p 
+        
+        return "Mega plot run smashed - look in self.plots"
     
     
     def plot_collection_frontier(self, showplots=False,
@@ -1552,20 +1550,32 @@ def bootstrap_unit_test():
     ### Setup a theoretical 3 Asset Class Portfolio
     
     # Returns & Vols
-    mu= pd.Series(data=[0.1, 0.05, 0.005], index=['EQ', 'FI', 'LQ'], name='ExRtn')
-    vol= pd.Series(data=[0.15, 0.08, 0.01], index=['EQ', 'FI', 'LQ'], name='Std')
-    alpha= pd.Series(data=[0.02, 0.01, 0.01], index=['EQ', 'FI', 'LQ'], name='active')
-    te = pd.Series(data=[0.03, 0.03, 0.01], index=['EQ', 'FI', 'LQ'], name='tracking')
+    universe = ['EQUITY', 'CREDIT', 'RATES']
+    mu= pd.Series(data=[0.1, 0.05, 0.01], index=universe, name='ExRtn')
+    vol= pd.Series(data=[0.15, 0.08, 0.01], index=universe, name='Std')
+    alpha= pd.Series(data=[0.02, 0.01, 0.01], index=universe, name='active')
+    te = pd.Series(data=[0.03, 0.03, 0.01], index=universe, name='tracking')
     
+    # Dummy Weights Array
+    wgts = pd.DataFrame(data=np.array([[0.2, 0.6, 0.2], [0.4, 0.5, 0.1],
+                                       [0.6, 0.3, 0.1], [0.8, 0.1, 0.1]]).T,
+                        index=universe,
+                        columns=['RP1', 'RP2', 'RP3', 'RP4'])
     
-    wgts=[]
-    rtns=[]
+    # Create rtns using random gaussian... obviously correl will be bollocks
+    rtns = pd.DataFrame(columns=universe)
+    for i, v in enumerate(rtns):
+        rtns[v] = np.random.normal(mu[i]/52,               # expected return
+                                   vol[i] / np.sqrt(52),   # deannualise vol
+                                   (20*52))                # 10-years rtns
     
-    # Setup bootsrap class with theoretical 3-asset class portfolio
+    ### Setup bootsrap class with theoretical 3-asset class portfolio
     bs = bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns,
-                   alpha=alpha, te=te,
-                   nsims=100, f=52, psims=260,)
+                  alpha=alpha, te=te, nsims=100, f=52, psims=260,)
     
     
     
-    return
+    
+    return bs
+
+#x = bootstrap_unit_test()
