@@ -323,8 +323,9 @@ class bootstrap(object):
         # insert vec PortValue==1 at col.0; concat because pd.insert is crap
         df = pd.DataFrame(sims, columns=range(1, psims+1))
         v1 = pd.DataFrame(np.ones((nsims, 1)), columns=[0])
-            
-        return pd.concat([v1, df], axis=1)
+        
+        # round on the output to save space in chart memory later
+        return pd.concat([v1, df], axis=1).round(5)
     
     
     def sim_stats(self, sims, tgt=0, method='annualise', **kwargs):
@@ -1194,8 +1195,10 @@ class bootstrap(object):
         return fig
     
     def plot_stats_table(self, port, periods=[52, 156, 260], title=''):
+        """ Simulation Descriptive Stats Table
         
-        """
+        Plotly table with simulation period in the index and stats of columns
+        
         REFERENCES:
             https://plotly.com/python/table/
             
@@ -1237,7 +1240,6 @@ class bootstrap(object):
         
         return fig
         
-    
     # %% BOOTSTRAP REPORT WRITING FUNCTIONS
     
     
@@ -1292,9 +1294,8 @@ def unit_test():
     #bs.plot_ridgeline('MS4).show()
     #bs.plot_histogram().show()
     #bs.plot_histogram('MS4').show()
-    bs.plot_convergence(frontier=False, port='MS4').show()
-    bs.plot_convergence(frontier=True).show()
-    
+    #bs.plot_convergence(frontier=False, port='MS4').show()
+    #bs.plot_convergence(frontier=True).show()
     #bs.plot_table(method='risk', port='MS4').show()
     #bs.plot_table(method='wgts').show()
     #bs.plot_stats_table(port='MS4').show()
