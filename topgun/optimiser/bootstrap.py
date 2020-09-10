@@ -1267,14 +1267,16 @@ class bootstrap(object):
         """
         
         # Run frontier & digest
-        self.plot_collection_frontier(plotly2html=True, digest=True)
+        self.plots['frontier'] = self.plot_collection_frontier(
+                                            plotly2html=True,
+                                            digest=True)
         
         # Now iterate through all plots in the self.results dictionary
         for port in self.results.keys():
-            self.plot_collection_port(port=port,
-                                      plotly2html=True,
-                                      digest=True)
-        
+            self.plots['port'] = self.plot_collection_port(
+                                            port=port,
+                                            plotly2html=True,
+                                            digest=True)
         return self.plots
     
     
