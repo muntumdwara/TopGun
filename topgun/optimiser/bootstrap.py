@@ -1410,17 +1410,7 @@ class bootstrap(object):
         
         if plots is None:
             plots = self.plots['frontier']
-        
-        
-        # could be multiple stats table which would be labelled 
-        # 'stats_RP2', 'stats_RP3' etc..
-        # create a list and append plotly html if key starts 'stats_'
-        # then convert to long html string with double line break between each
-        #stats = []
-        #for k, v in plots.items():
-        #    if k[:6] == 'stats_':
-        #        stats.append(v)
-       # 
+
         #stats = '\n \n'.join(stats)    # convert 2 long str with 2 line breaks
         
         # REALLY IMPORTANT NOT TO CHANGE THE FORMATTING
@@ -1454,6 +1444,28 @@ simulated results over time.
            )
             
         return md
+    
+    def markdown_port_report(self, port):
+        """ Alternative Method of Creating Markdown text """
+        
+        # grab plots (requires self.plot_collection_port() to be have run)
+        plots = self.plots[port]
+        
+        # dummy list container - convert to strings later
+        md = []
+        
+        # Append markdown
+        md.append("## STANLIB Multi-Strategy Bootstrap Report")
+        md.append("### Simulated Portfolio: {}".format(port))
+        md.append("{}".format(plots['risk_table']))
+        md.append("{}".format(plots['paths']))
+        md.append("{}".format(plots['stats']))
+        md.append("{}".format(plots['hist']))
+        md.append("{}".format(plots['ridgeline']))
+        md.append("{}".format(plots['convergence']))
+        md.append("{}".format(plots['hist_multi']))
+        
+        return "\n \n".join(md)
     
     def report_writer(self, title="TEST_REPORT", md="# TEST", path=""):
         """ Template Report Writer
