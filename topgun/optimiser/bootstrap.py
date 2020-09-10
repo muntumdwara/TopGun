@@ -1332,17 +1332,17 @@ class bootstrap(object):
                                  default_height=550,
                                  default_width=1000)
             
-            # Multiple keys is a bit of a pain in markdown later
-            # Create a single 'stats' plot which merges the plotly stats tables
-            # look for string 'stats_' in keys & append to dummy list
-            # then convert to long html str with double line break between each
-            stats = []
-            for k, v in plots.items():
-                if k[:6] == 'stats_':
-                    stats.append(v)
-                    
-            stats = '\n \n'.join(stats)    # make long str with line-breaks
-            plots[stats] = stats
+        # Multiple keys is a bit of a pain in markdown later
+        # Create a single 'stats' plot which merges the plotly stats tables
+        # look for string 'stats_' in keys & append to dummy list
+        # then convert to long html str with double line break between each
+        stats = []
+        for k, v in plots.items():
+            if k[:6] == 'stats_':
+                stats.append(v)
+                
+        stats = '\n \n'.join(stats)    # make long str with line-breaks
+        plots[stats] = stats
             
         # save to self.plots() dictionary by default
         if digest:
