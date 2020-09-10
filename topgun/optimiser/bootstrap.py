@@ -1407,46 +1407,28 @@ class bootstrap(object):
     # VERY MUCH WORK IN PROGRESS
     
     def markdown_frontier_report(self, plots=None, title='TEST'):
+        """ Markdown report created by appending lines """
         
         if plots is None:
             plots = self.plots['frontier']
-
-        #stats = '\n \n'.join(stats)    # convert 2 long str with 2 line breaks
+    
+        md = []
         
-        # REALLY IMPORTANT NOT TO CHANGE THE FORMATTING
-        # Markdown text MUST be aligned far left and NOT INDENTED or will not
-        # render as markdown text in Jinja2 templates
-        md = \
-"""## STANLIB Multi-Strategy Bootstrap Report \n
-### Frontier: {title} \n \n
-{frontier} \n 
-{wgts} \n
-{wgts_bar} \n
-{correl} \n
-{stats} \n
-{ridgeline} \n
-{convergence} \n
-
-For the Frontier Confidence funnel we show the 25th and 95th percentile of 
-simulated results over time.
-
-{hist} \n
-
-""".format(title=title,
-           frontier=plots['frontier'],
-           wgts=plots['wgts'],
-           wgts_bar = plots['wgts_bar'],
-           correl = plots['correl'],
-           stats=plots['stats'],
-           ridgeline = plots['ridgeline'],
-           hist = plots['hist'],
-           convergence = plots['convergence'],
-           )
-            
-        return md
+        md.append("# STANLIB Multi-Strategy Bootstrap Report")
+        md.append("### Frontier Analysis: {}".format(title))
+        md.append("{}".format(plots['frontier']))
+        md.append("{}".format(plots['wgts']))
+        md.append("{}".format(plots['wgts_bar']))
+        md.append("{}".format(plots['correl']))
+        md.append("{}".format(plots['stats']))
+        md.append("{}".format(plots['ridgeline']))
+        md.append("{}".format(plots['convergence']))
+        md.append("{}".format(plots['hist']))
+    
+        return "\n ".join(md)
     
     def markdown_port_report(self, port):
-        """ Alternative Method of Creating Markdown text """
+        """ Markdown report created by appending lines """
         
         # grab plots (requires self.plot_collection_port() to be have run)
         plots = self.plots[port]
@@ -1455,7 +1437,7 @@ simulated results over time.
         md = []
         
         # Append markdown
-        md.append("## STANLIB Multi-Strategy Bootstrap Report")
+        md.append("# STANLIB Multi-Strategy Bootstrap Report")
         md.append("### Simulated Portfolio: {}".format(port))
         md.append("{}".format(plots['risk_table']))
         md.append("{}".format(plots['paths']))
