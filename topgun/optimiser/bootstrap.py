@@ -25,7 +25,20 @@ import plotly.io as pio
 class bootstrap(object):
     """ Portfolio Stochastic Modelling Class Modules
     
+    Currently offers emperical ONLY stochastic modelling for individual ports
+    as well as across a range of ports (called frontiers) as well as a range
+    of charts, analysis and markdown-report outputs (you need to go run the 
+    markdown elsewhere).
     
+    INPUTS:
+        wgts - dataframe where indices are asset classes & cols are portfolios
+        mu - vector of expected returns (as pd.Series) 
+        vol - vector of expected volatilies (as pd.Series)
+        hist - dataframe of historic returns (NOT index px/levels)
+        cor - dataframe of correlation matrix
+        nsims - number of Monte Carlo simulations
+        psims - no of periods to run simulation over (default = 260w)
+        f - annualisation factor (default = 52 for weekly returns data)
     
     MAIN FUNCTIONS:
         emperical() - runs emperical sims for 1 vector of weights
@@ -37,15 +50,10 @@ class bootstrap(object):
         correl_rmt_filtered() - allows us to build RMT filtered correl matrix
                     for other correl work look at correls module
     
-    INPUTS:
-        wgts - dataframe where indices are asset classes & cols are portfolios
-        mu - vector of expected returns (as pd.Series) 
-        vol - vector of expected volatilies (as pd.Series)
-        hist - dataframe of historic returns (NOT index px/levels)
-        cor - dataframe of correlation matrix
-        nsims - number of Monte Carlo simulations
-        psims - no of periods to run simulation over (default = 260w)
-        f - annualisation factor (default = 52 for weekly returns data)
+    CHARTING FUNCTIONS:
+        plot_collection_all(): runs default plots for frontier & ports
+        plot_collection_frontier(): runs plots to analyse across portfolios
+        plot_collection_port(): runs plots to analyse timeseries of simulations
         
     DEVELOPMENT:
         - check correlation matrix PSD in class properties
