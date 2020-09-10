@@ -64,21 +64,21 @@ class bootstrap(object):
 
         ### Non-optional class inputs
         self.wgts = wgts
-        self.mu = mu          # vector check in properties
-        self.vol = vol        # vector check in properties
+        self.mu = mu          # [has @property]
+        self.vol = vol        # [has @property]
 
         # From required inputs we set these
-        self.universe = mu.index          # list of asset classes
+        self.universe = mu.index          # list of asset classes [has @property]
         self.port_names = wgts.columns    # useful to have names of portfolios
 
         ### Optional class inputs
         
-        # alpha - set to vector of zeros of None passed 
+        # alpha - set to vector of zeros of None passed [has @property]
         if alpha is None:
             alpha = pd.Series(np.zeros(len(mu)), index=mu.index, name='alpha')
         self.alpha = alpha
 
-        # tracking error - set to vector of zeros if None passed 
+        # tracking error - set to vector of zeros if None passed [has @property]
         if te is None:
             te = pd.Series(np.zeros(len(mu)), index=mu.index, name='te')
         self.te = te
@@ -157,6 +157,19 @@ class bootstrap(object):
             raise ValueError('mu input is non-vector: {} given'.format(x))  
         self.__mu = x
         
+    # Alpha (alpha) - Ideally pd.Series but MUST be a (1xN) vector 
+    @property
+    def alpha(self): return self.__alpha
+    @alpha.getter
+    def alpha(self): return self.__alpha
+    @alpha.setter
+    def alpha(self, x):
+        if isinstance(x, pd.Series):
+            x.name = 'alpha'
+        elif len(np.shape(x)) != 1:
+            raise ValueError('alpha input is non-vector: {} given'.format(x))  
+        self.__alpha = x
+        
     # Volatility (vol) - Ideally pd.Series but MUST be a (1xN) vector 
     @property
     def vol(self): return self.__vol
@@ -169,6 +182,19 @@ class bootstrap(object):
         elif len(np.shape(x)) != 1:
             raise ValueError('vol input is non-vector: {} given'.format(x))  
         self.__vol = x
+        
+    # Tracking Error (te) - Ideally pd.Series but MUST be a (1xN) vector 
+    @property
+    def te(self): return self.__te
+    @te.getter
+    def te(self): return self.__te
+    @te.setter
+    def te(self, x):
+        if isinstance(x, pd.Series):
+            x.name = 'te'
+        elif len(np.shape(x)) != 1:
+            raise ValueError('te input is non-vector: {} given'.format(x))  
+        self.__te = x
         
     # Correlation Matrix
     # Currently just check if symmetrical
