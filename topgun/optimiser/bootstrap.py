@@ -768,9 +768,32 @@ class bootstrap(object):
         return fig
     
     
-    def plot_box(self, annsims=None, periods=[52, 156, 260], template='multi_strat'):
+    def plot_box(self, annsims=None, periods=[52, 156, 260],
+                 points=False, boxmean='sd',
+                 title='Return Distribution Box Plot',
+                 template='multi_strat'):
         
-        """ """
+        """ Returns Box PLot
+        
+        INPUTS:
+            annsims: None implies entire frontier defined by self.port_names
+                     dataframe of simulations with annualised returns OR
+                     str() name of port in self.results
+            portrange:
+                False - (default) annsims is single port_sim & we are plotting 
+                         hist for 1 of more periods
+                True - annsims is a df with multiple portfolio & single period
+            periods: [52] (default) but multiple periods available in list
+                     if going across frontier will set to MAX value in periods
+            points: False(default)|'outliers'|True
+                    Shows side plot with datum; looks silly with large nsims
+            boxmean: 'sd'(default)|True|False
+                    Includes dashed mean line in box & diamond for 'sd'
+                    Turns notched median off because it looks stupid
+            title: obvious
+            template: (default multi_strat)
+                    
+        """
         
         # annsims can be the actual sims to be plotted on histrogram or
         # a string with the name of a port in self.results or
@@ -819,17 +842,16 @@ class bootstrap(object):
             
         # Actual Histogram    
         fig = px.box(df, x=colour , y='returns',  color=colour, 
-                     points='all', notched=True,
+                     points=points, notched=True,
+                     title=title, 
                      template=template)
+        
+        if boxmean is not None:
+            fig.update_traces(boxmean=boxmean, notched=False)
         
         # Update Axis
         fig.update_layout(yaxis= {'title':'Annualised Return', 'hoverformat':'.1%', 'tickformat':'.0%',},
                           xaxis= {'title':'Portfolio', 'hoverformat':'.1%', 'tickformat':'.1%',})
-        
-        
-        
-        
-        
         
         return fig
     
