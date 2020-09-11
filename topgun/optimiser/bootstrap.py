@@ -1514,15 +1514,28 @@ class bootstrap(object):
     
         md = []     # dummy list container - convert to strings later
         
-        md.append("# STANLIB Multi-Strategy Bootstrap Report")
-        md.append("## Frontier Analysis: {}".format(title))
-        md.append("{nsims}".format(nsims=self.nsims))
+        md.append("## STANLIB Multi-Strategy Stochastic Modelling")
+        md.append("### Frontier Report: {}".format(title))
+        md.append("For this analysis we generate {nsims} simulated paths \
+                  modelling prospective {psims}-week return distributions. \
+                  We use an adjusted emperical copula in order to maintain \
+                  higher-moments in the distributions and scale standardised \
+                  histrocial returns by forward looking estimates of returns \
+                  and volatility; historical sample size used is {weeks}-weeks \
+                  with factor modelling used to extend some assets \
+                      ".format(nsims=self.nsims,
+                               psims=self.psims,
+                               weeks=self.rtns.shape[0]))
+        
+        md.append("### Portfolio Weights & Ex-Ante Risk & Return Information")
         md.append("{}".format(plots['frontier']))
         md.append("{}".format(plots['wgts']))
         md.append("{}".format(plots['wgts_bar']))
         #md.append("{}".format(plots['tcr']))
         md.append("{}".format(plots['pcr']))
         md.append("{}".format(plots['correl']))
+        
+        md.append("### Monte-Carlo Simulations")
         md.append("{}".format(plots['stats']))
         md.append("{}".format(plots['ridgeline']))
         md.append("{}".format(plots['hist']))
