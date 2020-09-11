@@ -767,6 +767,83 @@ class bootstrap(object):
 
         return fig
     
+    
+    def plot_box(self, annsims=None, periods=[52, 156, 260]):
+        
+        """ """
+        # annsims can be the actual sims to be plotted on histrogram or
+        # a string with the name of a port in self.results or
+        # None in which case we assume a single period, but the whole frontier
+        # frontier is defined by self.port_names which is normally the same
+        # as self.results.keys() but allows a subset if we have lots of ports
+        # and only want a smaller number of those results on the frontier
+        if annsims is None:
+            
+            # if going across frontier we can't have more than 1 period
+            # then we iterate through the frontier
+            # grab the period vector from the ith port & concat to a dataframe
+            periods = [max(periods)] if len(periods) > 0 else periods
+            for i, k in enumerate(self.port_names):
+                
+                x = self.results[k]['annsims'].iloc[:, periods]
+                if i == 0:
+                    df = pd.DataFrame(x)
+                else:
+                    df = pd.concat([df, x], axis=1) 
+            
+            df.columns = self.port_names
+            annsims = df    # set annsims as the dataframe of sims now
+            
+            # using frontier also means portrange must be true
+            portrange = True
+            
+        elif isinstance(annsims, str):
+            # If input was a str assume its a portfolio from self.results
+            annsims = self.results[annsims]['annsims'].iloc[:, periods]
+        else:     
+            annsims = annsims.loc[:, periods]    #subset data
+        
+        # reshape for plotly express (stacked format)        
+        df = annsims.stack().reset_index()
+        if portrange:
+            # assumes passed multiple portfolio as same time period
+            # rather than 1-portfolio at multiple periods along a simulation
+            df.columns = ['sim', 'port', 'returns']
+            colour='port'
+        else:
+            # converting period to string stops the box thing having a shit fit
+            df.columns = ['sim', 'period', 'returns']
+            df['period'] = 'p-' + df['period'].astype(str)
+            colour='period'
+            
+        # Actual Histogram    
+        fig = px.box(df, x='returns', color=colour,)
+        
+        # Update Axis
+        fig.update_layout(yaxis= {'title':'Probability', 'hoverformat':'.1%', 'tickformat':'.0%',},
+                          xaxis= {'title':'Annualised Return', 'hoverformat':'.1%', 'tickformat':'.1%',})
+        
+        
+        
+        
+        
+        
+        return fig
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     def plot_ridgeline(self, annsims=None, traces=[52, 104, 156, 208, 260],
                  side='positive', meanline=True, box=False, width=3,
                  title='Ridgeline KDE Distributions', 
@@ -1630,11 +1707,12 @@ def bootstrap_unit_test():
     
     # This will run plot_collection_frontier() & plot_collection_port()
     # Therefore a good test if all the plotting functions are working
-    bs.plot_collection_all()
+    #bs.plot_collection_all()
     
-    
+    bs.plot_box()
     
     return bs
 
-#bs = bootstrap_unit_test()
-#x = bs.plots.keys()
+bs = bootstrap_unit_test()
+x = bs.plot_box()
+x.show()
