@@ -854,20 +854,7 @@ class bootstrap(object):
                           xaxis= {'title':'Portfolio', 'hoverformat':'.1%', 'tickformat':'.1%',})
         
         return fig
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     
     def plot_ridgeline(self, annsims=None, traces=[52, 104, 156, 208, 260],
                  side='positive', meanline=True, box=False, width=3,
@@ -1425,6 +1412,7 @@ class bootstrap(object):
         
         plots['ridgeline'] = self.plot_ridgeline()    # ridgeline frontier
         plots['hist'] = self.plot_histogram()         # TV histogram of frontier
+        plots['box'] = self.plot_box()                # TV boxplot
         
         # convergence plot of inter-quartile range through time for each port
         plots['convergence'] = self.plot_convergence(frontier=True)
@@ -1537,8 +1525,9 @@ class bootstrap(object):
         md.append("{}".format(plots['correl']))
         md.append("{}".format(plots['stats']))
         md.append("{}".format(plots['ridgeline']))
-        md.append("{}".format(plots['convergence']))
         md.append("{}".format(plots['hist']))
+        md.append("{}".format(plots['box']))
+        md.append("{}".format(plots['convergence']))
         
         return "\n \n".join(md)    # NEEDS double line-break to render plots
     
