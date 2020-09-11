@@ -1525,7 +1525,7 @@ class bootstrap(object):
                   with factor modelling used to extend some assets \
                       ".format(nsims=self.nsims,
                                psims=self.psims,
-                               weeks=self.rtns.shape[0]))
+                               weeks=self.hist.shape[0]))
         
         md.append("### Portfolio Weights & Ex-Ante Risk & Return Information")
         md.append("{}".format(plots['frontier']))
@@ -1741,10 +1741,6 @@ def bootstrap_unit_test():
     # Therefore a good test if all the plotting functions are working
     #bs.plot_collection_all()
     
-    bs.plot_box()
-    
     return bs
 
-bs = bootstrap_unit_test()
-x = bs.plot_box()
-x.show()
+#bs = bootstrap_unit_test()
