@@ -1069,8 +1069,13 @@ class bootstrap(object):
     # Stacked bar chart for portfolio weights
     def plot_wgts_bar_stacked(self, wgts=None, 
                               title='Frontier Portfolio Weights',
+                              ytitle='Port Weight',
                               template='multi_strat'):
-        """ Stacked Bar Chart with Portfolio Weights of Multiple Portfolios """
+        """ Stacked Bar Chart with Portfolio Weights of Multiple Portfolios 
+        
+        Originally designed for weights - but works for any stacked bar.
+        We also use this for MCR, TCR, PCR charts by setting wgts = self.pcr
+        """
         
         if wgts is None:
             wgts = self.wgts
@@ -1082,7 +1087,7 @@ class bootstrap(object):
         # plotly bar chart with Plotly Express
         fig = px.bar(df, x='port', y='w', color='Asset',
                      title=title,
-                     labels={'port':'Portfolio', 'w': "Port Weight",},
+                     labels={'port':'Portfolio', 'w':ytitle,},
                      template=template,)
         
         return fig    
@@ -1303,6 +1308,12 @@ class bootstrap(object):
         plots['frontier']= self.plot_frontier()          
         plots['wgts']= self.plot_table(method='wgts')      # table of frontier wgts
         plots['wgts_bar']= self.plot_wgts_bar_stacked()    # stacked wgts bar chart
+        plots['pcr']= self.plot_wgts_bar_stacked(
+            wgts=self.pcr, ytitle='Percent CTR',
+            title='Asset Class Percentage Contribution to Risk')    # stacked PCR
+        plots['tcr']= self.plot_wgts_bar_stacked(
+            wgts=self.tcr, ytitle='Contribution to Risk',
+            title='Asset Class Contribution to Total Risk')         # stacked PCR
         plots['correl']= self.plot_correl()                # correlation matrix
         
         # iterate adding stats tables for each portfolio
@@ -1342,7 +1353,7 @@ class bootstrap(object):
                 stats.append(v)
                 
         stats = '\n \n'.join(stats)    # make long str with line-breaks
-        plots['stats'] = stats
+        plots['stats'] = stats,
             
         # save to self.plots() dictionary by default
         if digest:
@@ -1417,9 +1428,12 @@ class bootstrap(object):
         
         md.append("# STANLIB Multi-Strategy Bootstrap Report")
         md.append("## Frontier Analysis: {}".format(title))
+        md.append("")
         md.append("{}".format(plots['frontier']))
         md.append("{}".format(plots['wgts']))
         md.append("{}".format(plots['wgts_bar']))
+        md.append("{}".format(plots['tcr']))
+        md.append("{}".format(plots['pcr']))
         md.append("{}".format(plots['correl']))
         md.append("{}".format(plots['stats']))
         md.append("{}".format(plots['ridgeline']))
