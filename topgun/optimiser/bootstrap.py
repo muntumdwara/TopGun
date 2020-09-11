@@ -22,7 +22,7 @@ import plotly.io as pio
 
 # %% CLASS MODULE
 
-class bootstrap(object):
+class Bootstrap(object):
     """ Portfolio Stochastic Modelling Class Modules
     
     Currently offers emperical ONLY stochastic modelling for individual ports
@@ -1699,9 +1699,11 @@ def unit_test():
 
 def bootstrap_unit_test():
     
-    ### Setup a theoretical 3 Asset Class Portfolio
+    ### Setup a Range of 4 Dummy Portfolios (RP1-4) & Dummy Returns
+    # Returns are a random normal distribution with 20-years of weekly data
     
-    # Returns & Vols
+    ## Returns & Vols
+    # Bootstrap is designed to take pd.Series() as main vector inputs
     universe = ['EQUITY', 'CREDIT', 'RATES']
     mu= pd.Series(data=[0.1, 0.05, 0.01], index=universe, name='ExRtn')
     vol= pd.Series(data=[0.15, 0.08, 0.01], index=universe, name='Std')
@@ -1722,7 +1724,7 @@ def bootstrap_unit_test():
                                    (20*52))                # 10-years rtns
     
     ### Setup bootsrap class with theoretical 3-asset class portfolio
-    bs = bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns,
+    bs = Bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns,
                   alpha=alpha, te=te, nsims=100, f=52, psims=260,)
     
     # run emperical bootstrap
