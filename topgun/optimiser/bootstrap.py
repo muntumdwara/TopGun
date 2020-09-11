@@ -818,7 +818,9 @@ class bootstrap(object):
             colour='period'
             
         # Actual Histogram    
-        fig = px.box(df, x=colour , y='returns',  color=colour, template=template)
+        fig = px.box(df, x=colour , y='returns',  color=colour, 
+                     points='all', notched=True,
+                     template=template)
         
         # Update Axis
         fig.update_layout(yaxis= {'title':'Annualised Return', 'hoverformat':'.1%', 'tickformat':'.0%',},
