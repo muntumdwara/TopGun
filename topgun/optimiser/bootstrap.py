@@ -1698,6 +1698,20 @@ def unit_test():
 # %%
 
 def bootstrap_unit_test():
+    """ Not proper unit testing
+    
+    Create:
+        range of dummy 3-asset portfolios (named RP1-RP4)
+        vectors of expected returns, volatility, alpha & TE
+        pseudo-random 20-year weekly returns with means & std from mu/vol
+    
+    Set up a Bootstrap class and initialise with dummy data then run all 
+    the main functions and test output/plots.
+    
+    Will annotate with guidance on what answers ought to look like but haven't
+    bothered actually providing output figures.
+    
+    """
     
     ### Setup a Range of 4 Dummy Portfolios (RP1-4) & Dummy Returns
     # Returns are a random normal distribution with 20-years of weekly data
