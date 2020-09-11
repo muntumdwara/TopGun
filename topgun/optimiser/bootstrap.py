@@ -768,9 +768,10 @@ class bootstrap(object):
         return fig
     
     
-    def plot_box(self, annsims=None, periods=[52, 156, 260]):
+    def plot_box(self, annsims=None, periods=[52, 156, 260], template='multi_strat'):
         
         """ """
+        
         # annsims can be the actual sims to be plotted on histrogram or
         # a string with the name of a port in self.results or
         # None in which case we assume a single period, but the whole frontier
@@ -817,11 +818,11 @@ class bootstrap(object):
             colour='period'
             
         # Actual Histogram    
-        fig = px.box(df, x='returns', color=colour,)
+        fig = px.box(df, x=colour , y='returns',  color=colour, template=template)
         
         # Update Axis
-        fig.update_layout(yaxis= {'title':'Probability', 'hoverformat':'.1%', 'tickformat':'.0%',},
-                          xaxis= {'title':'Annualised Return', 'hoverformat':'.1%', 'tickformat':'.1%',})
+        fig.update_layout(yaxis= {'title':'Annualised Return', 'hoverformat':'.1%', 'tickformat':'.0%',},
+                          xaxis= {'title':'Portfolio', 'hoverformat':'.1%', 'tickformat':'.1%',})
         
         
         
