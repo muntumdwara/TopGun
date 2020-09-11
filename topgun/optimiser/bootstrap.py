@@ -121,7 +121,7 @@ class bootstrap(object):
         self.plots = dict()   # initisalise dict for plotly plots (useful later)
 
         ## Update Plotly template
-        colourmap = ['grey', 'teal', 'purple', 'black', 'hotpink', 'green', 'line', 'darkorange','gold']
+        colourmap = ['grey', 'teal', 'purple', 'black', 'deeppink', 'skyblue', 'lime', 'green','darkorange', 'gold', 'navy', 'darkred',]
         fig = go.Figure(layout=dict(
                       font={'family':'Calibri', 'size':14},
                       plot_bgcolor= 'white',
@@ -1745,6 +1745,6 @@ def bootstrap_unit_test():
     
     return bs
 
-#bs = bootstrap_unit_test()
-#x = bs.plot_box()
-#x.show()
+bs = bootstrap_unit_test()
+x = bs.plot_box()
+x.show()
