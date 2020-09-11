@@ -1441,7 +1441,7 @@ class bootstrap(object):
                 stats.append(v)
                 
         stats = '\n \n'.join(stats)    # make long str with line-breaks
-        plots['stats'] = stats,
+        plots['stats'] = stats
             
         # save to self.plots() dictionary by default
         if digest:
@@ -1727,6 +1727,6 @@ def bootstrap_unit_test():
     
     return bs
 
-bs = bootstrap_unit_test()
-x = bs.plot_box()
-x.show()
+#bs = bootstrap_unit_test()
+#x = bs.plot_box()
+#x.show()
