@@ -1432,7 +1432,7 @@ class bootstrap(object):
         md.append("{}".format(plots['frontier']))
         md.append("{}".format(plots['wgts']))
         md.append("{}".format(plots['wgts_bar']))
-        md.append("{}".format(plots['tcr']))
+        #md.append("{}".format(plots['tcr']))
         md.append("{}".format(plots['pcr']))
         md.append("{}".format(plots['correl']))
         md.append("{}".format(plots['stats']))
