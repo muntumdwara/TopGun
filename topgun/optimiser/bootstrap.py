@@ -1309,11 +1309,9 @@ class bootstrap(object):
         plots['wgts']= self.plot_table(method='wgts')      # table of frontier wgts
         plots['wgts_bar']= self.plot_wgts_bar_stacked()    # stacked wgts bar chart
         plots['pcr']= self.plot_wgts_bar_stacked(
-            wgts=self.pcr, ytitle='Percent CTR',
+            wgts=self.pcr, ytitle='Contribution-to-Risk',
             title='Asset Class Percentage Contribution to Risk')    # stacked PCR
-        plots['tcr']= self.plot_wgts_bar_stacked(
-            wgts=self.tcr, ytitle='Contribution to Risk',
-            title='Asset Class Contribution to Total Risk')         # stacked PCR
+        #plots['tcr']= self.plot_wgts_bar_stacked(wgts=self.tcr, ytitle='Contribution to Risk', title='Asset Class Contribution to Total Risk')         # stacked PCR
         plots['correl']= self.plot_correl()                # correlation matrix
         
         # iterate adding stats tables for each portfolio
@@ -1428,7 +1426,7 @@ class bootstrap(object):
         
         md.append("# STANLIB Multi-Strategy Bootstrap Report")
         md.append("## Frontier Analysis: {}".format(title))
-        md.append("")
+        md.append("{nsims}".format(nsims=self.nsims))
         md.append("{}".format(plots['frontier']))
         md.append("{}".format(plots['wgts']))
         md.append("{}".format(plots['wgts_bar']))
