@@ -121,7 +121,7 @@ class bootstrap(object):
         self.plots = dict()   # initisalise dict for plotly plots (useful later)
 
         ## Update Plotly template
-        colourmap = ['grey', 'teal', 'purple', 'green','grey', 'teal', 'purple', 'green','grey', 'teal', 'purple', 'green',]
+        colourmap = ['grey', 'teal', 'purple', 'black', 'hotpink', 'green', 'line', 'darkorange','gold']
         fig = go.Figure(layout=dict(
                       font={'family':'Calibri', 'size':14},
                       plot_bgcolor= 'white',
@@ -1535,12 +1535,17 @@ class bootstrap(object):
         md.append("{}".format(plots['pcr']))
         md.append("{}".format(plots['correl']))
         
-        md.append("### Monte-Carlo Simulations")
+        md.append("### Bootstrapped Simulations")
         md.append("{}".format(plots['stats']))
+        md.append("Note: Std within descriptive statistics refers to the \
+                  standard deviation of the simulated returns at period-X \
+                  which is not the expected volatility of the portfolio.")
+        
         md.append("{}".format(plots['ridgeline']))
         md.append("{}".format(plots['hist']))
         md.append("{}".format(plots['box']))
         md.append("{}".format(plots['convergence']))
+        md.append("Note: Funnel here show the inter-quartile range vis-a-vis time.")
         
         return "\n \n".join(md)    # NEEDS double line-break to render plots
     
