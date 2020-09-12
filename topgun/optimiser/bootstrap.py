@@ -1593,6 +1593,26 @@ class Bootstrap(object):
     # %% Bootstrap Reporting
     # VERY MUCH WORK IN PROGRESS
     
+    def markdown_master(self):
+        """ Markdown combined report for Frontier & Portfolios """
+        
+        md = []
+        md.append(self.markdown_frontier_report())
+        
+        # Individual Portfolio Intro
+        md.append(" \n \n ")
+        md.append("## Portfolio Timeseries Modelling")
+        md.append("Our focus through Frontier analysis is on comparing \
+                   terminal outcome distributions at the {psims}-week point. \
+                   Here we consider the potential experience of individual \
+                   portfolios with respect to time. \n \n "\
+                   .format(psims=self.psims))
+        
+        for port in self.port_names:
+            md.append(self.markdown_port_report(port=port, header=False))
+        
+        return "\n \n".join(md)
+    
     def markdown_frontier_report(self, plots=None, title='TEST'):
         """ Markdown report created by appending lines """
         
@@ -1604,16 +1624,17 @@ class Bootstrap(object):
         
         md.append("## STANLIB Multi-Strategy Stochastic Modelling")
         md.append("### Frontier Report: {}".format(title))
-        md.append("For this analysis we generate {nsims} simulated paths \
-                  modelling prospective {psims}-week return distributions. \
-                  We use an adjusted emperical copula in order to maintain \
-                  higher-moments in the distributions and scale standardised \
-                  histrocial returns by forward looking estimates of returns \
-                  and volatility; historical sample size used is {weeks}-weeks \
-                  with factor modelling used to extend some assets \
-                      ".format(nsims=self.nsims,
-                               psims=self.psims,
-                               weeks=self.hist.shape[0]))
+        md.append("We use an adjusted emperical copula to generate {nsims} \
+                  simulated {psims}-week portfolio return paths. \
+                  \
+                  An emperical copula is selected to maintain higher-moments \
+                  and historical returns are scaled to for forward estimates \
+                  of prospective returns and volatility. Historical sample size \
+                  was {weeks}-weeks; multi-factor regression models may be \
+                  applied to extend timeseries of assets with short histories."\
+                  .format(nsims=self.nsims,
+                          psims=self.psims,
+                          weeks=self.hist.shape[0]))
         
         md.append("### Portfolio Weights & Ex-Ante Risk & Return Information")
         md.append("{}".format(plots['frontier']))
@@ -1633,11 +1654,12 @@ class Bootstrap(object):
         md.append("{}".format(plots['hist']))
         md.append("{}".format(plots['box']))
         md.append("{}".format(plots['convergence']))
-        md.append("Note: Funnel here show the inter-quartile range vis-a-vis time.")
+        md.append("Note: Funnel chart shows the inter-quartile range of \
+                  simulated returns with respect to time.")
         
         return "\n \n".join(md)    # NEEDS double line-break to render plots
     
-    def markdown_port_report(self, port):
+    def markdown_port_report(self, port, header=True):
         """ Markdown report created by appending lines """
         
         # grab plots (requires self.plot_collection_port() to be have run)
@@ -1647,10 +1669,15 @@ class Bootstrap(object):
         md = []
         
         # Append markdown
-        md.append("# STANLIB Multi-Strategy Bootstrap Report")
-        md.append("## Simulated Portfolio: {}".format(port))
+        
+        # header is optional and my not be wanted if creating combined reports
+        # assumption is we will always want the frontier report
+        if header:
+            md.append("# STANLIB Multi-Strategy Bootstrap Report")
+        
+        md.append("### Portfolio Report: {}".format(port))
         md.append("{}".format(plots['risk_table']))
-        md.append("{}".format(plots['paths']))
+        #md.append("{}".format(plots['paths']))
         md.append("{}".format(plots['cone']))
         md.append("{}".format(plots['stats']))
         md.append("{}".format(plots['hist']))
@@ -1727,29 +1754,6 @@ class Bootstrap(object):
 def unit_test():
     """ NOT A TRUE UNIT TEST YET """
 
-    # Connect to Excel Workbook & setup lambda function for importing data
-    wb = xlw.Book('Viper.xlsm')
-    pullxlw = lambda a, b: wb.sheets[a].range(b).options(
-        pd.DataFrame, expand='table').value
-    
-    # Table of Bootstap Imports - mu, vol, alpha, te
-    mc = pullxlw('viper', 'A1')
-    mu = mc['ExRtn']
-    vol = mc['Vol']
-    alpha = mc['ALPHA']
-    te = mc['TE']
-    
-    # Table of Port Weights - which has return targets as last row
-    wgts = pullxlw('viper', 'J1').iloc[:-1,:]
-    tgts = pullxlw('viper', 'J1').iloc[-1,:]
-    
-    # Historical Returns for Emperical Analysis
-    rtns = pullxlw('STATIC ZAR', 'D5').reset_index()
-
-    # set up bootstrap class
-    bs = bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns, 
-                   #alpha=alpha, te=te,
-                   nsims=100)
     
     sim0 = bs.emperical(w=wgts.iloc[:,0])        # run a sim on 1st port
     sst0 = bs.sim_stats(sims=sim0)               # run sim stats on 1st port   
@@ -1844,11 +1848,8 @@ def bootstrap_unit_test():
     bs.plot_collection_all()
     
     # reports
-    md_frontier = bs.markdown_frontier_report()
-    md_port = bs.markdown_port_report('RP3')
-    
-    bs.report_writer(md=md_frontier, title='test_frontier')
-    bs.report_writer(md=md_port, title='test_port')
+    md = bs.markdown_master()
+    bs.report_writer(md=md, title='test')
     
     return bs
 
