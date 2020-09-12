@@ -1566,6 +1566,7 @@ class Bootstrap(object):
         
         # convergence shows port and 5%, 10%, 25%, 40% & 50% bands
         plots['convergence'] = self.plot_convergence(frontier=False, port=port)
+        plots['density'] = self.plot_densitymap(sims=port)
         
         # multi-period histogram
         plots['hist_multi'] = self.plot_histogram(port, periods=[52, 156, 260])
@@ -1593,8 +1594,13 @@ class Bootstrap(object):
     # %% Bootstrap Reporting
     # VERY MUCH WORK IN PROGRESS
     
-    def markdown_master(self):
-        """ Markdown combined report for Frontier & Portfolios """
+    def markdown_master(self, density=False):
+        """ Markdown combined report for Frontier & Portfolios 
+        
+        INPUTS:
+            density: add density plot to port report section, looks very cool
+                     but has a tendancy to really bloat report sizes
+        """
         
         md = []
         md.append(self.markdown_frontier_report())
@@ -1609,7 +1615,9 @@ class Bootstrap(object):
                    .format(psims=self.psims))
         
         for port in self.port_names:
-            md.append(self.markdown_port_report(port=port, header=False))
+            md.append(self.markdown_port_report(port=port,
+                                                header=False,
+                                                density=density))
         
         return "\n \n".join(md)
     
@@ -1659,7 +1667,7 @@ class Bootstrap(object):
         
         return "\n \n".join(md)    # NEEDS double line-break to render plots
     
-    def markdown_port_report(self, port, header=True):
+    def markdown_port_report(self, port, header=True, density=False):
         """ Markdown report created by appending lines """
         
         # grab plots (requires self.plot_collection_port() to be have run)
@@ -1682,8 +1690,11 @@ class Bootstrap(object):
         md.append("{}".format(plots['stats']))
         md.append("{}".format(plots['hist']))
         md.append("{}".format(plots['ridgeline']))
+        if density:
+            md.append("{}".format(plots['density']))
         md.append("{}".format(plots['convergence']))
         md.append("{}".format(plots['hist_multi']))
+        
         
         return "\n \n".join(md)    # NEEDS double line-break to render plots
     
