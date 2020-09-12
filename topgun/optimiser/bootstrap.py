@@ -1021,7 +1021,33 @@ class Bootstrap(object):
             
         return fig
 
-    def plot_convergence(bs, frontier=True, port=None, opacity = 0.2,
+    def _colourway_rgba(self, c1= 'rgb(0,128,128)', c2= 'rgba(128,0,128)',
+                              n = 10, opacity=1):
+        """ Creates list of colours between two RGB inputs - with opactity
+        
+        Use plotlys gradient thing to get colours between teal and purple
+        go.Scatter won't let us change opacity directly but we can via rgba
+        plotly colours gives rga NOT rgba - append an opacity alpha to the output
+        
+        Used in Funnel Plots!
+        """
+        from plotly.colors import n_colors
+        
+        # Use plotlys gradient thing to get colours between teal and purple
+        colours = n_colors(c1, c2, n, colortype='rgb')
+        
+        # Update string to change to rgba then append alpha for opacity
+        for i, c in enumerate(colours):
+            c = c[:3] + 'a' + c[3:]    # convert from rgb to rgba  
+            
+            # insert opacity alpha into the string
+            idx = c.find(')')
+            colours[i] = c[:idx] + ", {}".format(opacity) + c[idx:]
+            
+        return colours
+
+
+    def plot_convergence(self, frontier=True, port=None, opacity = 0.2,
                          title='Simulated Confidence Funnel', 
                          template='multi_strat', **kwargs):
         """ Area fill showing confidence intervals over time 
@@ -1043,8 +1069,8 @@ class Bootstrap(object):
             # create 2 dataframes for the upper & lower quartiles of data
             # iterate through results
             for i, port in enumerate(bs.port_names):
-                u0 = bs.results[port]['stats'].T.loc[:,'25%']
-                l0 = bs.results[port]['stats'].T.loc[:,'75%']
+                u0 = self.results[port]['stats'].T.loc[:,'25%']
+                l0 = self.results[port]['stats'].T.loc[:,'75%']
     
                 if i == 0:
                     u = pd.DataFrame(u0)
@@ -1054,8 +1080,8 @@ class Bootstrap(object):
                     l = pd.concat([l, l0], axis=1)
             
             # update column headers (which will say eg. 25% ) to port_names
-            u.columns = bs.port_names
-            l.columns = bs.port_names
+            u.columns = self.port_names
+            l.columns = self.port_names
             
             # when we build the chart we iterate to add traces
             # zip to ensure tuples for upper and lower
@@ -1065,28 +1091,15 @@ class Bootstrap(object):
         else:
             
             # on a single port this isn't required, but to have a single function we do
-            u = bs.results[port]['stats'].T
-            l = bs.results[port]['stats'].T
+            u = self.results[port]['stats'].T
+            l = self.results[port]['stats'].T
             pairs = [('5%', '95%'), ('10%', '90%'), ('25%', '75%'), ('40%', '60%'), ('50%', '50%')]
             ncolours = len(pairs)
         
-        # use plotlys gradient thing to get colours between teal and purple
-        # go.Scatter won't let us change opacity directly but we can via rgba
-        # plotly colours gives rga NOT rgba - append an opacity alpha to the output
-        from plotly.colors import n_colors
-    
-        colors = n_colors('rgb(0, 128, 128)',
-                          'rgba(128, 0, 128)',
-                          ncolours,
-                          colortype='rgb')
-        
-        for i, c in enumerate(colors):
-            c = c[:3] + 'a' + c[3:]    # convert from rgb to rgba  
-            
-            # insert opacity alpha into the string
-            idx = c.find(')')
-            colors[i] = c[:idx] + ", {}".format(opacity) + c[idx:]
-        
+        # create colourway between teal and purple        
+        colors = self._colourway_rgba('rgb(0, 128, 128)', 'rgba(128, 0, 128)',
+                                      ncolours, opacity)
+
         ### BUILD THE PLOT
         
         # Set up dummy figure
@@ -1114,6 +1127,69 @@ class Bootstrap(object):
             xaxis= {'anchor':'y1','title':'Simulation Period', 'hoverformat':'.0f', 'tickformat':'.0f',}, )
         
         return fig
+
+
+    def plot_cone(self, port=None, period=260, opacity=0.15,
+                  title='test',
+                  template='multi_strat', **kwargs):
+        """ Mash up between a paths plot & a convergence funnel
+        """
+        
+        # percentile stats to pull put from stats table
+        pctle = ['5%', '10%','25%','40%','50%','60%','75%','90%','95%']
+        s = self.results[port]['stats'].loc[pctle, period]
+        
+        # create smoothed port path for terminal percentile annualised returns
+        # NOTE this is NOT the actual simulation that hit that percentile
+        df = pd.DataFrame([s] * (period+1))    # repmat for no of periods
+        df.index = range(0, period+1)          # reindex to show 0-260 for eg
+        df = (1 + df) ** (1 / 52)              # de-annualise returns
+        df.iloc[0,:] = 1                       # set port value
+        df = df.cumprod()                      # calculate return paths
+        
+        pairs = [('5%', '95%'), ('10%', '90%'), ('25%', '75%'), ('40%', '60%')]
+         
+        # create colourway between teal and purple        
+        colors = self._colourway_rgba('rgb(0, 128, 128)', 'rgba(128, 0, 128)',
+                                      len(pairs), opacity)
+        
+        # Dummy plot - note this only works with plotly-express >= 4.10
+        fig = px.line(title=title, template=template)
+         
+        for i, v in enumerate(pairs):
+     
+            # Add upper trace 
+            fig.add_trace(go.Scatter(x=df.index, y=df.loc[:,v[0]],
+                                     line={'width':0}, fill=None,
+                                     showlegend=False,
+                                     name="{}".format(str(v[0])),))
+   
+            fig.add_trace(go.Scatter(x=df.index, y=df.loc[:,v[1]],
+                                    line={'width':0},
+                                    fill='tonexty',
+                                    fillcolor=colors[i],
+                                    name="{}".format(str(v[1])),)) 
+        
+        fig.update_layout(
+            yaxis= {'anchor':'x1','title':'Port Value', 'hoverformat':'.2f', 'tickformat':'.2f',},
+            xaxis= {'anchor':'y1','title':'Simulation Period', 'hoverformat':'.0f', 'tickformat':'.0f',}, )
+        
+        return fig
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     # Risk Return of Assets & Plotted Efficient Frontier
@@ -1757,6 +1833,28 @@ def bootstrap_unit_test():
     # Therefore a good test if all the plotting functions are working
     #bs.plot_collection_all()
     
+   
+    x = bs.plot_cone(port='RP3')
+    #x = bs.plot_convergence()    
+    x.show()
+    
+    
+    
     return bs
 
-#bs = bootstrap_unit_test()
+bs = bootstrap_unit_test()
+
+# %%
+
+#period = 260
+#pctle = ['5%', '10%','25%','40%','50%','60%','75%','90%','95%']
+#s = bs.results['RP3']['stats'].loc[pctle, period]
+#
+#df = pd.DataFrame([s] * (period+1))
+#df.index = range(0, period+1)
+#df = (1 + df) ** (1 / 52)
+#df.iloc[0,:] = 1
+#df = df.cumprod()
+#
+##s = np.tile(np.array(s), (period, 1))
+#s = pd.concat([s] * period, axis=1).T
