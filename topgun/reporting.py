@@ -7,7 +7,7 @@ Created on Thu Sep 10 16:49:19 2020
 @author: David J McNay
 """
 
-class reporting(object):
+class Reporting(object):
     """ Top Gun Reporting Functions
     
     MAIN FUNCTIONS:

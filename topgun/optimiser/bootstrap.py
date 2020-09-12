@@ -1068,7 +1068,7 @@ class Bootstrap(object):
             
             # create 2 dataframes for the upper & lower quartiles of data
             # iterate through results
-            for i, port in enumerate(bs.port_names):
+            for i, port in enumerate(self.port_names):
                 u0 = self.results[port]['stats'].T.loc[:,'25%']
                 l0 = self.results[port]['stats'].T.loc[:,'75%']
     
@@ -1085,7 +1085,7 @@ class Bootstrap(object):
             
             # when we build the chart we iterate to add traces
             # zip to ensure tuples for upper and lower
-            pairs = zip(bs.port_names[::-1], bs.port_names[::-1])
+            pairs = zip(self.port_names[::-1], self.port_names[::-1])
             ncolours = len(u.columns)    # number of colours we need
     
         else:
@@ -1129,10 +1129,22 @@ class Bootstrap(object):
         return fig
 
 
-    def plot_cone(self, port=None, period=260, opacity=0.15,
+    def plot_cone(self, port=None, tgt=0, period=260, opacity=0.15,
                   title='test',
                   template='multi_strat', **kwargs):
         """ Mash up between a paths plot & a convergence funnel
+        
+        Takes simulated terminal annualised returns for different percentiles
+        then plots a funnel area chart showing styalised return paths given those
+        terminal values.
+        
+        Important to note this is the smoothed return NOT any simulated path
+        
+        INPUTS:
+            port: name from self.port_names
+            tgt: OPTIONAL (default=0) is the return bogie
+            period: point along simulation to extract annualised returns
+            opacity: how deep the colour is on the funnel.
         """
         
         # percentile stats to pull put from stats table
@@ -1155,41 +1167,39 @@ class Bootstrap(object):
         
         # Dummy plot - note this only works with plotly-express >= 4.10
         fig = px.line(title=title, template=template)
-         
+        
+        # Add Median Line & Historical backtest if including
+        fig.add_scatter(x=df.index, y=df.loc[:,'50%'], name='MEDIAN')
+        
+        # target return path
+        if tgt != 0:
+            tgt_rtn = [1] + [(1 + tgt) ** (1 / self.f)] * (period + 1)
+            fig.add_scatter(x=df.index,
+                            y=(np.cumprod(tgt_rtn)),
+                            name='Target',
+                            line={'dash':'dot', 'color':'black'})
+        
         for i, v in enumerate(pairs):
      
             # Add upper trace 
             fig.add_trace(go.Scatter(x=df.index, y=df.loc[:,v[0]],
                                      line={'width':0}, fill=None,
                                      showlegend=False,
-                                     name="{}".format(str(v[0])),))
+                                     name="{}".format(v),))
    
             fig.add_trace(go.Scatter(x=df.index, y=df.loc[:,v[1]],
                                     line={'width':0},
                                     fill='tonexty',
                                     fillcolor=colors[i],
-                                    name="{}".format(str(v[1])),)) 
+                                    name="{}".format(v),)) 
         
         fig.update_layout(
-            yaxis= {'anchor':'x1','title':'Port Value', 'hoverformat':'.2f', 'tickformat':'.2f',},
-            xaxis= {'anchor':'y1','title':'Simulation Period', 'hoverformat':'.0f', 'tickformat':'.0f',}, )
+            yaxis= {'anchor':'x1','title':'Portfolio Value',
+                    'hoverformat':'.2f', 'tickformat':'.1f',},
+            xaxis= {'anchor':'y1','title':'Simulation Period',
+                    'hoverformat':'.0f', 'tickformat':'.0f',}, )
         
         return fig
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     # Risk Return of Assets & Plotted Efficient Frontier
@@ -1543,6 +1553,8 @@ class Bootstrap(object):
         
         # Simulation paths - these make file sizes 
         plots['paths'] = self.plot_paths(port)
+        plots['cone'] = self.plot_cone(port)    # more useful with smaller size
+        
         plots['stats'] = self.plot_stats_table(
             port=port,
             periods=[52, 156, 260],
@@ -1639,6 +1651,7 @@ class Bootstrap(object):
         md.append("## Simulated Portfolio: {}".format(port))
         md.append("{}".format(plots['risk_table']))
         md.append("{}".format(plots['paths']))
+        md.append("{}".format(plots['cone']))
         md.append("{}".format(plots['stats']))
         md.append("{}".format(plots['hist']))
         md.append("{}".format(plots['ridgeline']))
@@ -1763,10 +1776,7 @@ def unit_test():
     #bs.plot_table(method='wgts').show()
     #bs.plot_stats_table(port='MS4').show()
     
-    bs.plot_collection_all()
-    #md = bs.markdown_frontier_report()
-    #bs.report_writer(md=md)
-    
+
     return bs
 
 #bs = unit_test()
@@ -1831,30 +1841,15 @@ def bootstrap_unit_test():
     
     # This will run plot_collection_frontier() & plot_collection_port()
     # Therefore a good test if all the plotting functions are working
-    #bs.plot_collection_all()
+    bs.plot_collection_all()
     
-   
-    x = bs.plot_cone(port='RP3')
-    #x = bs.plot_convergence()    
-    x.show()
+    # reports
+    md_frontier = bs.markdown_frontier_report()
+    md_port = bs.markdown_port_report('RP3')
     
-    
+    bs.report_writer(md=md_frontier, title='test_frontier')
+    bs.report_writer(md=md_port, title='test_port')
     
     return bs
 
 bs = bootstrap_unit_test()
-
-# %%
-
-#period = 260
-#pctle = ['5%', '10%','25%','40%','50%','60%','75%','90%','95%']
-#s = bs.results['RP3']['stats'].loc[pctle, period]
-#
-#df = pd.DataFrame([s] * (period+1))
-#df.index = range(0, period+1)
-#df = (1 + df) ** (1 / 52)
-#df.iloc[0,:] = 1
-#df = df.cumprod()
-#
-##s = np.tile(np.array(s), (period, 1))
-#s = pd.concat([s] * period, axis=1).T
