@@ -50,19 +50,34 @@ class Reporting(object):
             # this is the boiler plate HTML used by jinja2 in the report
             # Note {{ report_title }} and {{ report_markdown }}
             base_template = """
-                <!DOCTYPE html><html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-                    <title>{{ report_title }}</title>
-                </head>
-                <body>
-                    {{ report_markdown }}
-                    <br><br>
-                    {{ disclaimer }}
-                </body></html>"""
-            
+            <!DOCTYPE html><html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="X-UA-Compatible" content="ie=edge">
+               
+                <style>
+                    body {background-color: white;
+                          width: 1000px;
+                          max-width: 90%;
+                          margin: auto;
+                          font-family: Garamond;
+                          }
+                    
+                    h1 {color: teal; margin-left: 20px; margin-right: 20px;}
+                    h2 {color: darkslategray; margin-left: 20px;}
+                    h3 {color: teal; margin-left: 20px;}
+                    p {margin: 20px}
+                </style>
+                       
+                <title>{{ report_title }}</title>
+            </head>
+            <body>
+                {{ report_markdown }}
+                <br><br>
+                {{ disclaimer }}
+            </body></html>"""
+        
             disclaimer = "Report generated on {}".format(date.today().strftime("%d %B %Y"))
             
             # set up base template in jinja2 then render report to HTML
