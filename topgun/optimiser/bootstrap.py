@@ -132,7 +132,7 @@ class Bootstrap(object):
         ## Update Plotly template
         colourmap = ['grey', 'teal', 'purple', 'black', 'deeppink', 'skyblue', 'lime', 'green','darkorange', 'gold', 'navy', 'darkred',]
         fig = go.Figure(layout=dict(
-                      font={'family':'Calibri', 'size':14},
+                      font={'family':'Garamond', 'size':14},
                       plot_bgcolor= 'white',
                       colorway=colourmap,
                       showlegend=True,
@@ -1611,8 +1611,9 @@ class Bootstrap(object):
         for k, v in plots.items():
             plots[k] = v.to_html(full_html=False,
                                  include_plotlyjs=plotlyjs,
-                                 default_height=550,
-                                 default_width=1000)
+                                 default_height=450,
+                                 #default_width=1000
+                                 )
     
         # save to self.plots() dictionary by default
         if digest:
@@ -1659,8 +1660,8 @@ class Bootstrap(object):
     
         md = []     # dummy list container - convert to strings later
         
-        md.append("## STANLIB Multi-Strategy Stochastic Modelling")
-        md.append("### Frontier Report: {}".format(title))
+        md.append("# STANLIB Multi-Strategy Stochastic Modelling")
+        md.append("## Frontier Report: {}".format(title))
         md.append("We use an adjusted emperical copula to generate {nsims} \
                   simulated {psims}-week portfolio return paths. \
                   \
@@ -1712,7 +1713,7 @@ class Bootstrap(object):
         if header:
             md.append("# STANLIB Multi-Strategy Bootstrap Report")
         
-        md.append("### Portfolio Report: {}".format(port))
+        md.append("## Portfolio Report: {}".format(port))
         md.append("{}".format(plots['risk_table']))
         #md.append("{}".format(plots['paths']))
         md.append("{}".format(plots['cone']))
@@ -1760,6 +1761,21 @@ class Bootstrap(object):
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <meta http-equiv="X-UA-Compatible" content="ie=edge">
+               
+                <style>
+                    body {background-color: white;
+                          width: 1000px;
+                          max-width: 90%;
+                          margin: auto;
+                          font-family: Garamond;
+                          }
+                    
+                    h1 {color: teal; margin-left: 20px; margin-right: 20px;}
+                    h2 {color: darkslategray; margin-left: 20px;}
+                    h3 {color: teal; margin-left: 20px;}
+                    p {margin: 20px}
+                </style>
+                       
                 <title>{{ report_title }}</title>
             </head>
             <body>
@@ -1881,4 +1897,4 @@ def unit_test(write_report=True, plots_individual=False):
     
     return bs
 
-# bs = bootstrap_unit_test()
+bs = unit_test()
