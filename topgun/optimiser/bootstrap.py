@@ -57,6 +57,15 @@ class Bootstrap(object):
         
         NB/ for details of individual charts go look below, or run collection
         then load each plotly figures from the collection to see what it is
+        
+    REPORTING:
+    In all cases we produce a templated markdown script with Plotly plots
+    already embedded as HTML - these can be fed to report_writer or anything
+    which turns markdown to a static html/pdf.
+    
+        markdown_master(): combines frontier report with all ports; options avail
+        markdown_frontier_report(): frontier analysis
+        markdown_port_report(): individual portfolio report
     
     DEVELOPMENT:
         - check correlation matrix PSD in class properties
@@ -146,8 +155,9 @@ class Bootstrap(object):
                                          pad = {'l':0, 'r':0, 't':0, 'b':0},
                                          buttons=[])],
                       annotations=[{'text': 'Source: STANLIB Multi-Strategy',
-                                    'xref': 'paper', 'x': 0.9, 'ax': 0,
-                                    'yref': 'paper', 'y': 0.05, 'ay': 0,}],))
+                                    'xref': 'paper', 'x': 0.5, 'ax': 0,
+                                    'yref': 'paper', 'y': 0.5, 'ay': 0,
+                                    'align':'right'}],))
         
         # Save template
         pio.templates['multi_strat'] = pio.to_templated(fig).layout.template
@@ -602,6 +612,12 @@ class Bootstrap(object):
     # Again the base for these charts may be replicated elsewhere, but seeing
     # as we want these for reporting purposes we've storing them as distinct
     
+    def _px_addsource(self, fig, x=1, y=-0.095, align='right'):
+        return fig.add_annotation(
+                text="Source: STANLIB Multi-Strategy".format(),
+                xref='paper', yref='paper', x=x, y=y, ax=0, ay=0, align=align)
+        
+    
     # Monte Carlo Simulation paths     
     def plot_paths(self, sims, tgt=0, maxpaths=2500,
                         xtitle='Periods', ytitle='Portfolio Value',
@@ -764,6 +780,8 @@ class Bootstrap(object):
                                            yref='paper', y0=0, y1=0.98, xref='x', x0=tgt, x1=tgt)])
             fig.add_annotation(text="Return Target {:.1%}".format(tgt),
                                 xref='x', x=tgt, yref='paper', y=1 , ax=0, ay=0)
+            
+        fig = self._px_addsource(fig)
 
         return fig
     
@@ -852,6 +870,8 @@ class Bootstrap(object):
         # Update Axis
         fig.update_layout(yaxis= {'title':'Annualised Return', 'hoverformat':'.1%', 'tickformat':'.0%',},
                           xaxis= {'title':'Portfolio', 'hoverformat':'.1%', 'tickformat':'.1%',})
+        
+        fig = self._px_addsource(fig)
         
         return fig
 
@@ -955,8 +975,7 @@ class Bootstrap(object):
             yaxis= {'anchor':'x1', 'title':'Simulation', 'hoverformat':':.1%', 'tickformat':':.0%',},
             xaxis= {'anchor':'y1', 'title':'Annualised Return'})
         
-        fig.add_annotation(text="Source: STANLIB Multi-Strategy".format(),
-                            xref='paper', x=1, yref='paper', y=-0.085 , ax=0, ay=0, align='right')
+        fig = self._px_addsource(fig)
         
         return fig
     
@@ -1018,7 +1037,9 @@ class Bootstrap(object):
     
         # Update hoverdata - NB X and Y are HARDCODED
         fig['data'][0]['hovertemplate'] = 'Sim Period=%{x}<br>Annualised Return=%{y}<br>Prob=%{z}<extra></extra>'
-            
+        
+        fig = self._px_addsource(fig)
+        
         return fig
 
     def _colourway_rgba(self, c1= 'rgb(0,128,128)', c2= 'rgba(128,0,128)',
@@ -1126,6 +1147,8 @@ class Bootstrap(object):
             yaxis= {'anchor':'x1','title':'Annualised Return', 'hoverformat':'.1%', 'tickformat':'.0%',},
             xaxis= {'anchor':'y1','title':'Simulation Period', 'hoverformat':'.0f', 'tickformat':'.0f',}, )
         
+        fig = self._px_addsource(fig)
+        
         return fig
 
 
@@ -1199,6 +1222,8 @@ class Bootstrap(object):
             xaxis= {'anchor':'y1','title':'Simulation Period',
                     'hoverformat':'.0f', 'tickformat':'.0f',}, )
         
+        fig = self._px_addsource(fig)
+        
         return fig
 
 
@@ -1220,7 +1245,8 @@ class Bootstrap(object):
         fig = px.scatter(x=vol[idx], y=mu[idx], text=w[idx].index,
                          #hover_data=[w[idx].index],
                          labels={'x': 'Volatility',
-                                 'y': 'Expected Return',},
+                                 'y': 'Expected Return',
+                                 'text': 'Asset Class'},
                          title='Risk Return Chart',
                          template=template)
         
@@ -1238,6 +1264,8 @@ class Bootstrap(object):
                         hovertext=df.index,
                         marker=dict(size=10, line=dict(width=0.5), symbol='diamond'),
                         name='Portfolios')
+        
+        fig = self._px_addsource(fig)
         
         return fig
     
@@ -1262,8 +1290,12 @@ class Bootstrap(object):
         # plotly bar chart with Plotly Express
         fig = px.bar(df, x='port', y='w', color='Asset',
                      title=title,
-                     labels={'port':'Portfolio', 'w':ytitle,},
+                     labels={'port':'Portfolio',
+                             'w':ytitle,
+                             'Asset':'Asset Class'},
                      template=template,)
+        
+        fig = self._px_addsource(fig)
         
         return fig    
     
@@ -1279,6 +1311,7 @@ class Bootstrap(object):
         ## Basic plotly express imshow heatmap
         fig = px.imshow(cor,
                         x=cor.index, y=cor.index,
+                        labels={'color':'Correlation'}, 
                         title=title,
                         color_continuous_midpoint=0,   # change for VCV
                         aspect=aspect,    
@@ -1560,17 +1593,13 @@ class Bootstrap(object):
             periods=[52, 156, 260],
             title="Simulation Stats: {}".format(port))
         
-        # single period histogram
-        plots['hist'] = self.plot_histogram(port, periods=[260])
+        plots['hist_multi'] = self.plot_histogram(port, periods=[52, 156, 260])
         plots['ridgeline'] = self.plot_ridgeline(port)
         
         # convergence shows port and 5%, 10%, 25%, 40% & 50% bands
         plots['convergence'] = self.plot_convergence(frontier=False, port=port)
         plots['density'] = self.plot_densitymap(sims=port)
-        
-        # multi-period histogram
-        plots['hist_multi'] = self.plot_histogram(port, periods=[52, 156, 260])
-        
+
         # useful in Jupyter Notebooks - just an option to show the plots
         if showplots:
             for p in plots:
@@ -1688,12 +1717,11 @@ class Bootstrap(object):
         #md.append("{}".format(plots['paths']))
         md.append("{}".format(plots['cone']))
         md.append("{}".format(plots['stats']))
-        md.append("{}".format(plots['hist']))
+        md.append("{}".format(plots['hist_multi']))
         md.append("{}".format(plots['ridgeline']))
+        md.append("{}".format(plots['convergence']))
         if density:
             md.append("{}".format(plots['density']))
-        md.append("{}".format(plots['convergence']))
-        md.append("{}".format(plots['hist_multi']))
         
         
         return "\n \n".join(md)    # NEEDS double line-break to render plots
@@ -1762,43 +1790,7 @@ class Bootstrap(object):
 
 # %% TESTING
 
-def unit_test():
-    """ NOT A TRUE UNIT TEST YET """
-
-    
-    sim0 = bs.emperical(w=wgts.iloc[:,0])        # run a sim on 1st port
-    sst0 = bs.sim_stats(sims=sim0)               # run sim stats on 1st port   
-    bs.port_stats()                              # run port stats and consume
-    bs.emperical_frontier(alpha=False, tgts=0)   # run emperical frontier
-    
-    # Chart Tests
-    
-    #from plotly.offline import plot
-    pio.renderers.default='browser'
-    
-    #bs.plot_paths('MS4_v1').show()
-    #bs.plot_wgts_bar_stacked().show()
-    #bs.plot_correl().show()
-    #bs.plot_frontier().show()
-    #bs.plot_densitymap('MS4_v1').show()
-    #bs.plot_ridgeline().show()
-    #bs.plot_ridgeline('MS4).show()
-    #bs.plot_histogram().show()
-    #bs.plot_histogram('MS4').show()
-    #bs.plot_convergence(frontier=False, port='MS4').show()
-    #bs.plot_convergence(frontier=True).show()
-    #bs.plot_table(method='risk', port='MS4').show()
-    #bs.plot_table(method='wgts').show()
-    #bs.plot_stats_table(port='MS4').show()
-    
-
-    return bs
-
-#bs = unit_test()
-
-# %%
-
-def bootstrap_unit_test():
+def unit_test(plots_individual=True):
     """ Not proper unit testing
     
     Create:
@@ -1811,6 +1803,7 @@ def bootstrap_unit_test():
     
     Will annotate with guidance on what answers ought to look like but haven't
     bothered actually providing output figures.
+    
     
     """
     
@@ -1842,9 +1835,10 @@ def bootstrap_unit_test():
     bs = Bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns,
                   alpha=alpha, te=te, nsims=100, f=52, psims=260,)
     
-    # run emperical bootstrap
+    ## run emperical bootstrap
+    # remember will output sims to self.results and sims should be shape(100x261)
     bs.emperical_frontier()
-    
+        
     ### Now we test all the things - remember to test both frontier & port
     # by making sure the charts work we cover
     #   self.emperical()
@@ -1853,6 +1847,28 @@ def bootstrap_unit_test():
     
     # render plotly plots to new tab on browser
     pio.renderers.default='browser'
+    
+    # Create dummy plot for each type to see if it looks sensible
+    if plots_individual:
+        bs.plot_paths('RP3').show()
+        bs.plot_cone('RP3', tgt=0.05).show()
+        bs.plot_wgts_bar_stacked().show()
+        bs.plot_wgts_bar_stacked(wgts=bs.pcr, ytitle='CTR',title='Test CTR')
+        bs.plot_correl().show()
+        bs.plot_frontier().show()
+        bs.plot_densitymap('RP3').show()
+        bs.plot_ridgeline().show()
+        bs.plot_ridgeline('RP3').show()
+        bs.plot_histogram().show()
+        bs.plot_histogram('RP3', periods=[52, 156, 260]).show()
+        bs.plot_convergence(frontier=True).show()
+        bs.plot_convergence(frontier=False, port='RP3').show()
+        
+        # Tables
+        bs.plot_table(method='risk', port='RP3').show()
+        bs.plot_table(method='wgts').show()
+        bs.plot_stats_table(port='RP3', periods=[52, 156, 260]).show()
+    
     
     # This will run plot_collection_frontier() & plot_collection_port()
     # Therefore a good test if all the plotting functions are working
@@ -1864,4 +1880,4 @@ def bootstrap_unit_test():
     
     return bs
 
-bs = bootstrap_unit_test()
+# bs = bootstrap_unit_test()
