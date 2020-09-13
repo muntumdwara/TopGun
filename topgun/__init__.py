@@ -13,7 +13,7 @@ TopGun
 
 # General
 from .utilities import *
-from .reporting import reporting
+from .reporting import Reporting
 
 # Models
 from .models import *
