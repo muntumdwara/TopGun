@@ -1790,7 +1790,7 @@ class Bootstrap(object):
 
 # %% TESTING
 
-def unit_test(plots_individual=True):
+def unit_test(write_report=True, plots_individual=False):
     """ Not proper unit testing
     
     Create:
@@ -1847,6 +1847,16 @@ def unit_test(plots_individual=True):
     
     # render plotly plots to new tab on browser
     pio.renderers.default='browser'
+        
+    # This will run plot_collection_frontier() & plot_collection_port()
+    # Therefore a good test if all the plotting functions are working
+    bs.plot_collection_all()
+    
+    # reports - go open this file
+    # if the report looks correct then everything is probably working
+    if write_report:
+        md = bs.markdown_master()
+        bs.report_writer(md=md, title='test')
     
     # Create dummy plot for each type to see if it looks sensible
     if plots_individual:
@@ -1868,15 +1878,6 @@ def unit_test(plots_individual=True):
         bs.plot_table(method='risk', port='RP3').show()
         bs.plot_table(method='wgts').show()
         bs.plot_stats_table(port='RP3', periods=[52, 156, 260]).show()
-    
-    
-    # This will run plot_collection_frontier() & plot_collection_port()
-    # Therefore a good test if all the plotting functions are working
-    bs.plot_collection_all()
-    
-    # reports
-    md = bs.markdown_master()
-    bs.report_writer(md=md, title='test')
     
     return bs
 
