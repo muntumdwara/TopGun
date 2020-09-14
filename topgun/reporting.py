@@ -57,17 +57,19 @@ class Reporting(object):
                 <meta http-equiv="X-UA-Compatible" content="ie=edge">
                
                 <style>
-                    body {background-color: white;
+                
+                body {background-color: white;
                           width: 850px;
                           max-width: 95%;
                           margin: auto;
                           font-family: Garamond;
                           }
                     
-                    h1 {color: teal; margin-left: 20px; margin-right: 20px;}
-                    h2 {color: darkslategray; margin-left: 20px;}
-                    h3 {color: teal; margin-left: 20px;}
-                    p {margin: 20px}
+                h1 {color: teal; margin-left: 20px; margin-right: 20px;}
+                h2 {color: darkslategray; margin-left: 20px;}
+                h3 {color: teal; margin-left: 20px;}
+                p {margin: 20px}
+                
                 </style>
                        
                 <title>{{ report_title }}</title>
