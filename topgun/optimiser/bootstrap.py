@@ -1461,7 +1461,7 @@ class Bootstrap(object):
                        font={'color':['white', 'black'], 'size':11},))])
     
         fig.update_layout(title=title,
-                          width=((stats.shape[1] + 1) * 60), 
+                          width=750,#((stats.shape[1] + 1) * 60), 
                           height=((stats.shape[0] + 1) * 40),
                           margin = {'l':50, 'r':50, 'b':5, 't':50})    # change width
         
@@ -1549,8 +1549,8 @@ class Bootstrap(object):
         for k, v in plots.items():
             plots[k] = v.to_html(full_html=False,
                                  include_plotlyjs=plotlyjs,
-                                 default_height=450,
-                                 default_width=750,
+                                 default_height=500,
+                                 default_width=800,
                                  )
             
         # Multiple keys is a bit of a pain in markdown later
@@ -1615,7 +1615,7 @@ class Bootstrap(object):
             plots[k] = v.to_html(full_html=False,
                                  include_plotlyjs=plotlyjs,
                                  default_height=450,
-                                 default_width=750,
+                                 default_width=800,
                                  )
     
         # save to self.plots() dictionary by default
