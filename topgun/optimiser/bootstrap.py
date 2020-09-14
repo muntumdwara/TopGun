@@ -20,7 +20,7 @@ import plotly.express as px
 import plotly.graph_objs as go
 import plotly.io as pio
 
-from ..reporting import Reporting
+from topgun.reporting import Reporting
 
 # %% CLASS MODULE
 
@@ -1876,7 +1876,7 @@ def unit_test(write_report=True, plots_individual=False):
     # if the report looks correct then everything is probably working
     if write_report:
         md = bs.markdown_master()
-        Reporting.md2html(md=md, title='test')
+        Reporting().md2html(md=md, title='test')
     
     # Create dummy plot for each type to see if it looks sensible
     if plots_individual:

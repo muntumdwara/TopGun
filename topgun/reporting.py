@@ -57,9 +57,9 @@ class Reporting(object):
                 <meta http-equiv="X-UA-Compatible" content="ie=edge">
                
                 <style>
-                    body {background-color: white;
-                          width: 1000px;
-                          max-width: 90%;
+                    body {background-color: black;
+                          width: 800px;
+                          max-width: 95%;
                           margin: auto;
                           font-family: Garamond;
                           }
