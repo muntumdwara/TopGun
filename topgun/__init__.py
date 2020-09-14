@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 TopGun
-@author: Mavrick
+@author: Viper
 
 """
 

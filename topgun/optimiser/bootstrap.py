@@ -12,7 +12,6 @@ Created on Tue Sep  8 08:17:30 2020
 import numpy as np
 import pandas as pd
 import scipy.linalg as LA 
-import xlwings as xlw        # less useful in production
 
 # Plotly for charting
 import plotly
@@ -20,7 +19,8 @@ import plotly.express as px
 import plotly.graph_objs as go
 import plotly.io as pio
 
-from topgun.reporting import Reporting
+
+#from topgun.reporting import Reporting
 
 # %% CLASS MODULE
 
@@ -1469,7 +1469,7 @@ class Bootstrap(object):
     
     # %% Plot Collections - saves lots of plots to self.plots()
     
-    def plot_collection_all(self):
+    def plot_collection_all(self, plot_height=450, plot_width=850):
         """ Run port_collection functions for frontier & all portfolios
         
         In each case plots will be returned to self.plots which is a dictionary
@@ -1478,7 +1478,14 @@ class Bootstrap(object):
         
         look at guide for plot_collection_frontier() & plot_collection_port()
         for details of exactly which plots are run... this function is just
-        for the default settings.        
+        for the default settings.       
+        
+        INPUTS:
+            plot_height & plot_width - go into fig.to_html() as inputs
+        
+        NB/ these only feed in where a plot hasn't been sized already, so it 
+        won't override an existing explicit size input.
+                
         """
         
         # python seems to prefer grabing ones self, manipulating & stuffing back 
@@ -1487,7 +1494,11 @@ class Bootstrap(object):
         
         # iterate through all plots in the self.results dictionary
         for port in self.results.keys():
-            p = self.plot_collection_port(port=port, plotly2html=True, digest=True)
+            p = self.plot_collection_port(port=port,
+                                          plotly2html=True,
+                                          digest=True,
+                                          plot_height=plot_height,
+                                          plot_width=plot_width)
             plots[port] = p 
         
         # Run frontier & digest
@@ -1501,7 +1512,9 @@ class Bootstrap(object):
     
     def plot_collection_frontier(self, showplots=False,
                                  plotly2html=True, plotlyjs='cdn',
-                                 digest=True):
+                                 digest=True,
+                                 plot_height=450,
+                                 plot_width=850):
         """ Create Dictionary of Frontier Plots for use in Reporting
         
         NB/ This includes tables (which require some hacks) remember to remove
@@ -1548,8 +1561,8 @@ class Bootstrap(object):
         for k, v in plots.items():
             plots[k] = v.to_html(full_html=False,
                                  include_plotlyjs=plotlyjs,
-                                 default_height=500,
-                                 default_width=850,
+                                 default_height=plot_height,
+                                 default_width=plot_width,
                                  )
             
         # Multiple keys is a bit of a pain in markdown later
@@ -1573,7 +1586,9 @@ class Bootstrap(object):
     def plot_collection_port(self, port,
                             showplots=False,
                             plotly2html=True, plotlyjs='cdn',
-                            digest=True):
+                            digest=True,
+                            plot_height=450,
+                            plot_width=850):
         """ Create Dictionary of Single Portfolio Plots for use in Reporting 
         
         REFERENCES:
@@ -1613,8 +1628,8 @@ class Bootstrap(object):
         for k, v in plots.items():
             plots[k] = v.to_html(full_html=False,
                                  include_plotlyjs=plotlyjs,
-                                 default_height=450,
-                                 default_width=850,
+                                 default_height=plot_height,
+                                 default_width=plot_width,
                                  )
     
         # save to self.plots() dictionary by default
@@ -1667,7 +1682,7 @@ class Bootstrap(object):
         md.append("We use an adjusted empirical copula to generate {nsims} \
                   simulated {psims}-week portfolio return paths. \
                   \
-                  An empirical copula is selected to maintain higher-moments \
+                  An empirical approach was selected to maintain higher-moments \
                   and historical returns are scaled to for forward estimates \
                   of prospective returns and volatility. Historical sample size \
                   was {weeks}-weeks; multi-factor regression models may be \
@@ -1726,7 +1741,6 @@ class Bootstrap(object):
         if density:
             md.append("{}".format(plots['density']))
         
-        
         return "\n \n".join(md)    # NEEDS double line-break to render plots
     
 # %% TESTING
@@ -1747,6 +1761,8 @@ def unit_test(write_report=True, plots_individual=False):
     
     
     """
+    
+    from topgun.reporting import Reporting
     
     ### Setup a Range of 4 Dummy Portfolios (RP1-4) & Dummy Returns
     # Returns are a random normal distribution with 20-years of weekly data
@@ -1822,4 +1838,4 @@ def unit_test(write_report=True, plots_individual=False):
     
     return bs
 
-#bs = unit_test()
+bs = unit_test(write_report=True)

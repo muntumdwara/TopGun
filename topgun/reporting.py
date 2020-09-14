@@ -13,7 +13,6 @@ class Reporting(object):
     MAIN FUNCTIONS:
         md2html(): converts a markdown to simple static html for sharing
     
-    
     """
 
     # initialise class
@@ -79,7 +78,9 @@ class Reporting(object):
             
             """
             
-            disclaimer = "Report generated on {}".format(date.today().strftime("%d %B %Y"))
+            disclaimer = \
+                "## Appendix    \
+                Report generated on {}".format(date.today().strftime("%d %B %Y"))
             
             # set up base template in jinja2 then render report to HTML
             # zetcode blog was quite usful for an HTML rookie to learn
