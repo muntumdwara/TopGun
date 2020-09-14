@@ -19,9 +19,6 @@ import plotly.express as px
 import plotly.graph_objs as go
 import plotly.io as pio
 
-
-#from topgun.reporting import Reporting
-
 # %% CLASS MODULE
 
 class Bootstrap(object):
@@ -466,7 +463,6 @@ class Bootstrap(object):
         
         Frontier here refers to any set of portfolio weights - original use case
         was to run analysis on each port on an MVO efficient frontier
-                
         """
         
         ## INPUTS
@@ -1838,4 +1834,4 @@ def unit_test(write_report=True, plots_individual=False):
     
     return bs
 
-bs = unit_test(write_report=True)
+# bs = unit_test(write_report=True)
