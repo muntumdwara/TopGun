@@ -1626,7 +1626,7 @@ class Bootstrap(object):
     # %% Bootstrap Reporting
     # VERY MUCH WORK IN PROGRESS
     
-    def markdown_master(self, title="", density=False):
+    def markdown_master(self, title="TEST", density=False):
         """ Markdown combined report for Frontier & Portfolios 
         
         INPUTS:
@@ -1635,7 +1635,7 @@ class Bootstrap(object):
         """
         
         md = []
-        md.append(self.markdown_frontier_report(title="TEST"))
+        md.append(self.markdown_frontier_report(title=title))
         
         # Individual Portfolio Intro
         md.append(" \n \n ")
