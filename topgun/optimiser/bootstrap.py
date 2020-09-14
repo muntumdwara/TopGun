@@ -1709,7 +1709,6 @@ class Bootstrap(object):
         md = []
         
         ## Append markdown
-        
         # header is optional and my not be wanted if creating combined reports
         # assumption is we will always want the frontier report
         if header:
@@ -1717,12 +1716,13 @@ class Bootstrap(object):
         
         md.append("## Portfolio Report: {}".format(port))
         md.append("{}".format(plots['risk_table']))
-        #md.append("{}".format(plots['paths']))
         md.append("{}".format(plots['cone']))
         md.append("{}".format(plots['stats']))
         md.append("{}".format(plots['hist_multi']))
         md.append("{}".format(plots['ridgeline']))
         md.append("{}".format(plots['convergence']))
+        
+        # Density plot massive to we make optional
         if density:
             md.append("{}".format(plots['density']))
         
@@ -1747,8 +1747,6 @@ def unit_test(write_report=True, plots_individual=False):
     
     
     """
-    
-    
     
     ### Setup a Range of 4 Dummy Portfolios (RP1-4) & Dummy Returns
     # Returns are a random normal distribution with 20-years of weekly data
@@ -1824,4 +1822,4 @@ def unit_test(write_report=True, plots_individual=False):
     
     return bs
 
-bs = unit_test()
+#bs = unit_test()

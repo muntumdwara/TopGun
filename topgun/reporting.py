@@ -55,23 +55,7 @@ class Reporting(object):
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <meta http-equiv="X-UA-Compatible" content="ie=edge">
-               
-                <style>
-                
-                body {background-color: white;
-                          width: 850px;
-                          max-width: 95%;
-                          margin: auto;
-                          font-family: Garamond;
-                          }
-                    
-                h1 {color: teal; margin-left: 20px; margin-right: 20px;}
-                h2 {color: darkslategray; margin-left: 20px;}
-                h3 {color: teal; margin-left: 20px;}
-                p {margin: 20px}
-                
-                </style>
-                       
+                <style>{{ internal_css }}</style>
                 <title>{{ report_title }}</title>
             </head>
             <body>
@@ -80,12 +64,28 @@ class Reporting(object):
                 {{ disclaimer }}
             </body></html>"""
         
+            internal_css = """
+            body {background-color: white;
+                          width: 850px;
+                          max-width: 95%;
+                          margin: auto;
+                          font-family: Garamond;
+                          }
+                    
+            h1 {color: teal; margin-left: 20px; margin-right: 20px;}
+            h2 {color: darkslategray; margin-left: 20px;}
+            h3 {color: teal; margin-left: 20px;}
+            p {margin: 20px}
+            
+            """
+            
             disclaimer = "Report generated on {}".format(date.today().strftime("%d %B %Y"))
             
             # set up base template in jinja2 then render report to HTML
             # zetcode blog was quite usful for an HTML rookie to learn
             template = Template(base_template)
-            report = template.render(report_title=title,
+            report = template.render(internal_css=internal_css,
+                                     report_title=title,
                                      report_markdown=markdown(md),
                                      disclaimer=markdown(disclaimer))
             
