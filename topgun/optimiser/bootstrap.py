@@ -20,12 +20,14 @@ import plotly.express as px
 import plotly.graph_objs as go
 import plotly.io as pio
 
+from ..reporting import Reporting
+
 # %% CLASS MODULE
 
 class Bootstrap(object):
     """ Portfolio Stochastic Modelling Class Modules
     
-    Currently offers emperical ONLY stochastic modelling for individual ports
+    Currently offers empirical ONLY stochastic modelling for individual ports
     as well as across a range of ports (called frontiers) as well as a range
     of charts, analysis and markdown-report outputs (you need to go run the 
     markdown elsewhere).
@@ -41,10 +43,10 @@ class Bootstrap(object):
         f - annualisation factor (default = 52 for weekly returns data)
     
     MAIN FUNCTIONS:
-        emperical() - runs emperical sims for 1 vector of weights
+        empirical() - runs emperical sims for 1 vector of weights
         sim_stats() - calc descriptive stats for 1 simulation output
         port_stats() - rtn, vol & marginal-contribution given inputs
-        emperical_frontier() - runs emperical analysis across all ports in wgts
+        emperical_frontier() - runs empirical analysis across all ports in wgts
                     will do stochastic sims, sim_stats, port_stats & return 
                     a dictionary with all the outputs (stored as self.results)
         correl_rmt_filtered() - allows us to build RMT filtered correl matrix
@@ -267,7 +269,7 @@ class Bootstrap(object):
 
     # %% Emperical Bootstrap
     
-    def emperical(self, **kwargs):
+    def empirical(self, **kwargs):
         """ Monte-Carlo Simulation using Scaled Empirical Data
         
         Jacos idea to take the historical timeseries and standardise, then once
@@ -459,7 +461,7 @@ class Bootstrap(object):
         
         return dict(risk=v, rtn=rtn, mcr=mcr, tcr=tcr, pcr=pcr)
     
-    def emperical_frontier(self, wgts=None, tgts=None, alpha=True, **kwargs):
+    def empirical_frontier(self, wgts=None, tgts=None, alpha=True, **kwargs):
         """ Runs Stochastic Modelling on whole Frontier
         
         Frontier here refers to any set of portfolio weights - original use case
@@ -517,7 +519,7 @@ class Bootstrap(object):
             
             # Run simulation. Pass wgts but take f, nsims, psims from self 
             # For emperical() alpha is set via kwarg, send zeros if alpha False
-            sims = self.emperical(w=wgts[port], alpha=alpha, te=te)
+            sims = self.empirical(w=wgts[port], alpha=alpha, te=te)
 
             # annualised returns from sim paths
             # and descriptive stats
@@ -1662,10 +1664,10 @@ class Bootstrap(object):
         
         md.append("# STANLIB Multi-Strategy Stochastic Modelling")
         md.append("## Frontier Report: {}".format(title))
-        md.append("We use an adjusted emperical copula to generate {nsims} \
+        md.append("We use an adjusted empirical copula to generate {nsims} \
                   simulated {psims}-week portfolio return paths. \
                   \
-                  An emperical copula is selected to maintain higher-moments \
+                  An empirical copula is selected to maintain higher-moments \
                   and historical returns are scaled to for forward estimates \
                   of prospective returns and volatility. Historical sample size \
                   was {weeks}-weeks; multi-factor regression models may be \
@@ -1823,6 +1825,8 @@ def unit_test(write_report=True, plots_individual=False):
     
     """
     
+    
+    
     ### Setup a Range of 4 Dummy Portfolios (RP1-4) & Dummy Returns
     # Returns are a random normal distribution with 20-years of weekly data
     
@@ -1853,7 +1857,7 @@ def unit_test(write_report=True, plots_individual=False):
     
     ## run emperical bootstrap
     # remember will output sims to self.results and sims should be shape(100x261)
-    bs.emperical_frontier()
+    bs.empirical_frontier()
         
     ### Now we test all the things - remember to test both frontier & port
     # by making sure the charts work we cover
@@ -1872,7 +1876,7 @@ def unit_test(write_report=True, plots_individual=False):
     # if the report looks correct then everything is probably working
     if write_report:
         md = bs.markdown_master()
-        bs.report_writer(md=md, title='test')
+        Reporting.md2html(md=md, title='test')
     
     # Create dummy plot for each type to see if it looks sensible
     if plots_individual:
