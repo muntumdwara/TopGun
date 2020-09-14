@@ -1549,8 +1549,9 @@ class Bootstrap(object):
         for k, v in plots.items():
             plots[k] = v.to_html(full_html=False,
                                  include_plotlyjs=plotlyjs,
-                                 default_height=550,
-                                 default_width=1000)
+                                 default_height=450,
+                                 default_width=750,
+                                 )
             
         # Multiple keys is a bit of a pain in markdown later
         # Create a single 'stats' plot which merges the plotly stats tables
@@ -1588,7 +1589,7 @@ class Bootstrap(object):
         
         # Simulation paths - these make file sizes 
         plots['paths'] = self.plot_paths(port)
-        plots['cone'] = self.plot_cone(port)    # more useful with smaller size
+        plots['cone'] = self.plot_cone(port, title=port)    # more useful with smaller size
         
         plots['stats'] = self.plot_stats_table(
             port=port,
@@ -1614,7 +1615,7 @@ class Bootstrap(object):
             plots[k] = v.to_html(full_html=False,
                                  include_plotlyjs=plotlyjs,
                                  default_height=450,
-                                 #default_width=1000
+                                 default_width=750,
                                  )
     
         # save to self.plots() dictionary by default
