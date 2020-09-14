@@ -1155,7 +1155,7 @@ class Bootstrap(object):
 
 
     def plot_cone(self, port=None, tgt=0, period=260, opacity=0.15,
-                  title='test',
+                  title='Simulated Portfolio Returns',
                   template='multi_strat', **kwargs):
         """ Mash up between a paths plot & a convergence funnel
         
@@ -1490,7 +1490,6 @@ class Bootstrap(object):
             p = self.plot_collection_port(port=port, plotly2html=True, digest=True)
             plots[port] = p 
         
-        
         # Run frontier & digest
         f = self.plot_collection_frontier(plotly2html=True, digest=True)
         plots['frontier'] = f 
@@ -1589,7 +1588,7 @@ class Bootstrap(object):
         
         # Simulation paths - these make file sizes 
         plots['paths'] = self.plot_paths(port)
-        plots['cone'] = self.plot_cone(port, title=port)    # more useful with smaller size
+        plots['cone'] = self.plot_cone(port)    # more useful with smaller size
         
         plots['stats'] = self.plot_stats_table(
             port=port,
