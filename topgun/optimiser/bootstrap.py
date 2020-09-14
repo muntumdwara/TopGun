@@ -1461,7 +1461,7 @@ class Bootstrap(object):
                        font={'color':['white', 'black'], 'size':11},))])
     
         fig.update_layout(title=title,
-                          width=800,#((stats.shape[1] + 1) * 60), 
+                          width=825,#((stats.shape[1] + 1) * 60), 
                           height=((stats.shape[0] + 1) * 40),
                           margin = {'l':5, 'r':5, 'b':5, 't':50})    # change width
         
