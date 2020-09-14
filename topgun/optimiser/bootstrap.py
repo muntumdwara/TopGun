@@ -1447,7 +1447,7 @@ class Bootstrap(object):
             
         # plotly table
         fig = go.Figure(data=[go.Table(
-            columnwidth = [150, 60],
+            columnwidth = [85, 50],
             header=dict(values=['Sim Period'] + list(stats.columns),
                         fill_color='black',
                         line_color='darkslategray',
@@ -1461,7 +1461,7 @@ class Bootstrap(object):
                        font={'color':['white', 'black'], 'size':11},))])
     
         fig.update_layout(title=title,
-                          width=750,#((stats.shape[1] + 1) * 60), 
+                          #width=800,#((stats.shape[1] + 1) * 60), 
                           height=((stats.shape[0] + 1) * 40),
                           margin = {'l':50, 'r':50, 'b':5, 't':50})    # change width
         
