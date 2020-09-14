@@ -1447,7 +1447,7 @@ class Bootstrap(object):
             
         # plotly table
         fig = go.Figure(data=[go.Table(
-            columnwidth = [85, 60],
+            columnwidth = [90, 60],
             header=dict(values=['Sim Period'] + list(stats.columns),
                         fill_color='black',
                         line_color='darkslategray',
@@ -1461,7 +1461,7 @@ class Bootstrap(object):
                        font={'color':['white', 'black'], 'size':11},))])
     
         fig.update_layout(title=title,
-                          #width=800,#((stats.shape[1] + 1) * 60), 
+                          width=800,#((stats.shape[1] + 1) * 60), 
                           height=((stats.shape[0] + 1) * 40),
                           margin = {'l':50, 'r':50, 'b':5, 't':50})    # change width
         
@@ -1550,7 +1550,7 @@ class Bootstrap(object):
             plots[k] = v.to_html(full_html=False,
                                  include_plotlyjs=plotlyjs,
                                  default_height=500,
-                                 default_width=800,
+                                 default_width=850,
                                  )
             
         # Multiple keys is a bit of a pain in markdown later
@@ -1615,7 +1615,7 @@ class Bootstrap(object):
             plots[k] = v.to_html(full_html=False,
                                  include_plotlyjs=plotlyjs,
                                  default_height=450,
-                                 default_width=800,
+                                 default_width=850,
                                  )
     
         # save to self.plots() dictionary by default
@@ -1773,10 +1773,10 @@ class Bootstrap(object):
                           font-family: Garamond;
                           }
                     
-                    h1 {color: teal; margin-left: 20px; margin-right: 20px;}
-                    h2 {color: darkslategray; margin-left: 20px;}
-                    h3 {color: teal; margin-left: 20px;}
-                    p {margin: 20px}
+                    h1 {color: teal; margin-left: 10px; margin-right: 20px;}
+                    h2 {color: darkslategray; margin-left: 10px;}
+                    h3 {color: teal; margin-left: 10px;}
+                    p {margin: 10px}
                 </style>
                        
                 <title>{{ report_title }}</title>

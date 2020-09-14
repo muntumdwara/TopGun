@@ -58,7 +58,7 @@ class Reporting(object):
                
                 <style>
                     body {background-color: white;
-                          width: 800px;
+                          width: 850px;
                           max-width: 95%;
                           margin: auto;
                           font-family: Garamond;
