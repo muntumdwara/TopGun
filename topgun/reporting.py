@@ -78,9 +78,10 @@ class Reporting(object):
             
             """
             
-            disclaimer = \
-                "## Appendix    \
-                Report generated on {}".format(date.today().strftime("%d %B %Y"))
+            disclaimer = []
+            disclaimer.append("## Appendix")
+            disclaimer.append("Report generated on {}".format(date.today().strftime("%d %B %Y")))
+            disclaimer.append("### Disclaimers  \n \n ")
             
             # set up base template in jinja2 then render report to HTML
             # zetcode blog was quite usful for an HTML rookie to learn
