@@ -79,7 +79,7 @@ class Reporting(object):
             """
             
             if isinstance(md, list):
-                md = "\n \n".join(list)
+                md = "\n \n".join(md)
             
             disclaimer = []
             disclaimer.append("## Appendix")
