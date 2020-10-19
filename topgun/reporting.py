@@ -106,6 +106,4 @@ class Reporting(object):
         
 # %% UNIT TESTING
             
-Reporting().md2html()
-            
-        
+#Reporting().md2html()
