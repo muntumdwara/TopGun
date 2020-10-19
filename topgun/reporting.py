@@ -78,6 +78,9 @@ class Reporting(object):
             
             """
             
+            if isinstance(md, list):
+                md = "\n \n".join(list)
+            
             disclaimer = []
             disclaimer.append("## Appendix")
             disclaimer.append("Report generated on {}".format(date.today().strftime("%d %B %Y")))
