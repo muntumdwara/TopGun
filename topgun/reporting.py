@@ -113,9 +113,9 @@ class Reporting(object):
 
 # %% REPORTS
 
-import xlwings as xlw
-import pandas as pd
-from topgun import Bootstrap
+#import xlwings as xlw
+#import pandas as pd
+#from topgun import Bootstrap
 
 def bootstrap_report_smash(title='TEST', 
                            active=False,
