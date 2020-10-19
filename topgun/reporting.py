@@ -117,62 +117,62 @@ class Reporting(object):
 #import pandas as pd
 #from topgun import Bootstrap
 
-def bootstrap_report_smash(title='TEST', 
-                           active=False,
-                           path="",
-                           n=100,
-                           reports=True):
+# def bootstrap_report_smash(title='TEST', 
+#                            active=False,
+#                            path="",
+#                            n=100,
+#                            reports=True):
     
-    """ End-to-End Emperical Stochastic Modelling
+#     """ End-to-End Emperical Stochastic Modelling
     
-    Function:
-        1. Pulls Data Required for MC Simulation from Excel Workbook
-        2. Runs Stochastic Modelling across all portfolios
-        3. Generates styled HTML reports & saves to folder
+#     Function:
+#         1. Pulls Data Required for MC Simulation from Excel Workbook
+#         2. Runs Stochastic Modelling across all portfolios
+#         3. Generates styled HTML reports & saves to folder
         
-    INPUTS:
-        XLWINGS CURRENTLY HARDCODED BUT EASY TO EDIT
-    """
+#     INPUTS:
+#         XLWINGS CURRENTLY HARDCODED BUT EASY TO EDIT
+#     """
     
-    ### Set up excel wings connection
-    wb = xlw.Book('Viper.xlsm')
-    pullxlw = lambda a, b: wb.sheets[a].range(b).options(pd.DataFrame, expand='table').value
+#     ### Set up excel wings connection
+#     wb = xlw.Book('Viper.xlsm')
+#     pullxlw = lambda a, b: wb.sheets[a].range(b).options(pd.DataFrame, expand='table').value
 
-    ## Pull bootstrap data from Excel
-    mc = pullxlw('viper', 'A1')    # Monte-Carlo Input Table & Weights
-    wgts = pullxlw('viper', 'J1')  # pull wgts cols (return tgts at the bottom)
-    rtns = pullxlw('STATIC ZAR', 'D5').reset_index()
+#     ## Pull bootstrap data from Excel
+#     mc = pullxlw('viper', 'A1')    # Monte-Carlo Input Table & Weights
+#     wgts = pullxlw('viper', 'J1')  # pull wgts cols (return tgts at the bottom)
+#     rtns = pullxlw('STATIC ZAR', 'D5').reset_index()
 
-    ## Manipulate
-    mu, vol = mc['ExRtn'], mc['Vol']
-    alpha, te = mc['ALPHA'], mc['TE']
+#     ## Manipulate
+#     mu, vol = mc['ExRtn'], mc['Vol']
+#     alpha, te = mc['ALPHA'], mc['TE']
 
-    # Order matters for these
-    wgts = wgts.iloc[:-1,:]        # now strip return tgt from wgts
+#     # Order matters for these
+#     wgts = wgts.iloc[:-1,:]        # now strip return tgt from wgts
     
-    ### setup bootstrap class
-    bs = Bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns, nsims=n, psims=260, f=52)
+#     ### setup bootstrap class
+#     bs = Bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns, nsims=n, psims=260, f=52)
     
-    if active:
-        bs.alpha = alpha
-        bs.te = te
+#     if active:
+#         bs.alpha = alpha
+#         bs.te = te
     
-    if reports:
+#     if reports:
     
-        # run emperical monte-carlo class
-        #display("Bootstrap: Running Simulations")
-        _ = bs.empirical_frontier()
+#         # run emperical monte-carlo class
+#         #display("Bootstrap: Running Simulations")
+#         _ = bs.empirical_frontier()
 
-        #display("Bookstrap: Simulations complete; generating Plots")
-        _ = bs.plot_collection_all()
+#         #display("Bookstrap: Simulations complete; generating Plots")
+#         _ = bs.plot_collection_all()
 
-        # produce reports
-        #display("Bootstrap: Writing Reports")
-        md = bs.markdown_master(title=title)
-        Reporting().md2html(title=title, md=md, path=path)
+#         # produce reports
+#         #display("Bootstrap: Writing Reports")
+#         md = bs.markdown_master(title=title)
+#         Reporting().md2html(title=title, md=md, path=path)
 
     
-    return bs
+#     return bs
 
 #bs = bootstrap_report_smash(title="TEST", n=10000, active=True)
 
