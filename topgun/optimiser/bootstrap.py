@@ -14,7 +14,6 @@ import pandas as pd
 import scipy.linalg as LA 
 
 # Plotly for charting
-import plotly
 import plotly.express as px
 import plotly.graph_objs as go
 import plotly.io as pio
@@ -1834,4 +1833,4 @@ def unit_test(write_report=True, plots_individual=False):
     
     return bs
 
-# bs = unit_test(write_report=True)
+#bs = unit_test(write_report=True)
