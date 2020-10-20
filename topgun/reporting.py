@@ -76,8 +76,7 @@ class Reporting(object):
             h3 {color: teal; margin-left: 20px;}
             p {margin: 20px}
             
-            table {margin: 0 auto;
-                   align-self: center}
+            table {margin: 0 auto; align-self: center}
             
             """
             
