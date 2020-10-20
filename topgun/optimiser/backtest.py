@@ -854,45 +854,45 @@ class Backtest(object):
 
 # %% TEST CODE
         
-import xlwings as xlw
+# import xlwings as xlw
 
-wb = xlw.Book('BACKTEST.xlsm')
+# wb = xlw.Book('BACKTEST.xlsm')
 
-# index data from timeseries sheet
-benchmarks = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:]
+# # index data from timeseries sheet
+# benchmarks = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:]
 
-# convert string to datetime & ensure EOM
-benchmarks.index = pd.to_datetime(benchmarks.index)
-benchmarks.index = benchmarks.index + pd.offsets.MonthEnd(0)
+# # convert string to datetime & ensure EOM
+# benchmarks.index = pd.to_datetime(benchmarks.index)
+# benchmarks.index = benchmarks.index + pd.offsets.MonthEnd(0)
 
-E = wb.sheets['Enhanced'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
-C = wb.sheets['Core'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+# E = wb.sheets['Enhanced'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+# C = wb.sheets['Core'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
 
-# Convert to month-end dates
-E.index = E.index + pd.offsets.MonthEnd(0)
-C.index = C.index + pd.offsets.MonthEnd(0)
+# # Convert to month-end dates
+# E.index = E.index + pd.offsets.MonthEnd(0)
+# C.index = C.index + pd.offsets.MonthEnd(0)
 
-# Rename Series
-E.name = 'Enhanced'
-C.name = 'Core'
+# # Rename Series
+# E.name = 'Enhanced'
+# C.name = 'Core'
 
-rtns = benchmarks.loc[:,'SWIX'].pct_change()
-rtns.name = 'BMK'
-rtns = pd.concat([E, C], axis=1).dropna()
-x = 0.3
-rtns['E30'] = rtns['Enhanced'] * x + rtns['Core'] * (1 - x)
+# rtns = benchmarks.loc[:,'SWIX'].pct_change()
+# rtns.name = 'BMK'
+# rtns = pd.concat([E, C], axis=1).dropna()
+# x = 0.3
+# rtns['E30'] = rtns['Enhanced'] * x + rtns['Core'] * (1 - x)
 
-rtns = rtns.loc[:,['E30', 'Core', 'Enhanced']]
+# rtns = rtns.loc[:,['E30', 'Core', 'Enhanced']]
 
-bt = Backtest(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX')
-bt.basic_backtest()
-df = bt.backtest_summary()
-df = bt.drawdown_table()
-bt.plot_master()
+# bt = Backtest(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX')
+# bt.basic_backtest()
+# df = bt.backtest_summary()
+# df = bt.drawdown_table()
+# bt.plot_master()
 
-md = bt.markdown_doc()
-from topgun.reporting import Reporting
-Reporting().md2html(md=md, title='test')
+# md = bt.markdown_doc()
+# from topgun.reporting import Reporting
+# Reporting().md2html(md=md, title='test')
 
 
 #print(df)
