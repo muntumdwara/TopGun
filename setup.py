@@ -14,9 +14,9 @@ setup(
     
     # Required Dependencies
     install_requires=['sklearn',
-                      'plotly', 'plotly-express',
+                      'plotly',
                       ],
-                      
+    
     # Optional Dependencies
     # Still need to work on this
 
