@@ -87,6 +87,9 @@ class Reporting(object):
             disclaimer.append("## Appendix")
             disclaimer.append("Report generated on {}".format(date.today().strftime("%d %B %Y")))
             disclaimer.append("### Disclaimers  \n \n ")
+            disclaimer.append("This report is for information purposes only and \
+                               only meant for use by the Multi-Strategy team. \
+                               For more information contact David.")
             disclaimer = "\n \n".join(disclaimer)
             
             # set up base template in jinja2 then render report to HTML
