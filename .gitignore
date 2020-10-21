@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 topgun/optimiser/test.html
 topgun/optimiser/.DS_Store
+test.html

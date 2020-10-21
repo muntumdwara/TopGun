@@ -19,12 +19,58 @@ import plotly.io as pio
 # %% CLASS MODULE
 
 class BacktestAnalytics(object):
-    """
+    """ Backtest Analytics & Reporting for Timeseries Data
     
+    Here we take one or more portfolios (strategies) timeseries returns and 
+    run various tests vs. against a specified becnhmark timeseries. There is
+    an option to provide multiple benchmark returns in the bmkrtns dataframe; 
+    at the moment only one benchmark is used as a direct comparitor but those
+    other indices will be used as part of a correlation analysis.
+    
+    NB/ THIS DOES NOT MANAGE STOCK LEVEL ANALYSIS - ONLY TIMESERIES
+    
+    INPUTS:
+        portrtns: pd.DataFrame (or pd.Series) of timeseries returns or prices; 
+            if using prices must add ports_as_rtns=False
+        bmkrtns: same conditions as portrtns (& using bmks_as_rtns)
+        benchmark (OPTIONAL): str() as column name in bmkrtns dataframe. If
+            not provided a vector of zeros is used as the benchmark returns
+        eom: True(default)|False will converts all input dates to end-of-month
+        freq: 12(default) is the periods per annum. Currently only works monthly
+        
+    MAIN FUNCTIONS:
+        run_backtest():
+            * builds data from portrtns, bmkrtns & benchmark
+            * creates full period summary table
+            * builds and stores rolling vol, TE, IR, etc..
+            * builds & saves drawdown series and analyses individual drawdowns
+            * creates wider correlation matrix inc. xs_rtns
+        
+        plot_master():
+            * creates dictionary of useful plots
+            
+        pretty_panda():
+            * applies basic styling to a pandas table - this could move
+            * bespoke sub funcs extend this; these funcs start "pretty_panda_xxx"
+            
+    REPORTING:
+    In all cases we produce a templated markdown script with Plotly plots
+    already embedded as HTML - these can be fed to report_writer or anything
+    which turns markdown to a static html/pdf.
+        - markdown_doc() is primary function for generating markdown. REQUIRES
+            plot_master() to have been run but will prettify dataframe itself.
+        
+    DEVELOPMENT:
+        - dynamic plots for correlation wrt time
+        - more work on hit-rates
+        - PCA based analysis
+
+    Author: David J McNay
     """
 
     def __init__(self, portrtns, bmkrtns, 
-                 benchmark=None, eom = True, freq=12,
+                 benchmark=None, Rf=None,
+                 eom = True, freq=12,
                  ports_as_rtns=True, bmks_as_rtns=True):
         
         # ingest portfolio (strategy) and benchmark returns
@@ -121,7 +167,7 @@ class BacktestAnalytics(object):
     
 # %% BASIC BACKTESTING
         
-    def basic_backtest(self):
+    def run_backtest(self):
        """ 
        
        """
@@ -151,8 +197,8 @@ class BacktestAnalytics(object):
        # drawdown analysis
        self.drawdown = self.rtns2drawdown(alpha=False)
        self.xs_drawdown = self.rtns2drawdown(alpha=True)
-       self.table_drawdown = self.drawdown_table(alpha=False)
-       self.table_xs_drawdown = self.drawdown_table(alpha=True)
+       self.drawdown_table = self.drawdown_breakdown(alpha=False)
+       self.xs_drawdown_table = self.drawdown_breakdown(alpha=True)
        
        # rolling period analysis
        for t in [12, 36]:
@@ -198,7 +244,7 @@ class BacktestAnalytics(object):
             
         return (dd - 100) / 100    # set to zero & percentages
     
-    def drawdown_table(self, alpha=True, dd_threshold=0):
+    def drawdown_breakdown(self, alpha=True, dd_threshold=0):
         """ Drawdowns Details by Individual Drawdown
         
         
@@ -292,6 +338,11 @@ class BacktestAnalytics(object):
         df['Beta'] = self.rtns.cov().iloc[:,0] / self.rtns.iloc[:,0].var()
         df['TE'] = self.xsrtns.std() * np.sqrt(self.freq)
         df['IR'] = (df.TR - df.TR[0]) / df.TE
+        
+        # Sharpe Ratio
+        
+        
+        
         
         # Drawdown Analysis
         df['Max_Drawdown'] = self.drawdown.min(axis=0)
@@ -706,11 +757,10 @@ class BacktestAnalytics(object):
 
 # %% REPORTING
 
-
-    
-    
     def pretty_panda(self, df):
         """ Styler for the Back-Test Summary Table
+        
+        This is the basic styler which applies some default styling to a df.
 
         This shit is tedious - look at the following links if confused
             https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html
@@ -800,13 +850,12 @@ class BacktestAnalytics(object):
 
         return x
     
-
     def pretty_panda_drawdown(self, alpha=True):
         """ Styling for the Annualised Drawdown Tables """
         
         # standard now - pick from dataframe based on if we want exccess rtns
         # Sort by drawdown & pick only the last however many
-        x = self.table_xs_drawdown if alpha else self.table_drawdown
+        x = self.xs_drawdown_table if alpha else self.drawdown_table
         x = x.sort_values(by='drawdown', ascending=False).tail(10)
         
         # useful for indexing - the formating in pandas can't take NaT
@@ -829,7 +878,14 @@ class BacktestAnalytics(object):
     
         # Title
         md.append("# STANLIB Multi-Strategy Backtest")
-        md.append("### Report: {} \n \n ".format(title))
+        md.append("### Report: {}".format(title))
+        md.append("Returns based backtest comparing portfolio(s) against the \
+                  {} benchmark; data contains {} monthly observations running \
+                  from {:%b-%y} to {:%b-%y}. \
+                  \n \n".format(self.benchmark,
+                                len(self.rtns.index),
+                                self.rtns.index[0],
+                                self.rtns.index[-1],))
         
         md.append("## Summary")
         md.append(self.pretty_panda_summary().render())
@@ -895,34 +951,21 @@ class BacktestAnalytics(object):
 
 # # index data from timeseries sheet
 # benchmarks = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:]
-
-# # convert string to datetime & ensure EOM
 # benchmarks.index = pd.to_datetime(benchmarks.index)
-# benchmarks.index = benchmarks.index + pd.offsets.MonthEnd(0)
 
 # E = wb.sheets['Enhanced'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
 # C = wb.sheets['Core'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
-
-# # Convert to month-end dates
 # E.index = E.index + pd.offsets.MonthEnd(0)
 # C.index = C.index + pd.offsets.MonthEnd(0)
-
-# # Rename Series
 # E.name = 'Enhanced'
 # C.name = 'Core'
 
-# rtns = benchmarks.loc[:,'SWIX'].pct_change()
-# rtns.name = 'BMK'
 # rtns = pd.concat([E, C], axis=1).dropna()
 # x = 0.3
 # rtns['E30'] = rtns['Enhanced'] * x + rtns['Core'] * (1 - x)
 
-# rtns = rtns.loc[:,['E30', 'Core', 'Enhanced']]
-
-# bt = Backtest(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX')
-# bt.basic_backtest()
-# df = bt.backtest_summary()
-# df = bt.drawdown_table()
+# bt = BacktestAnalytics(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX')
+# bt.run_backtest()
 # bt.plot_master()
 
 # md = bt.markdown_doc()
