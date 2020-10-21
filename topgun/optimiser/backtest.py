@@ -18,7 +18,7 @@ import plotly.io as pio
 
 # %% CLASS MODULE
 
-class Backtest(object):
+class BacktestAnalytics(object):
     """
     
     """

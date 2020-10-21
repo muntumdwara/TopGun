@@ -1,2 +1,2 @@
 from .bootstrap import Bootstrap
-from .backtest import Backtest
+from .backtest import BacktestAnalytics
