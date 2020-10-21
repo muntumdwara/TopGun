@@ -157,6 +157,23 @@ class BacktestAnalytics(object):
         else:
             raise ValueError('bmkrtns must be a pandas df or series: {} given'
                              .format(type(x)))
+            
+# %% BIG BANG
+            
+    def big_bang(self, title=""):
+        """ End-to-End Control Function """
+        
+        # Run Basic Backtest
+        self.run_backtest()
+        
+        # Generate Plots
+        self.plot_master()
+        
+        # Generate Markdown
+        md = self.markdown_doc(title=title)
+        self.md = md
+        
+        return md
 
 # %% HELPER FUNCTIONS
     
@@ -869,7 +886,6 @@ class BacktestAnalytics(object):
                 .format(formatter="{:%b-%y}", subset=pd.IndexSlice[x.index[idxna], ['end']])\
                 .background_gradient('RdYlGn', subset='drawdown')
     
-
     def markdown_doc(self, title="TEST"):
         """
         """
