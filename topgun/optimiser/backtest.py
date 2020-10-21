@@ -78,34 +78,6 @@ class Backtest(object):
         # Save template
         pio.templates['multi_strat'] = pio.to_templated(fig).layout.template
         
-        
-        ## DataFrame Styler Default
-        
-        styles = [dict(selector="th",
-                       props=[("font-family", "Garamond"),
-                              ('padding', "5px 5px"),
-                              ("font-size", "15px"),
-                              ("background-color", "black"),
-                              ("color", "white"),
-                              ("text-align", "center"),
-                              ('border', '1px solid black')]),
-                  
-                  dict(selector="td",
-                       props=[("font-family", "Garamond"),
-                              ('padding', "5px 5px"),
-                              ('min-width','70px'),
-                              ("font-size", "14px"),
-                              ("text-align", "center"),
-                              ('border', '1px solid black')]),   
-                  
-                  dict(selector="caption",
-                       props=[("text-align", "right"),
-                              ("caption-side", "bottom"),
-                              ("font-size", "85%"),
-                              ("color", 'grey')]),] 
-        
-        self.df_styles = styles
-        
         return
     
     # %% CLASS PROPERTIES
@@ -202,7 +174,6 @@ class Backtest(object):
         
        return
     
-
     def rtns2drawdown(self, alpha=True):
         """ Returns-to-Drawdown Timeseries """
     
@@ -228,6 +199,11 @@ class Backtest(object):
         return (dd - 100) / 100    # set to zero & percentages
     
     def drawdown_table(self, alpha=True, dd_threshold=0):
+        """ Drawdowns Details by Individual Drawdown
+        
+        
+        
+        """
         
         # determine if we need table of excess drawdowns or just drawdowns
         # the table determines if we need to start on the 0th or 1st column
@@ -301,7 +277,10 @@ class Backtest(object):
         return df.T
         
     def backtest_summary(self):
-        """ """
+        """ Summary Table for the Whole Sample Period 
+        
+        """
+        
         df = pd.DataFrame()
         
         # Annualised Total Return, Vol & Risk-adjusted-return
@@ -329,7 +308,6 @@ class Backtest(object):
         
     def plot_index(self, df, title="", benchmark=True,
                    yfmt=['.0f', '.2f'], ytitle='Port', height=0):
-        
         """ Basic Line Plot in Backtester"""
         
         fig = px.line(df, title=title, labels={'variable':'Port:'}, template='multi_strat', )
@@ -350,41 +328,42 @@ class Backtest(object):
     def plot_ridgeline(self, df, title='Ridgeline KDE Distributions',
                        side='positive', meanline=True, box=False, width=3,
                        template='multi_strat', **kwargs):
-            """ Simplified KDE from bootstrapper """
-            
-            n = len(df.columns)
-            
-            # create a blended colours list- here is teal to purple
-            if n > 1:
-                from plotly.colors import n_colors
-                colors = n_colors('rgb(0, 128, 128)', 'rgb(128, 0, 128)', n, colortype='rgb')
-            else:
-                colors = ['rgb(0, 128, 128)']
-            
-            # blank plotly express template
-            fig = px.scatter(title=title, template=template)    
-            for i, v in enumerate(df):             # add violin plots as traces
-                fig.add_trace(go.Violin(x=df.iloc[:,i],
-                                        line_color=colors[i],
-                                        line_width=1,
-                                        name=v,
-                                        spanmode='soft',))
-            
-            # convert from violins to horizontal kde charts 
-            fig.update_traces(orientation='h', 
-                              side=side,
-                              meanline_visible=meanline,
-                              width=width,
-                              box_visible=box)
-            
-            # update layouts
-            fig.update_layout(
-                yaxis= {'anchor':'x1', 'title':'Simulation', 'hoverformat':'.1%', 'tickformat':'.0%',},
-                xaxis= {'anchor':'y1', 'title':'Annualised Return', 'hoverformat':'.1%', 'tickformat':'.0%',})
-            
-            return fig
+        """ Simplified KDE from bootstrapper """
+        
+        n = len(df.columns)
+        
+        # create a blended colours list- here is teal to purple
+        if n > 1:
+            from plotly.colors import n_colors
+            colors = n_colors('rgb(0, 128, 128)', 'rgb(128, 0, 128)', n, colortype='rgb')
+        else:
+            colors = ['rgb(0, 128, 128)']
+        
+        # blank plotly express template
+        fig = px.scatter(title=title, template=template)    
+        for i, v in enumerate(df):             # add violin plots as traces
+            fig.add_trace(go.Violin(x=df.iloc[:,i],
+                                    line_color=colors[i],
+                                    line_width=1,
+                                    name=v,
+                                    spanmode='soft',))
+        
+        # convert from violins to horizontal kde charts 
+        fig.update_traces(orientation='h', 
+                          side=side,
+                          meanline_visible=meanline,
+                          width=width,
+                          box_visible=box)
+        
+        # update layouts
+        fig.update_layout(
+            yaxis= {'anchor':'x1', 'title':'Simulation', 'hoverformat':'.1%', 'tickformat':'.0%',},
+            xaxis= {'anchor':'y1', 'title':'Annualised Return', 'hoverformat':'.1%', 'tickformat':'.0%',})
+        
+        return fig
 
     def plot_histo(self, rtn, title='', opacity=0.5, benchmark=False):
+        """ Basic Histogram """
     
         fig = px.histogram(rtn, histnorm='probability', 
                             title=title,
@@ -404,9 +383,17 @@ class Backtest(object):
     def plot_regression(self, title='', alpha=True):
         """ CAPM Style Regression Plot
         
-        Shows the benchmark on the x-axis & port(s) on the y-axis
+        Plots the benchmark on the x-axis & port(s) on the y-axis; 
         OLS regression line plotted through
 
+        IMPORTANT:
+            function takes input dataframe from self. Therefore in order to 
+            run you need to have already run a backtest function which stores
+            self.xsrtns or self.rtns
+
+        INPUTS:
+            alpha: True(default)|False decides between xsrtns or rtns dfs 
+        
         """
         
         # stack either the returns or excess returns
@@ -448,7 +435,16 @@ class Backtest(object):
         return fig
 
     
-    def _plot_hitrate(self, df, title='', binary=True):
+    def plot_hitrate(self, df, title='', binary=True):
+        """ Hitrate Heatmap
+        
+        Plots Months x Years Heatmap, either as returns or binary outcome
+        
+        INPUT:
+            df: pd.DataFrame with each columns a series of returns
+            binary: True(default)|False map the returns or switch to 1/0
+                depending on if the monthly return was positive or negative
+        """
         
         # Use crosstab to break pd.Series to pd.DataFrame with months x years
         # Cols will be done alphabetically so we manually reorder dataframe
@@ -459,65 +455,24 @@ class Backtest(object):
                             rownames=['years'],
                             colnames=['months'])
         
+        # Re0order because crosstab will spit out in alphabetical order
         plots = plots.loc[:,['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']]
         
         # Convert excess returns to hit/miss
         if binary:
             plots = plots.applymap(lambda x: 1 if x >= 0 else x)
-            plots = plots.applymap(lambda x: -1 if x <= 0 else x)
+            plots = plots.applymap(lambda x: 0 if x <= 0 else x)
         
         # Plot
         fig = px.imshow(plots, x=plots.columns.to_list(), y=plots.index.to_list(),
                         title=title,
-                        labels=dict(x='Months', y='Years', color='Hit-or-Miss'),
-                        color_continuous_midpoint=0, aspect='auto', template='multi_strat')
+                        labels=dict(x='Month', y='Year', color='Hit-or-Miss'),
+                        color_continuous_midpoint=0,
+                        aspect='auto', template='multi_strat')
         
         # Colourscale stuff
         fig.update_traces(dict(colorscale='Tealrose', reversescale=True, showscale=False, coloraxis=None),)
         
-        return fig
-
-
-    def plot_correl(self, cor=None, title='Correlation Matrix', aspect='auto',
-                    colorscale='Tealrose', reversescale=False, **kwargs):
-        """ Plotly Heatmap with Overlay annotations
-        
-        NB/ DIRECT RIP FROM BOOTSTRAP - need to consolidate these in Overplot
-        """
-            
-        # Pull correlation matrix from Bootsrap class
-        if cor is None:
-            cor = self.cor
-            
-        ## Basic plotly express imshow heatmap
-        fig = px.imshow(cor,
-                        x=cor.index, y=cor.index,
-                        labels={'color':'Correlation'}, 
-                        title=title,
-                        color_continuous_midpoint=0,   # change for VCV
-                        aspect=aspect,    
-                        **kwargs)
-                
-            ## Formatting
-        fig.update_layout(margin = {'l':25, 'r':50, 'b':0, 't':50},)
-            
-            # format to 2dp by editing the z axis data
-        fig['data'][0]['z'] = np.round(fig['data'][0]['z'], 2)
-            
-            # Heatmap colour - I rather like Tealrose
-        fig.update_traces(dict(colorscale=colorscale, reversescale=reversescale,
-                               showscale=False, coloraxis=None),)
-            
-            # By default plotly imshow doesn't give values, so we append
-            # Each value is a unique annotation
-            # iterate through columns & rows (which is a bit silly)
-        N = cor.shape[0]
-        for i in range(N):
-            for j in range(N):
-                fig.add_annotation(text="{:.2f}".format(cor.iloc[i,j]),
-                                       font={'color':'black', 'size':9},
-                                       xref='x',yref='y',x=i,y=j,ax=0,ay=0)
-            
         return fig
 
     def plot_hitrates(self,
@@ -530,6 +485,18 @@ class Backtest(object):
         
         Charts are the Year x Month, binary, hit-or-miss heatmap and
         Table is the annualised hit rate per year - in a styled dataframe
+        
+        IMPORTANT:
+            requires bactest functions have to be run because needs
+            self.xsrtns & self.rtns dataframes to exist
+            uses self.plot_hitrates() function
+        
+        INPUTS:
+            min_count: 3(default) is min. months req to get a per-year number
+            
+        OUTPUT:
+            dict() with key 'annual' for styled df & others will be port name
+            i.e. {'annual':styled_df, 'PORT1':plotly_fig}
         
         """
         
@@ -545,7 +512,7 @@ class Backtest(object):
             
             ## PLOTLY
             # Get the Year x Month Hitrate Plot
-            plots[p] = self._plot_hitrate(self.xsrtns[p],
+            plots[p] = self.plot_hitrate(self.xsrtns[p],
                                          title="Hit Rate Heatmap: {}".format(p),
                                          binary=True)
             
@@ -587,30 +554,60 @@ class Backtest(object):
                                      default_height=plot_height,
                                      default_width=plot_width,
                                      )
-                
-        # Style annual dataframe
-        # This shit is tedious - look at the following links if confused
-        # https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html
-        df = df.reset_index()\
-               .style.hide_index()\
-               .set_table_styles(self.df_styles)\
-               .set_caption('Source: STANLIB Multi-Strategy')\
-               .set_table_attributes('style="border-collapse:collapse"')\
+                  
+        plots['annual'] = self.pretty_panda(df.reset_index())\
                .format(formatter="{:.0f}", subset=pd.IndexSlice[:, df.columns[0]])\
                .format(formatter="{:.1%}", subset=pd.IndexSlice[:, df.columns[0:]])\
-               .background_gradient('RdYlGn', vmin=0.2, vmax=0.8)\
+               .background_gradient('RdYlGn', vmin=0.2, vmax=0.8, subset=pd.IndexSlice[:, df.columns[0:]])\
                .highlight_null(null_color='white')\
-               .set_properties(subset=["years"], **{'font-weight':'bold',
-                                                    'color':'white',
-                                                    'background-color':'teal', })\
-               
-        plots['annual'] = df
         
         return plots
     
+    def plot_correl(self, cor=None, title='Correlation Matrix', aspect='auto',
+                    colorscale='Tealrose', reversescale=False, **kwargs):
+        """ Plotly Heatmap with Overlay annotations
+        
+        NB/ DIRECT RIP FROM BOOTSTRAP - need to consolidate these in Overplot
+        """
+            
+        # Pull correlation matrix from Bootsrap class
+        if cor is None:
+            cor = self.cor
+            
+        ## Basic plotly express imshow heatmap
+        fig = px.imshow(cor,
+                        x=cor.index, y=cor.index,
+                        labels={'color':'Correlation'}, 
+                        title=title,
+                        color_continuous_midpoint=0,   # change for VCV
+                        aspect=aspect,    
+                        **kwargs)
+                
+            ## Formatting
+        fig.update_layout(margin = {'l':25, 'r':50, 'b':0, 't':50},)
+            
+            # format to 2dp by editing the z axis data
+        fig['data'][0]['z'] = np.round(fig['data'][0]['z'], 2)
+            
+            # Heatmap colour - I rather like Tealrose
+        fig.update_traces(dict(colorscale=colorscale, reversescale=reversescale,
+                               showscale=False, coloraxis=None),)
+            
+            # By default plotly imshow doesn't give values, so we append
+            # Each value is a unique annotation
+            # iterate through columns & rows (which is a bit silly)
+        N = cor.shape[0]
+        for i in range(N):
+            for j in range(N):
+                fig.add_annotation(text="{:.2f}".format(cor.iloc[i,j]),
+                                       font={'color':'black', 'size':9},
+                                       xref='x',yref='y',x=i,y=j,ax=0,ay=0)
+            
+        return fig
     
     def plot_master(self, plotly2html=True, plotlyjs='cdn',
                     plot_height=450, plot_width=850):
+        """ """
         
         plots = dict()   # dummy dictionary to hold plots
         
@@ -709,14 +706,71 @@ class Backtest(object):
 
 # %% REPORTING
 
+
+    
+    
+    def pretty_panda(self, df):
+        """ Styler for the Back-Test Summary Table
+
+        This shit is tedious - look at the following links if confused
+            https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html
+            https://pbpython.com/styling-pandas.html
+            https://towardsdatascience.com/style-pandas-dataframe-like-a-master-6b02bf6468b0
+        
+        """
+        
+        # When we reset_index() the index becomes the first column
+        # by default we style that so need the column name as an indexor
+        faux_index = df.columns[0]
+        
+        ## DataFrame Styler Default for Headers & Captions
+        # Sort "td" with .set_properties because it's easer to override
+        styles = [dict(selector="th",
+                       props=[("font-family", "Garamond"),
+                              ('padding', "5px 5px"),
+                              ("font-size", "15px"),
+                              ("background-color", "black"),
+                              ("color", "white"),
+                              ("text-align", "center"),
+                              ('border', '1px solid black')]),
+
+                  dict(selector="caption",
+                       props=[("text-align", "right"),
+                              ("caption-side", "bottom"),
+                              ("font-size", "85%"),
+                              ("color", 'grey')]),] 
+        
+        df = df.style.hide_index()\
+               .set_table_styles(styles)\
+               .set_caption('Source: STANLIB Multi-Strategy')\
+               .set_table_attributes('style="border-collapse:collapse"')\
+               .set_precision(3)\
+               .highlight_null(null_color='white')\
+               .set_properties(**{"font-family": "Garamond",
+                                  "font-size": "14px",
+                                  "text-align": "center",
+                                  "border": "1px solid black",
+                                  "padding": "5px 5px",
+                                  "min-width": "70px"})\
+               .applymap(lambda x: 'color: white' if x== 0 else 'color: black')\
+               .set_properties(subset=[faux_index],
+                               **{'font-weight':'bold',
+                                  'color':'white',
+                                  'background-color':'teal',
+                                  "text-align": "justify",
+                                  'min-width':'115px'})\
+                   
+        return df
     
     def pretty_panda_summary(self):
-        
-        # This shit is tedious - look at the following links if confused
-        # https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html
-        # https://pbpython.com/styling-pandas.html
-        # https://towardsdatascience.com/style-pandas-dataframe-like-a-master-6b02bf6468b0
-        
+        """ Styler for the Back-Test Summary Table
+
+        This shit is tedious - look at the following links if confused
+            https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html
+            https://pbpython.com/styling-pandas.html
+            https://towardsdatascience.com/style-pandas-dataframe-like-a-master-6b02bf6468b0
+        """
+
         df = self.backtest_summary()
         
         # duplicate the index in the dataframe
@@ -725,22 +779,12 @@ class Backtest(object):
         m.name = 'Metric'
         x = pd.concat([m.to_frame(), df], axis=1).fillna(0)
         
-        x = x.style.hide_index()\
-             .set_table_styles(self.df_styles)\
-             .set_caption('Source: STANLIB Multi-Strategy')\
-             .set_table_attributes('style="border-collapse:collapse"')\
-             .applymap(lambda x: 'color: white' if x== 0 else 'color: black')
+        x = self.pretty_panda(x)
         
-        # Generally set to 0.1%; few things as 0.02; zeros have white text
+        ## Generally set to 0.1%; few things as 0.02; zeros have white text
         x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])\
              .format(formatter="{:.2f}", subset=pd.IndexSlice[['RaR', 'Beta', 'IR'], x.columns[1:]])\
              
-        # set the new "index" column
-        x = x.set_properties(subset=["Metric"], **{'text-align':'justify',
-                                                   'font-weight':'bold',
-                                                   'background-color':'teal',
-                                                   'color':'white',
-                                                   'min-width':'115px'})\
         
         ## Conditional Format Bits
         # These Include the Benchmark
@@ -754,18 +798,15 @@ class Backtest(object):
             x = x.highlight_max(color='lightseagreen', subset=pd.IndexSlice[y[0], y[1]], axis=1)
             x = x.highlight_min(color='crimson', subset=pd.IndexSlice[y[0], y[1]], axis=1)
 
-        self.summary_styled = x
         return x
     
-    def pretty_pandas_drawdown(self, alpha=True):
+
+    def pretty_panda_drawdown(self, alpha=True):
+        """ Styling for the Annualised Drawdown Tables """
         
         # standard now - pick from dataframe based on if we want exccess rtns
-        if alpha:
-            x = self.table_xs_drawdown
-        else:
-            x = self.table_drawdown
-        
         # Sort by drawdown & pick only the last however many
+        x = self.table_xs_drawdown if alpha else self.table_drawdown
         x = x.sort_values(by='drawdown', ascending=False).tail(10)
         
         # useful for indexing - the formating in pandas can't take NaT
@@ -773,59 +814,53 @@ class Backtest(object):
         idxna = ~x['recovery'].isna()
         
         # general stuff
-        x = x.reset_index().style.hide_index().set_table_styles(self.df_styles)\
-                           .set_caption('Source: STANLIB Multi-Strategy')\
-                           .set_table_attributes('style="border-collapse:collapse"')
+        x = self.pretty_panda(x.reset_index())
         
-        # specific posh formatting
-        x = x.format(dict(start='{:%b-%y}', trough='{:%b-%y}', drawdown='{:.1%}'))\
-             .format(formatter="{:%b-%y}", subset=pd.IndexSlice[x.index[idxna], ['end']])\
-             .background_gradient('RdYlGn', subset='drawdown')
-             
-             
-        return x
+        return x.format(dict(start='{:%b-%y}', trough='{:%b-%y}', drawdown='{:.1%}'))\
+                .format(formatter="{:%b-%y}", subset=pd.IndexSlice[x.index[idxna], ['end']])\
+                .background_gradient('RdYlGn', subset='drawdown')
     
-    
+
     def markdown_doc(self, title="TEST"):
+        """
+        """
         
         md = []     # dummy list container - convert to strings later
     
         # Title
         md.append("# STANLIB Multi-Strategy Backtest")
-        md.append("## Report: {} \n \n ".format(title))
+        md.append("### Report: {} \n \n ".format(title))
         
-        self.pretty_panda_summary()
-        md.append(self.summary_styled.render())
+        md.append("## Summary")
+        md.append(self.pretty_panda_summary().render())
         
-        # Cumulative Returns
-        md.append("### Portfolio Returns")
+        ## Risk & Return
+        md.append("## Portfolio Risk & Returns")
         md.append(self.plots['tr'])
-        md.append(self.plots['drawdown'])
-        md.append(self.pretty_pandas_drawdown(alpha=False).render())
-        md.append(self.plots['kde_rtns'])
-        md.append(self.plots['regression_rtn'])
-        
-        # Excess Return
-        md.append("### Excess Returns")
         md.append(self.plots['xsrtn'])
-        md.append(self.plots['xs_drawdown'])
-        md.append(self.pretty_pandas_drawdown(alpha=True).render())
-        md.append(self.plots['kde_alpha'])
-        md.append(self.plots['histogram'])
-        md.append(self.plots['regression_alpha'])
-        
-        
-        # Rolling
-        # Rolling Returns
-        md.append("### Rolling Period")
         md.append(self.plots['roll_vol'])
         md.append(self.plots['roll_te'])
         md.append(self.plots['roll_rar'])
-        md.append(self.plots['roll_ir'])
+        md.append(self.plots['roll_ir'])        
         
-        
+        ## Drawdown
+        md.append("## Drawdowns")
+        md.append(self.plots['xs_drawdown'])
+        md.append(self.pretty_panda_drawdown(alpha=True).render())
+        md.append(self.plots['drawdown'])
+        md.append(self.pretty_panda_drawdown(alpha=False).render())
+
+
+        ## Regression & Return Distributions
+        md.append("## Return Distribution")
+        md.append(self.plots['regression_rtn'])
+        md.append(self.plots['kde_rtns'])
+        md.append(self.plots['regression_alpha'])
+        md.append(self.plots['kde_alpha'])
+        md.append(self.plots['histogram'])        
+
         # Hitrate
-        md.append("### Hit Rate Analysis")
+        md.append("## Hit Rate Analysis")
         md.append("Here we aren't interested in the quantum of return, \
                simply if alpha was positive or negative for a given month. \
                In the annualised analysis we look at the percentage hit-rate \
@@ -841,7 +876,7 @@ class Backtest(object):
             md.append(self.plots['hitrate'][p])      
         
         # Correlation Analysis
-        md.append("### Correlation Review")
+        md.append("## Correlation Review")
         md.append("We present the correlation matrix for the full sample period, \
                    showing both the Portfolio returns and the Alpha stream. \
                    Additionally we include a series of strategic asset classes \

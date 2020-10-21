@@ -72,8 +72,8 @@ class Reporting(object):
                           }
                     
             h1 {color: teal; margin-left: 20px; margin-right: 20px;}
-            h2 {color: darkslategray; margin-left: 20px;}
-            h3 {color: teal; margin-left: 20px;}
+            h2 {color: teal; margin-left: 20px;}
+            h3 {color: darkslategray; margin-left: 20px;}
             p {margin: 20px}
             
             table {margin: 0 auto; align-self: center}
