@@ -188,7 +188,24 @@ class BacktestAnalytics(object):
 # %% BASIC BACKTESTING
         
     def run_backtest(self):
-       """ 
+       """ MAIN FUNCTION
+       
+       Function will splice port returns with benchmark & Rf returns so we have
+       a common time history, then do a series of things:
+           - Cumulative Returns
+           - Excess Returns (to benchmark)
+           - Drawdown and Excess Drawdown
+           - Rolling 12m metrics
+           - Summary Table - Full Sample Period
+           - Summary Table - per_annum except most recent year which is YTD
+           - Build "wide" correlation matrix with port rtns, xs returns and
+               all benchmarks specified in self.bmkrtns
+           
+       INPUTS not required but the following must have been set:
+           - self.portrtns
+           - self.bmkrtns
+           - self.benchmark
+           - self.Rf
        
        """
        
@@ -271,7 +288,10 @@ class BacktestAnalytics(object):
        return
     
     def rtns2drawdown(self, alpha=True):
-        """ Returns-to-Drawdown Timeseries """
+        """ Returns-to-Drawdown Timeseries 
+        
+        NB/ Rebased to 0 not 100
+        """
     
         # Need to select a method for drawdown
         # if alpha is True use excess returns, otherwise returns        
@@ -300,7 +320,17 @@ class BacktestAnalytics(object):
     def drawdown_breakdown(self, alpha=True, dd_threshold=0):
         """ Drawdowns Details by Individual Drawdown
         
+        Builds table which breaks out each individual drawdown period from a
+        timeseries of drawdowns (set with base at zero NOT 100). Table data 
+        currently shows the date drawdown starts, throughs & ends as well as 
+        the number of months in total, top to bottom & recovery as well as the
+        max drawdown itself.
         
+        INPUTS:
+            alpha: True(default)|False the function takes the drawdown ts from 
+                self.xs_drawdown or self.drawdown depending on if alpha.
+                NB/ MUST RUN self.rtns2drawdown FIRST OR THIS WILL FAIL
+            dd_threshold: +ve number; excludes drawdowns less than this level.
         
         """
         
@@ -780,7 +810,14 @@ class BacktestAnalytics(object):
     
     def plot_master(self, plotly2html=True, plotlyjs='cdn',
                     plot_height=450, plot_width=850):
-        """ """
+        """ Aggregation Function that runs ALL plots
+        
+        These are saved in a big dictionary self.plots
+        
+        INPUTS:
+            all related to if we want to save as HTML for output
+            this is required for markdown but less useful if used in an app
+        """
         
         plots = dict()   # dummy dictionary to hold plots
         
@@ -1041,8 +1078,8 @@ class BacktestAnalytics(object):
         return x
     
     def markdown_doc(self, title="TEST"):
-        """
-        """
+        """ Master Markdown file for full backtest report """
+        
         
         md = []     # dummy list container - convert to strings later
     
