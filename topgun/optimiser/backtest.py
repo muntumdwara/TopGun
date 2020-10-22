@@ -64,6 +64,7 @@ class BacktestAnalytics(object):
         - dynamic plots for correlation wrt time
         - more work on hit-rates
         - PCA based analysis
+        - basic checking that input benchmarks or Rf in bmkrtns columns
 
     Author: David J McNay
     """
@@ -254,8 +255,9 @@ class BacktestAnalytics(object):
                                   te=iTE,
                                   sharpe=iSharpe)
        
-       # Run summary table and ingest
+       # Run summary table & annualised summary and ingest
        self.summary = self.backtest_summary()
+       self.summary_pa = self.per_annum()
        
        # Extended Correlation Matrix
        # Use BMK, PORT, PORT_XS_RTNS & the bmkrtns indices to form corr matrix
@@ -406,15 +408,55 @@ class BacktestAnalytics(object):
         df['xs_best'] = self.xsrtns.max()
         
         # Remove Risk Free Rate from summary table
+        self.Rf_obs_rtn = df.loc['Rf', 'TR']
         self.summary = df.T.iloc[:, 1:]
         return self.summary
     
     
-    def per_annum_summary(self, df):
+    def per_annum(self):
+        """ Convert Return Stream to Per Annum Metrics
         
-
+        NB/ for current year we calculate YTD rather than annualised or 12m
+        """
+         
+        # Requires only the returns dataframe
+        # Rf in [0] and Rb in [1]
+        x = self.rtns
         
-        return
+        pa = dict.fromkeys(['rtn', 'alpha', 'xscash', 'vol', 'te', 'sharpe', 'ir'])
+        
+        # create group object which has years as keys
+        # find index of last month; can't just do annual or we miss YTD
+        grp = x.index.groupby(x.index.year)
+        idx = [v[-1] for v in grp.values()]    # index of last month
+        yrs = grp.keys()                       # list of years
+        
+        # Return - Annual & current YTD
+        # 1st ret2px, then subset dates and calc return
+        rtn = (1 + x).cumprod().loc[idx, :].pct_change()
+        rtn.index = yrs    # relabel indices to years (from timestamp)
+        pa['rtn'] = rtn
+        
+        # Volatility - fairly simple
+        pa['vol'] = x.groupby(x.index.year).std() * np.sqrt(12)
+        
+        # Alpha & Excess-Cash Return
+        # Remember Rf in posn 0 & Rb in posn 1
+        pa['xscash'] = rtn.subtract(rtn.iloc[:,0], axis='rows')
+        pa['alpha'] = rtn.subtract(rtn.iloc[:,1], axis='rows')
+        
+        # Tracking Error
+        # Can't use rtn above because that is annualised
+        # Need to create monthly series of alpha stream
+        xsrtn = x.subtract(x.iloc[:,1], axis='rows')
+        pa['te'] = xsrtn.groupby(x.index.year).std() * np.sqrt(12)
+        
+        # Sharpe & IR therefore easy to calculate
+        pa['sharpe'] = pa['xscash'] / pa['vol']
+        pa['ir'] = pa['alpha'] / pa['te']
+        
+        self.summary_pa = pa
+        return pa
 
 # %% PLOTLY PLOTS
         
@@ -776,12 +818,12 @@ class BacktestAnalytics(object):
         # Drawdown Charts
         plots['drawdown'] = self.plot_index(self.drawdown,
                            title='Drawdown of Returns',
-                           yfmt=['.0%', '.2%'], ytitle='Drawdown',
+                           yfmt=['.1%', '.2%'], ytitle='Drawdown',
                            benchmark=True,)
         
         plots['xs_drawdown'] = self.plot_index(self.xs_drawdown,
                            title='Drawdown of Excess Returns',
-                           yfmt=['.0%', '.2%'], ytitle='Drawdown',
+                           yfmt=['.1%', '.2%'], ytitle='Drawdown',
                            benchmark=False,)
         
         # Rolling Plots
@@ -807,19 +849,19 @@ class BacktestAnalytics(object):
         plots['roll_te'] = self.plot_index(
                                  self.rolling[12]['te'],
                                  title='Rolling ex-Post TE: 12m',
-                                 yfmt=['.0%', '.2%'], ytitle='Volatility',
+                                 yfmt=['.1%', '.2%'], ytitle='Tracking Error',
                                  benchmark=False, height=350)
 
         plots['roll_sharpe'] = self.plot_index(
                                   self.rolling[12]['sharpe'],
                                   title='Sharpe Ratio: 12m',
-                                  yfmt=['.2f', '.2f'], ytitle='[Rp - Rf] / Vol',
+                                  yfmt=['.1f', '.2f'], ytitle='Sharpe Ratio',
                                   benchmark=False, height=350)
         
         plots['roll_rar'] = self.plot_index(
                                  self.rolling[12]['xsrtn'] / self.rolling[12]['vol'],
                                  title='Risk Adjusted Return: 12m',
-                                 yfmt=['.2f', '.2f'], ytitle='[Rp - Rb] / Vol',
+                                 yfmt=['.1f', '.2f'], ytitle='Information Ratio',
                                  benchmark=False, height=350)
 
         plots['roll_ir'] = self.plot_index(
@@ -967,6 +1009,37 @@ class BacktestAnalytics(object):
                 .format(formatter="{:%b-%y}", subset=pd.IndexSlice[x.index[idxna], ['end']])\
                 .background_gradient('RdYlGn', subset='drawdown')
     
+    def pretty_panda_annual(self, key='rtn'):
+        """ Styling for Tables of Annualised Metrics
+        
+        These are calc'd by self.per_annum() which is itself in self.run_backtest()
+        Tables are stored in a dict() called self.summary_pa
+        
+        Each table needs stubtly different styling
+        
+        INPUT:
+            key: refers to the key from self.summary_pa
+        """
+        
+        pa = self.summary_pa
+        
+        # subtle differences depending on if we want Rb or not
+        # also subtle difference in if is .2% of .2f
+        if key in ['rtn', 'vol']:            
+            x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
+            x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
+        elif key in ['sharpe']:
+            x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
+            x = x.format(formatter="{:.2f}", subset=pd.IndexSlice[:, x.columns[1:]])
+        elif key in ['alpha', 'te']:
+            x = self.pretty_panda(pa[key].dropna().iloc[:,2:].reset_index())
+            x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
+        elif key in ['ir']:
+            x = self.pretty_panda(pa[key].dropna().iloc[:,3:].reset_index())
+            x = x.format(formatter="{:.2f}", subset=pd.IndexSlice[:, x.columns[1:]])
+        
+        return x
+    
     def markdown_doc(self, title="TEST"):
         """
         """
@@ -987,18 +1060,27 @@ class BacktestAnalytics(object):
         
         md.append("## Summary")
         md.append(self.pretty_panda_summary().render())
+        md.append("Annualised 'risk-free' return of the {} index over the \
+                  period was {:.2%}. \n \n".format(self.Rf, self.Rf_obs_rtn))
         
         ## Risk & Return
         md.append("## Portfolio Returns")
         md.append(self.plots['tr'])
         md.append(self.plots['xsrtn'])
         md.append(self.plots['roll_rtn'])
+        md.append(self.pretty_panda_annual('rtn').render())
+        md.append("\n \n ")
         md.append(self.plots['roll_xsrtn'])
+        md.append(self.pretty_panda_annual('alpha').render())
         
         ## Portfolio Risk & Drawdown
         md.append("## Portfolio Risk & Drawdowns")
         md.append(self.plots['roll_vol'])
+        md.append(self.pretty_panda_annual('vol').render())
+        md.append("\n \n ")
         md.append(self.plots['roll_te'])
+        md.append(self.pretty_panda_annual('te').render())
+        md.append("\n \n ")
         md.append(self.plots['xs_drawdown'])
         md.append(self.pretty_panda_drawdown(alpha=True).render())
         md.append(self.plots['drawdown'])
@@ -1007,15 +1089,17 @@ class BacktestAnalytics(object):
         ## Rolling Risk Adjusted Measures
         md.append("## Risk Adjusted Returns - Rolling")
         md.append(self.plots['roll_sharpe'])
-        md.append(self.plots['roll_rar'])
+        md.append(self.pretty_panda_annual('sharpe').render())
+        md.append("\n \n ")
         md.append(self.plots['roll_ir'])
+        md.append(self.plots['roll_rar'])
         
         ## Regression & Return Distributions
         md.append("## Return Distribution")
         md.append(self.plots['kde_rtns'])
         md.append(self.plots['kde_alpha'])
         md.append(self.plots['histogram'])
-        md.append("Visualising return or alpha regressions add colour to CAPM Beta. \
+        md.append("Visualising return or alpha regressions adds colour to CAPM Beta. \
                   Steeper regression lines indicate higher Beta whilst R<sup>2</sup> gives \
                   an impression of the correlation; look for non-linearity \
                   that may be missed in headline metrics.")
@@ -1028,7 +1112,7 @@ class BacktestAnalytics(object):
                    simply the binary outcome per month. Heatmaps will show \
                    month-by-month experience as either +1 or 0. \
                    For annualised analysis we look at the percentage monthly hit-rate \
-                   over a calendar year; subject to a minimum of 3-observations. \ \n")
+                   over a calendar year; subject to a minimum of 3-observations. \n \n")
         
         md.append(self.plots['hitrate']['annual'].render())
         
