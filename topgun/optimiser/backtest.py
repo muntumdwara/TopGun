@@ -796,13 +796,13 @@ class BacktestAnalytics(object):
         plots['roll_sharpe'] = self.plot_index(
                                   self.rolling[12]['sharpe'],
                                   title='Sharpe Ratio: 12m',
-                                  yfmt=['.2f', '.2f'], ytitle='XS Rtn / Vol',
+                                  yfmt=['.2f', '.2f'], ytitle='[Rp - Rf] / Vol',
                                   benchmark=False, height=350)
         
         plots['roll_rar'] = self.plot_index(
                                  self.rolling[12]['xsrtn'] / self.rolling[12]['vol'],
                                  title='Risk Adjusted Return: 12m',
-                                 yfmt=['.2f', '.2f'], ytitle='XS Rtn / Vol',
+                                 yfmt=['.2f', '.2f'], ytitle='[Rp - Rb] / Vol',
                                  benchmark=False, height=350)
 
         plots['roll_ir'] = self.plot_index(
