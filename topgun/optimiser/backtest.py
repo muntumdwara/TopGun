@@ -221,7 +221,7 @@ class BacktestAnalytics(object):
        # Pull from bmkrtns if index provided; set as vector of 0 otherwise
        # Be careful about the alignment of dates (indices)
        if self.Rf == None:
-           Rf = pd.Series(data=0, index=self.rtns, name='Rf')
+           Rf = pd.Series(data=0, index=self.rtns.index, name='Rf')
        else:
            Rf = self.bmkrtns.loc[self.rtns.index, self.Rf]
            Rf.name = 'Rf'
