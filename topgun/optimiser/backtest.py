@@ -191,25 +191,35 @@ class BacktestAnalytics(object):
        
        """
        
+       # Benchamrk
+       # Pull from bmkrtns if provided
+       # Pull from bmkrtns if index provided; set as vector of 0 otherwise
        if self.Rb == None:
            bmk = pd.Series(data=0, index=self.portrtns.index, name='BMK')
        else:
            bmk = self.bmkrtns.loc[:,self.Rb]
            bmk.name = 'BMK'
-        
-       # Consolidated dataframe for benchmarks & returns
-       # Also set up excess returns at the same time
-       # Benchmark always in position 0 in dataframe
-       self.rtns = pd.concat([bmk, self.portrtns], axis=1).dropna()
-       self.xsrtns = self.rtns.subtract(self.rtns.iloc[:,0], axis='rows')
-       
-       # cumulative returns
-       cr = (1 + self.rtns).cumprod() * 100
-       
-       # ingest cumulative returns & excess returns
-       # we leave benchmark in postion 0 with values 0 for alpha
+           
+       # Risk Free Rate Stuff
+       # Pull from bmkrtns if index provided; set as vector of 0 otherwise
+       # Be careful about the alignment of dates (indices)    
+       if self.Rf == None:
+           Rf = pd.Series(data=0, index=self.portrtns.index, name='Rf')
+       else:
+           Rf = self.bmkrtns.loc[:, self.Rf]
+           Rf.name = 'Rf' 
+    
+       # Consolidated dataframe for risk-free, benchmarks & returns
+       # Also set up cumulative returns
+       # Rf always at 0, Benchmark always at 1 in dataframe
+       self.rtns = pd.concat([Rf, bmk, self.portrtns], axis=1).dropna()
+       cr = (1 + self.rtns).cumprod() * 100     # cumulative returns
        self.cum_rtn = cr
-       self.cum_xs_rtn = cr.subtract(cr.iloc[:,0], axis='rows') + 100
+       
+       # Excess Returns
+       # Remember again Rb at 1
+       self.xsrtns = self.rtns.subtract(self.rtns.iloc[:, 1], axis='rows')
+       self.cum_xs_rtn = cr.subtract(cr.iloc[:,1], axis='rows') + 100
        
        # drawdown analysis
        self.drawdown = self.rtns2drawdown(alpha=False)
@@ -217,27 +227,15 @@ class BacktestAnalytics(object):
        self.drawdown_table = self.drawdown_breakdown(alpha=False)
        self.xs_drawdown_table = self.drawdown_breakdown(alpha=True)
        
-       # Risk Free Rate Stuff
-       # Pull from bmkrtns if index provided; set as vector of 0 otherwise
-       # Be careful about the alignment of dates (indices)
-       if self.Rf == None:
-           Rf = pd.Series(data=0, index=self.rtns.index, name='Rf')
-       else:
-           Rf = self.bmkrtns.loc[self.rtns.index, self.Rf]
-           Rf.name = 'Rf'
-       
-       # save the risk-free return series
-       self.Rf_cum_rtn = (1+Rf).cumprod() * 100    
-       
+
        # rolling period analysis
        for t in [12]:
            
            # 12m returns for data & risk free index
            irtn = cr.pct_change(t)
-           iRf = self.Rf_cum_rtn.pct_change(t)
-           
+             
            # excess return taken by subtracting the benchmark
-           irtn_xs = irtn.subtract(irtn.iloc[:,0], axis='rows')
+           irtn_xs = irtn.subtract(irtn.iloc[:, 1], axis='rows')
            
            # rolling volatility
            iVol = self.rtns.rolling(window=t).std() * np.sqrt(self.freq)
@@ -246,13 +244,13 @@ class BacktestAnalytics(object):
            iTE = self.xsrtns.rolling(t).std() * np.sqrt(self.freq)
            
            # Sharpe Ratio [(Rp-Rb)/vol]
-           iSharpe = irtn.subtract(iRf, axis='rows').divide(iVol, axis='rows')
+           # Remember Rf at position 0
+           iSharpe = irtn.subtract(irtn.iloc[:, 0], axis='rows').divide(iVol, axis='rows')
            
            # save ith data to dictionary
            self.rolling[t] = dict(vol=iVol,
                                   rtn=irtn,
                                   xsrtn=irtn_xs,
-                                  rf_rtn=iRf,
                                   te=iTE,
                                   sharpe=iSharpe)
        
@@ -261,8 +259,9 @@ class BacktestAnalytics(object):
        
        # Extended Correlation Matrix
        # Use BMK, PORT, PORT_XS_RTNS & the bmkrtns indices to form corr matrix
-       rtns_wide = pd.concat([self.rtns, self.xsrtns.iloc[:, 1:]], axis=1)
-       rtns_wide.columns = list(self.xsrtns.columns) + list(self.xsrtns.columns + '_XS')[1:]
+       # Some minor adjustments to remove Rf from 1st column
+       rtns_wide = pd.concat([self.rtns.iloc[:,1:], self.xsrtns.iloc[:, 2:]], axis=1)
+       rtns_wide.columns = list(self.xsrtns.columns)[1:] + list(self.xsrtns.columns + '_XS')[2:]
        rtns_wide = pd.concat([rtns_wide, self.bmkrtns], axis=1).dropna()
        self.rtns_wide = rtns_wide
        self.corr = rtns_wide.corr()
@@ -274,7 +273,10 @@ class BacktestAnalytics(object):
     
         # Need to select a method for drawdown
         # if alpha is True use excess returns, otherwise returns        
+        # Remove risk free column  
         rtns = self.xsrtns if alpha else self.rtns
+        rtns = rtns.iloc[:,1:]
+        
         
         dd = 1 + rtns         # add 1 to monthly rtns
         dd.iloc[0,:] = 100    # rebase to 100
@@ -296,7 +298,8 @@ class BacktestAnalytics(object):
     def drawdown_breakdown(self, alpha=True, dd_threshold=0):
         """ Drawdowns Details by Individual Drawdown
         
-    
+        
+        
         """
         
         # determine if we need table of excess drawdowns or just drawdowns
@@ -382,13 +385,16 @@ class BacktestAnalytics(object):
         df['Vol'] = self.rtns.std() * np.sqrt(self.freq)
         
         # Beta, Ex-Post Tracking Error & Information Ratio
-        df['Beta'] = self.rtns.cov().iloc[:,0] / self.rtns.iloc[:,0].var()
+        df['Beta'] = self.rtns.cov().iloc[:,1] / self.rtns.iloc[:,1].var()
         df['TE'] = self.xsrtns.std() * np.sqrt(self.freq)
-        df['IR'] = (df.TR - df.TR[0]) / df.TE
+        df['IR'] = (df.TR - df.TR[1]) / df.TE
         
         # Sharpe Ratio & Risk-Adjusted-Return
-        Rf = (self.Rf_cum_rtn[-1]/100)**(self.freq/len(self.cum_rtn)) - 1       
-        df['Sharpe'] = (df.TR - Rf) / df.Vol
+        #Rf = (self.Rf_cum_rtn[-1]/100)**(self.freq/len(self.cum_rtn)) - 1       
+       
+        
+        
+        df['Sharpe'] = (df.TR - df.TR[0]) / df.Vol
         df['RaR'] = df.TR / df.Vol
         
         # Drawdown Analysis
@@ -399,8 +405,9 @@ class BacktestAnalytics(object):
         df['xs_worst'] = self.xsrtns.min()
         df['xs_best'] = self.xsrtns.max()
         
-        self.summary = df.T
-        return df.T
+        # Remove Risk Free Rate from summary table
+        self.summary = df.T.iloc[:, 1:]
+        return self.summary
     
     
     def per_annum_summary(self, df):
@@ -415,17 +422,19 @@ class BacktestAnalytics(object):
                    yfmt=['.0f', '.2f'], ytitle='Port', height=0):
         """ Basic Line Plot in Backtester"""
         
+        # Remember the 1st column is a Risk-Free rate
+        Rf = df.iloc[:,0]     # Risk Free
+        df = df.iloc[:,1:]    # Benchmark & Simulations
+
+        # Plot basic line
         fig = px.line(df, title=title, labels={'variable':'Port:'}, template='multi_strat', )
         
-        # This was something of an afterthought and isn't best placed here
-        # It's sort of an option that only comes up with the cumulative returns
+        # Append Risk-Free Line if Required
         if risk_free:
-            if self.Rf != None:
-                Rf = self.bmkrtns.loc[df.index, self.Rf]
-                Rf = (1+Rf).cumprod() * 100
-                fig.add_scatter(x=Rf.index, y=Rf,
-                            name="Rf",
+            fig.add_scatter(x=Rf.index, y=Rf, name="Rf",
                             line={'color':'black', 'dash':'dot','width': 0.75})
+        
+        # Hide benchmark if required
         if not benchmark:
             fig.data[0]['visible'] = 'legendonly'    # hide bmk
         
@@ -443,6 +452,10 @@ class BacktestAnalytics(object):
                        side='positive', meanline=True, box=False, width=3,
                        template='multi_strat', **kwargs):
         """ Simplified KDE from bootstrapper """
+        
+        # Remember the 1st column is a Risk-Free rate
+        #Rf = df.iloc[:,0]     # Risk Free
+        df = df.iloc[:,1:]    # Benchmark & Simulations
         
         n = len(df.columns)
         
@@ -476,13 +489,15 @@ class BacktestAnalytics(object):
         
         return fig
 
-    def plot_histo(self, rtn, title='', opacity=0.5, benchmark=False):
+    def plot_histo(self, df, title='', opacity=0.5, benchmark=False):
         """ Basic Histogram """
+        
+        # Remember the 1st column is a Risk-Free rate
+        #Rf = df.iloc[:,0]     # Risk Free
+        df = df.iloc[:,1:]    # Benchmark & Simulations
     
-        fig = px.histogram(rtn, histnorm='probability', 
-                            title=title,
-                            opacity=opacity,
-                            template='multi_strat')
+        fig = px.histogram(df, title=title, histnorm='probability', 
+                           opacity=opacity, template='multi_strat')
         
         if benchmark != True:
             fig.data[0]['visible'] = 'legendonly'    # hide bmk from histogram
@@ -512,12 +527,13 @@ class BacktestAnalytics(object):
         
         # stack either the returns or excess returns
         # rename columns as required
+        # Also remember to remove risk free column
         if alpha:
-            y = self.xsrtns.stack().reset_index()
+            y = self.xsrtns.iloc[:,1:].stack().reset_index()
             ytitle='Alpha'
             benchmark=False
         else:
-            y = self.rtns.stack().reset_index()
+            y = self.rtns.iloc[:,1:].stack().reset_index()
             ytitle='Port Return'
             benchmark=False
         
@@ -525,8 +541,8 @@ class BacktestAnalytics(object):
     
         # Repmat benchmark returns & Match columns
         # This is so we can stack - so we can then concat
-        x = pd.concat([self.rtns['BMK']] * len(self.xsrtns.columns), axis=1)
-        x.columns = self.xsrtns.columns
+        x = pd.concat([self.rtns['BMK']] * (len(self.xsrtns.columns)-1), axis=1)
+        x.columns = self.xsrtns.columns[1:]   # [1:] excludes Rf
         x = x.stack().reset_index()
         x.columns = ['Dates', 'Port', 'Mkt']
     
@@ -619,7 +635,8 @@ class BacktestAnalytics(object):
         
         # iterate through each portfolios alpha
         # could be done as a matrix but complexity isn't worth the speed
-        for i, p in enumerate(self.xsrtns):
+        # remember to remove risk-free column zero
+        for i, p in enumerate(self.xsrtns.iloc[:,1:]):
             
             if i == 0:
                 continue
@@ -686,7 +703,7 @@ class BacktestAnalytics(object):
             
         # Pull correlation matrix from Bootsrap class
         if cor is None:
-            cor = self.cor
+            cor = self.corr
             
         ## Basic plotly express imshow heatmap
         fig = px.imshow(cor,
@@ -1053,7 +1070,7 @@ class BacktestAnalytics(object):
 # x = 0.3
 # rtns['E30'] = rtns['Enhanced'] * x + rtns['Core'] * (1 - x)
 
-# bt = BacktestAnalytics(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX', Rf='STEFI')#'STEFI')
+# bt = BacktestAnalytics(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX', Rf='STEFI')
 # md = bt.big_bang(title="TEST")
 # from topgun.reporting import Reporting
 # Reporting().md2html(md=md, title='test')
