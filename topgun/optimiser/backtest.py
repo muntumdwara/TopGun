@@ -860,7 +860,7 @@ class BacktestAnalytics(object):
         frames = []
         sliders = {'yanchor': 'top',
                    'xanchor': 'left', 
-                   'currentvalue': {'prefix':'12m Correlation to Date: ',
+                   'currentvalue': {'prefix':'{}m Correlation: '.format(n),
                                     'font':{'size': 10}, 'xanchor': 'left',},
                    'transition': {'duration': 10, 'easing': 'linear'},
                    'pad': {'b': 0, 't': 0}, 'len': 0.88, 'x': 0.12, 'y': 0,
