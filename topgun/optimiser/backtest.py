@@ -836,7 +836,7 @@ class BacktestAnalytics(object):
         
         # Update Main Plot
         fig.update_traces(dict(colorscale='Tealrose', reversescale=False,
-                               showscale=False, coloraxis=None),)
+                               showscale=True, coloraxis=None),)
         fig.update_layout(margin = {'l':25, 'r':50, 'b':10, 't':75}, font_size=10)
         fig.update_xaxes(side="top")    # sort of struggling with overalapping
         
