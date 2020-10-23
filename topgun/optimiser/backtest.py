@@ -808,6 +808,90 @@ class BacktestAnalytics(object):
             
         return fig
     
+    
+    def plot_correl_animation(self, title="Rolling Correlation", subset=True, years=1):
+        """ Animated Correlation Matrix
+        
+        Creates plotly animation with rolling period correlation matrix
+        
+        INPUTS:
+            years: 1 as default; gets multiplied by self.freq for data range
+            
+        DEVELOPMENT:
+            Having problems with the axis labels overlapping the title
+
+        """
+        
+        wide = self.rtns_wide      # pull wide reutrns & xs return series
+        if subset:
+            wide = wide.iloc[:,:(len(self.rtns.columns[1:])*2-1)] 
+        corr = wide.corr()         # basic correlation matrix
+        
+        n = self.freq * years        # data rolling window
+        
+        # Initial Correlation plot
+        fig = px.imshow(corr, x=corr.columns, y=corr.index,
+                        title=title, aspect='auto',
+                        color_continuous_midpoint=0, zmin=-1, zmax=1)
+        
+        # Update Main Plot
+        fig.update_traces(dict(colorscale='Tealrose', reversescale=False,
+                               showscale=False, coloraxis=None),)
+        fig.update_layout(margin = {'l':25, 'r':50, 'b':10, 't':75}, font_size=10)
+        fig.update_xaxes(side="top")    # sort of struggling with overalapping
+        
+        # Add play & pause buttons
+        fig["layout"]["updatemenus"] = [
+                {"buttons":[{"args":[None,{"frame": {"duration": 500, "redraw": True},
+                                           "fromcurrent": True,
+                                           "transition": {"duration": 300, "easing": "quadratic-in-out"}}],
+                                           "label": "Play",
+                                           "method": "animate"},
+                            {"args":[[None],{"frame": {"duration": 0, "redraw": True},
+                                             "mode": "immediate",
+                                             "transition": {"duration": 0}}],
+                                             "label": "Stop",
+                                             "method": "animate"}],
+                 "direction": "left", "pad": {"r": 0, "t": 20},
+                 "showactive": False, "type": "buttons",
+                 "x": 0.1, "xanchor": "right", "y": 0, "yanchor": "top"}]
+        
+        ### Animation Stuff
+        frames = []
+        sliders = {'yanchor': 'top',
+                   'xanchor': 'left', 
+                   'currentvalue': {'prefix':'12m Correlation to Date: ',
+                                    'font':{'size': 10}, 'xanchor': 'left',},
+                   'transition': {'duration': 10, 'easing': 'linear'},
+                   'pad': {'b': 0, 't': 0}, 'len': 0.88, 'x': 0.12, 'y': 0,
+                   'steps':[]}
+        
+        for i, v in enumerate(wide.index[n:], n):
+    
+            c = wide.iloc[i-n:i,:]         # subset ith data
+            c = c.corr()                    # subset correlation matrix
+            label = '{:%m/%y}'.format(v)    # string label - used to link slider and frame (data things)
+            
+            # Add ith correlation matrix to frames list
+            frames.append({'name':i, 'layout':{},
+                           'data': [dict(type='heatmap',
+                                         x=c.index, y=c.index,
+                                         z=c.values.tolist(),
+                                         zmin=-1, zmax=1)]})
+            
+            # Add ith thing to sliders
+            sliders['steps'].append({'label':label, 'method': 'animate', 
+                                     'args':[[i], {'frame':{'duration': 0, 'easing':'linear', 'redraw': True},
+                                                   'transition':{'duration': 0, 'easing': 'linear'}}],})
+        
+        # Append Frames & Sliders to 
+        fig['frames'] = frames
+        fig['layout']['sliders'] = [sliders]
+        
+        return fig
+    
+    
+    
     def plot_master(self, plotly2html=True, plotlyjs='cdn',
                     plot_height=450, plot_width=850):
         """ Aggregation Function that runs ALL plots
@@ -909,6 +993,7 @@ class BacktestAnalytics(object):
             
         # Correlation
         plots['correl_wide'] = self.plot_correl(self.corr)
+        plots['correl_animation'] = self.plot_correl_animation(subset=True, years=1)
         
         # Convert to HTML
         if plotly2html:
@@ -1165,6 +1250,7 @@ class BacktestAnalytics(object):
                    Additionally we include a series of strategic asset classes \
                    relevant for multi-asset portfolios. \n ")
         md.append(self.plots['correl_wide'])
+        md.append(self.plots['correl_animation'])
         md.append("\n \n")
         
         return "\n \n".join(md)
@@ -1172,29 +1258,29 @@ class BacktestAnalytics(object):
 
 # %% TEST CODE
         
-# import xlwings as xlw
+import xlwings as xlw
 
-# wb = xlw.Book('BACKTEST.xlsm')
+wb = xlw.Book('BACKTEST.xlsm')
 
-# # index data from timeseries sheet
-# benchmarks = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:]
-# benchmarks.index = pd.to_datetime(benchmarks.index)
+# index data from timeseries sheet
+benchmarks = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:]
+benchmarks.index = pd.to_datetime(benchmarks.index)
 
-# E = wb.sheets['Enhanced'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
-# C = wb.sheets['Core'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
-# E.index = E.index + pd.offsets.MonthEnd(0)
-# C.index = C.index + pd.offsets.MonthEnd(0)
-# E.name = 'Enhanced'
-# C.name = 'Core'
+E = wb.sheets['Enhanced'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+C = wb.sheets['Core'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+E.index = E.index + pd.offsets.MonthEnd(0)
+C.index = C.index + pd.offsets.MonthEnd(0)
+E.name = 'Enhanced'
+C.name = 'Core'
 
-# rtns = pd.concat([E, C], axis=1).dropna()
-# x = 0.3
-# rtns['E30'] = rtns['Enhanced'] * x + rtns['Core'] * (1 - x)
+rtns = pd.concat([E, C], axis=1).dropna()
+x = 0.3
+rtns['E30'] = rtns['Enhanced'] * x + rtns['Core'] * (1 - x)
 
-# bt = BacktestAnalytics(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX', Rf='STEFI')
-# md = bt.big_bang(title="TEST")
-# from topgun.reporting import Reporting
-# Reporting().md2html(md=md, title='test')
+bt = BacktestAnalytics(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX', Rf='STEFI')
+md = bt.big_bang(title="TEST")
+from topgun.reporting import Reporting
+Reporting().md2html(md=md, title='test')
 
 #print(df)
 #x = bt.rolling
