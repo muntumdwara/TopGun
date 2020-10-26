@@ -1147,15 +1147,26 @@ class BacktestAnalytics(object):
         
         # subtle differences depending on if we want Rb or not
         # also subtle difference in if is .2% of .2f
-        if key in ['rtn', 'vol']:            
+        if key in ['rtn']:            
             x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
             x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
+            x = x.background_gradient('RdYlGn', subset=pd.IndexSlice[:, x.columns[1:]],)
+        elif key in ['vol']:            
+            x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
+            x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
+            x = x.background_gradient('RdYlGn_r', subset=pd.IndexSlice[:, x.columns[1:]],)
         elif key in ['sharpe']:
             x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
             x = x.format(formatter="{:.2f}", subset=pd.IndexSlice[:, x.columns[1:]])
-        elif key in ['alpha', 'te']:
+            x = x.background_gradient('RdYlGn', vmin=-2, vmax=+3, subset=pd.IndexSlice[:, x.columns[1:]],)
+        elif key in ['alpha']:
             x = self.pretty_panda(pa[key].dropna().iloc[:,2:].reset_index())
             x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
+            x = x.background_gradient('RdYlGn',  vmin=-0.05, vmax=+0.05, subset=pd.IndexSlice[:, x.columns[1:]],)
+        elif key in ['te']:
+            x = self.pretty_panda(pa[key].dropna().iloc[:,2:].reset_index())
+            x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
+            x = x.background_gradient('RdYlGn_r', vmin=0, vmax=0.06, subset=pd.IndexSlice[:, x.columns[1:]],)
         elif key in ['ir']:
             x = self.pretty_panda(pa[key].dropna().iloc[:,3:].reset_index())
             x = x.format(formatter="{:.2f}", subset=pd.IndexSlice[:, x.columns[1:]])
