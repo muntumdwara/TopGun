@@ -489,9 +489,17 @@ class BacktestAnalytics(object):
         return pa
 
 # %% PLOTLY PLOTS
-        
+    
+    def _px_addsource(self, fig, x=1, y=-0.125, align='right'):
+        return fig.add_annotation(
+                text="Source: STANLIB Multi-Strategy".format(),
+                xref='paper', yref='paper',
+                x=x, y=y, ax=0, ay=0,
+                align=align)
+    
     def plot_index(self, df, title="", benchmark=True, risk_free=False,
-                   yfmt=['.0f', '.2f'], ytitle='Port', height=0):
+                   yfmt=['.0f', '.2f'], ytitle='Port', height=0,
+                   source=False, y_src=-0.15):
         """ Basic Line Plot in Backtester"""
         
         # Remember the 1st column is a Risk-Free rate
@@ -517,12 +525,17 @@ class BacktestAnalytics(object):
         if height != 0:
             fig.update_layout(height=height)
         
+        if source:
+            fig = self._px_addsource(fig, y=y_src)
+        
         return fig
     
     
     def plot_ridgeline(self, df, title='Ridgeline KDE Distributions',
                        side='positive', meanline=True, box=False, width=3,
-                       template='multi_strat', **kwargs):
+                       template='multi_strat', 
+                       source=False, y_src=-0.15,
+                       **kwargs):
         """ Simplified KDE from bootstrapper """
         
         # Remember the 1st column is a Risk-Free rate
@@ -559,9 +572,13 @@ class BacktestAnalytics(object):
             yaxis= {'anchor':'x1', 'title':'Simulation', 'hoverformat':'.1%', 'tickformat':'.0%',},
             xaxis= {'anchor':'y1', 'title':'Annualised Return', 'hoverformat':'.1%', 'tickformat':'.0%',})
         
+        if source:
+            fig = self._px_addsource(fig, y=y_src)
+        
         return fig
 
-    def plot_histo(self, df, title='', opacity=0.5, benchmark=False):
+    def plot_histo(self, df, title='', opacity=0.5, benchmark=False,
+                   source=False, y_src=-0.15):
         """ Basic Histogram """
         
         # Remember the 1st column is a Risk-Free rate
@@ -579,9 +596,13 @@ class BacktestAnalytics(object):
             yaxis= {'anchor':'x1','title':'Probability', 'tickformat':'.0%', 'hoverformat':'.2%', },
             xaxis= {'anchor':'y1','title':'Excess Return', 'tickformat':'.1%', 'hoverformat':'.2%', },)
         
+        if source:
+            fig = self._px_addsource(fig, y=y_src)
+        
         return fig
 
-    def plot_regression(self, title='', alpha=True):
+    def plot_regression(self, title='', alpha=True,
+                        source=False, y_src=-0.15):
         """ CAPM Style Regression Plot
         
         Plots the benchmark on the x-axis & port(s) on the y-axis; 
@@ -633,11 +654,15 @@ class BacktestAnalytics(object):
         
         if not benchmark:
             fig.data[0]['visible'] = 'legendonly'    # hide bmk
+            
+        if source:
+            fig = self._px_addsource(fig, y=y_src)
         
         return fig
 
     
-    def plot_hitrate(self, df, title='', binary=True):
+    def plot_hitrate(self, df, title='', binary=True,
+                     source=False, y_src=-0.15):
         """ Hitrate Heatmap
         
         Plots Months x Years Heatmap, either as returns or binary outcome
@@ -674,6 +699,9 @@ class BacktestAnalytics(object):
         
         # Colourscale stuff
         fig.update_traces(dict(colorscale='Tealrose', reversescale=True, showscale=False, coloraxis=None),)
+        
+        if source:
+            fig = self._px_addsource(fig, y=y_src)
         
         return fig
 
@@ -717,7 +745,9 @@ class BacktestAnalytics(object):
             # Get the Year x Month Hitrate Plot
             plots[p] = self.plot_hitrate(self.xsrtns[p],
                                          title="Hit Rate Heatmap: {}".format(p),
-                                         binary=True)
+                                         binary=True,
+                                         source=False, y_src=-0.15)
+            
             
             ## TABLE
             # Calc the average annual across backtest things
@@ -889,8 +919,7 @@ class BacktestAnalytics(object):
         fig['layout']['sliders'] = [sliders]
         
         return fig
-    
-    
+
     
     def plot_master(self, plotly2html=True, plotlyjs='cdn',
                     plot_height=450, plot_width=850):
@@ -909,43 +938,55 @@ class BacktestAnalytics(object):
         plots['tr'] = self.plot_index(self.cum_rtn,
                                       title='Cumulative Returns',
                                       ytitle='Index Level', 
-                                      risk_free=True)
+                                      risk_free=True,
+                                      source=True, y_src=-0.125)
         
         plots['xsrtn'] = self.plot_index(self.cum_xs_rtn,
                                       title='Excess Returns',
                                       ytitle='Excess Returns',
-                                      benchmark=False)
+                                      benchmark=False,
+                                      source=True, y_src=-0.125)
         
         # Return Distributions
         plots['kde_rtns'] = self.plot_ridgeline(
                                     self.rtns,
-                                    title='Ridgeline KDE Distributions: Returns')
+                                    title='Ridgeline KDE Distributions: Returns',
+                                    source=True, y_src=-0.125)
+        
         plots['kde_alpha'] = self.plot_ridgeline(
                                     self.xsrtns.iloc[:, 1:],
-                                    title='Ridgeline KDE Distributions: Excess Returns')
+                                    title='Ridgeline KDE Distributions: Excess Returns',
+                                    source=True, y_src=-0.125)
         
         
         # Regression Charts
         plots['regression_rtn'] = self.plot_regression(
                                             alpha=False,
-                                            title='Return Regression: Port Returns')
+                                            title='Return Regression: Port Returns',
+                                            source=True, y_src=-0.125)
+        
         plots['regression_alpha'] = self.plot_regression(
                                             alpha=True,
-                                            title='Return Regression: Excess Returns')
+                                            title='Return Regression: Excess Returns',
+                                            source=True, y_src=-0.125)
+        
         plots['histogram'] = self.plot_histo(self.xsrtns,
-                                    title='Excess Return Distribution')
+                                    title='Excess Return Distribution',
+                                    source=True, y_src=-0.125)
         
         
         # Drawdown Charts
         plots['drawdown'] = self.plot_index(self.drawdown,
                            title='Drawdown of Returns',
                            yfmt=['.1%', '.2%'], ytitle='Drawdown',
-                           benchmark=True,)
+                           benchmark=True,
+                           source=True, y_src=-0.125)
         
         plots['xs_drawdown'] = self.plot_index(self.xs_drawdown,
                            title='Drawdown of Excess Returns',
                            yfmt=['.1%', '.2%'], ytitle='Drawdown',
-                           benchmark=False,)
+                           benchmark=False,
+                           source=True, y_src=-0.125)
         
         # Rolling Plots
         # Rolling Period Charts
@@ -953,43 +994,50 @@ class BacktestAnalytics(object):
                                             title='Rolling Return: 12m',
                                             yfmt=['.0%', '.2%'],
                                             ytitle='Return',
-                                            height=350)
+                                            height=350,
+                                            source=True, y_src=-0.15)
         
         plots['roll_xsrtn'] = self.plot_index(self.rolling[12]['xsrtn'],
                                             title='Rolling Excess Return: 12m',
                                             yfmt=['.0%', '.2%'],
                                             ytitle='Alpha',
-                                            benchmark=False, height=350)
+                                            benchmark=False, height=350,
+                                            source=True, y_src=-0.15)
         
         plots['roll_vol'] = self.plot_index(self.rolling[12]['vol'],
                                             title='Rolling Volatility: 12m',
                                             yfmt=['.0%', '.2%'],
                                             ytitle='Volatility',
-                                            height=350)
+                                            height=350,
+                                            source=True, y_src=-0.15)
         
         plots['roll_te'] = self.plot_index(
                                  self.rolling[12]['te'],
                                  title='Rolling ex-Post TE: 12m',
                                  yfmt=['.1%', '.2%'], ytitle='Tracking Error',
-                                 benchmark=False, height=350)
+                                 benchmark=False, height=350,
+                                 source=True, y_src=-0.15)
 
         plots['roll_sharpe'] = self.plot_index(
                                   self.rolling[12]['sharpe'],
                                   title='Sharpe Ratio: 12m',
                                   yfmt=['.1f', '.2f'], ytitle='Sharpe Ratio',
-                                  benchmark=False, height=350)
+                                  benchmark=False, height=350,
+                                  source=True, y_src=-0.15)
         
         plots['roll_rar'] = self.plot_index(
                                  self.rolling[12]['xsrtn'] / self.rolling[12]['vol'],
                                  title='Risk Adjusted Return: 12m',
                                  yfmt=['.1f', '.2f'], ytitle='Information Ratio',
-                                 benchmark=False, height=350)
+                                 benchmark=False, height=350,
+                                 source=True, y_src=-0.15)
 
         plots['roll_ir'] = self.plot_index(
                                 self.rolling[12]['xsrtn'] / self.rolling[12]['te'],              
                                 title='Rolling Information Ratio: 12m',
                                 yfmt=['.1f', '.2f'], ytitle='IR',
-                                benchmark=False, height=350)
+                                benchmark=False, height=350,
+                                source=True, y_src=-0.15)
             
         # Correlation
         plots['correl_wide'] = self.plot_correl(self.corr)
@@ -1269,29 +1317,29 @@ class BacktestAnalytics(object):
 
 # %% TEST CODE
         
-# import xlwings as xlw
+import xlwings as xlw
 
-# wb = xlw.Book('BACKTEST.xlsm')
+wb = xlw.Book('BACKTEST.xlsm')
 
-# # index data from timeseries sheet
-# benchmarks = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:]
-# benchmarks.index = pd.to_datetime(benchmarks.index)
+# index data from timeseries sheet
+benchmarks = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:]
+benchmarks.index = pd.to_datetime(benchmarks.index)
 
-# E = wb.sheets['Enhanced'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
-# C = wb.sheets['Core'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
-# E.index = E.index + pd.offsets.MonthEnd(0)
-# C.index = C.index + pd.offsets.MonthEnd(0)
-# E.name = 'Enhanced'
-# C.name = 'Core'
+E = wb.sheets['Enhanced'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+C = wb.sheets['Core'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+E.index = E.index + pd.offsets.MonthEnd(0)
+C.index = C.index + pd.offsets.MonthEnd(0)
+E.name = 'Enhanced'
+C.name = 'Core'
 
-# rtns = pd.concat([E, C], axis=1).dropna()
-# x = 0.3
-# rtns['E30'] = rtns['Enhanced'] * x + rtns['Core'] * (1 - x)
+rtns = pd.concat([E, C], axis=1).dropna()
+x = 0.3
+rtns['E30'] = rtns['Enhanced'] * x + rtns['Core'] * (1 - x)
 
-# bt = BacktestAnalytics(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX', Rf='STEFI')
-# md = bt.big_bang(title="TEST")
-# from topgun.reporting import Reporting
-# Reporting().md2html(md=md, title='test')
+bt = BacktestAnalytics(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX', Rf='STEFI')
+md = bt.big_bang(title="TEST")
+from topgun.reporting import Reporting
+Reporting().md2html(md=md, title='test')
 
 #print(df)
 #x = bt.rolling
