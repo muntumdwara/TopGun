@@ -175,7 +175,7 @@ class BacktestAnalytics(object):
         self.run_backtest()
         
         # Generate Plots
-        #self.plot_master()
+        self.plot_master()
         
         # Generate Markdown
         md = self.markdown_doc(title=title)
@@ -1548,9 +1548,9 @@ class BacktestAnalytics(object):
         
         ## Risk & Return
         md.append("## Portfolio Returns")
-       # md.append(self.plots['tr'])
-       # md.append(self.plots['xsrtn'])
-       # md.append(self.plots['roll_rtn'])
+        md.append(self.plots['tr'])
+        md.append(self.plots['xsrtn'])
+        md.append(self.plots['roll_rtn'])
         md.append(self.pretty_panda_annual('rtn').render())
         md.append("\n \n ")
        # md.append(self.plots['roll_xsrtn'])
