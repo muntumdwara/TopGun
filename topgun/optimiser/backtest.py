@@ -1652,197 +1652,36 @@ class BacktestAnalytics(object):
 
 # %% TEST CODE
         
-import xlwings as xlw
+#import xlwings as xlw
 
-wb = xlw.Book('BACKTEST.xlsm')
+#wb = xlw.Book('BACKTEST.xlsm')
 
 # # index data from timeseries sheet
-benchmarks = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:]
-benchmarks.index = pd.to_datetime(benchmarks.index)
+#benchmarks = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:]
+#benchmarks.index = pd.to_datetime(benchmarks.index)
 
-E = wb.sheets['Enhanced'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
-C = wb.sheets['Core'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
-E.index = E.index + pd.offsets.MonthEnd(0)
-C.index = C.index + pd.offsets.MonthEnd(0)
-E.name = 'Enhanced'
-C.name = 'Core'
+#E = wb.sheets['Enhanced'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+#C = wb.sheets['Core'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+#E.index = E.index + pd.offsets.MonthEnd(0)
+#C.index = C.index + pd.offsets.MonthEnd(0)
+#E.name = 'Enhanced'
+#C.name = 'Core'
 
-rtns = pd.concat([E, C], axis=1).dropna()
+#rtns = pd.concat([E, C], axis=1).dropna()
 
 #b_r = benchmarks.pct_change().dropna()
 
-w = 0.3
-rtns['E30'] = rtns['Enhanced'] * w + rtns['Core'] * (1 - w)
+#x = 0.3
+#rtns['E30'] = rtns['Enhanced'] * x + rtns['Core'] * (1 - x)
 
 #
 #ret = pd.concat([rtns,b_r], axis=1).dropna()
 
-bt = BacktestAnalytics(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX', Rf='STEFI')
-md = bt.big_bang(title="TEST")
-from topgun.reporting import Reporting
-Reporting().md2html(md=md, title='test')
+#bt = BacktestAnalytics(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX', Rf='STEFI')
+#md = bt.big_bang(title="TEST")
+#from topgun.reporting import Reporting
+#Reporting().md2html(md=md, title='test')
 
 #print(df)
-x = bt.rolling
+#x = bt.rolling
 
-
-draw_down = bt.drawdown
-xs_draw_down = bt.xs_drawdown
-
-
-cr = (1 + rtns).cumprod() * 100     # cumulative returns
-cum_rtn = cr
-
-colourmap = ['black', 'teal', 'purple', 'grey', 'deeppink', 'skyblue', 'lime', 'green','darkorange', 'gold', 'navy', 'darkred',]
-fig = go.Figure(layout=dict(
-        font={'family':'Garamond', 'size':14},
-        plot_bgcolor= 'white',
-        colorway=colourmap,
-        showlegend=True,
-        legend={'orientation':'v'},
-        margin = {'l':75, 'r':50, 'b':25, 't':50},
-        xaxis= {'anchor': 'y1', 'title': '', 'hoverformat':'.1f', 'tickformat':'.0f',
-                'showline':True, 'linecolor': 'gray',
-                'zeroline':True, 'zerolinewidth':1 , 'zerolinecolor':'whitesmoke',
-                'showgrid': True, 'gridcolor': 'whitesmoke',
-                },
-        yaxis= {'anchor': 'x1', 'title': '', 'hoverformat':'.1f', 'tickformat':'.0f',
-                'showline':True, 'linecolor':'gray',
-                'zeroline':True, 'zerolinewidth':1 , 'zerolinecolor':'whitesmoke',
-                'showgrid': True, 'gridcolor': 'whitesmoke'
-                },
-        updatemenus= [dict(type='buttons',
-                        active=-1, showactive = True,
-                        direction='down',
-                        y=0.5, x=1.1,
-                        pad = {'l':0, 'r':0, 't':0, 'b':0},
-                        buttons=[])],
-                      annotations=[],))
-        
-# Save template
-pio.templates['multi_strat'] = pio.to_templated(fig).layout.template
-
-
-def _px_addsource(fig, x=1, y=-0.125, align='right'):
-    return fig.add_annotation(
-            text="Source: STANLIB Multi-Strategy".format(),
-            xref='paper', yref='paper',
-            x=x, y=y, ax=0, ay=0,
-            align=align)
-    
-def plot_index(df, title="", benchmark=True, risk_free=False,yfmt=['.0f', '.2f'], ytitle='Port', height=0, source=False, y_src=-0.15):
-        """ Basic Line Plot in Backtester"""
-        
-        # Remember the 1st column is a Risk-Free rate
-        Rf = df.iloc[:,0]     # Risk Free
-        df = df.iloc[:,1:]    # Benchmark & Simulations
-
-        # Plot basic line
-        fig = px.line(df, title=title, labels={'variable':'Port:'}, template='multi_strat', )
-        
-        # Append Risk-Free Line if Required
-        if risk_free:
-            fig.add_scatter(x=Rf.index, y=Rf, name="Rf",
-                        line={'color':'black', 'dash':'dot','width': 0.75})
-        
-#        # Hide benchmark if required
-#        if not benchmark:
-#            fig.data[0]['visible'] = 'legendonly'    # hide bmk
-        
-        fig.update_layout(
-            yaxis= {'anchor':'x1','title':ytitle, 'tickformat':yfmt[0], 'hoverformat':yfmt[1], },
-            xaxis= {'anchor':'y1','title':'', 'hoverformat':'%b-%y', 'tickformat':'%b-%y',},)
-        
-        if height != 0:
-            fig.update_layout(height=height)
-        
-        if source:
-            fig = _px_addsource(fig, y=y_src)
-        
-        return fig
-    
-    
-def plot_master(plotly2html=True, plotlyjs='cdn',
-                    plot_height=450, plot_width=850):
-    
-    plots = dict()   # dummy dictionary to hold plots
-        
-        # Total Return & Excess Return
-    plots['tr'] = plot_index(cum_rtn,
-                         title='Cumulative Returns',
-                         ytitle='Index Level', 
-                         risk_free=True,
-                         source=True, y_src=-0.125) 
-    
-    plots['drawdown'] = plot_index(draw_down,
-                           title='Drawdown of Returns',
-                           yfmt=['.1%', '.2%'], ytitle='Drawdown',
-                           benchmark=True,
-                           source=True, y_src=-0.125)
-#        
-    plots['te'] = plot_index(x[12]['te'],
-                           title='Drawdown of Excess Returns',
-                           yfmt=['.1%', '.2%'], ytitle='Drawdown',
-                           benchmark=False,
-                           source=True, y_src=-0.125)
-   
-    
-    
-    
-    
-    return plots
-
-
-TE = x[12]['te'].iloc[:,2:] 
-    
-
-
-
-#grp = rtns.index.groupby(rtns.index.year)
-#idx = [v[-1] for v in grp.values()]    # index of last month
-#yrs = grp.keys() 
-#
-#ret = rtns[rtns.index.isin(idx)]
-
-#negative_ret = ret[ret < 0].fillna(0)
-#xs_return=ret.subtract(ret.iloc[:, 5], axis='rows').divide(iVol, axis='rows')
-#
-#vol_annual = negative_ret.groupby(negative_ret.index.year).std() * np.sqrt(12)
-
-
-#beta_annual = betas.groupby(betas.index.year)
-#d =bt.summary_pa
-#y=ret.SWIX
-#X= ret[['Core','Enhanced','E30']]
-#
-#BetaS =[]
-#
-#window = 12  # months
-##
-##for col in X.columns:
-##   model = PandasRollingOLS(y=y, x=X[col], window=window)
-##   BetaS.append(model.beta)
-##   
-#BetaS_1 ={}
-#   
-#for col in X.columns:
-#   BetaS_1[col] = pd.DataFrame(PandasRollingOLS(y=y, x=X[col], window=window).beta)
-#   
-#
-#for key, df in BetaS_1.items():
-#    # create a column called "key name"
-#    df['key_name'] = key
-#
-#lst = list(BetaS_1.values())
-#df = pd.concat(lst)
-#name = df.index.name
-#
-#betas = df.pivot(index=name, columns='key_name', values='feature1')
-#
-## Select all December data - view last few rows
-#boulder_precip_2003_2013[boulder_precip_2003_2013.index.month == 12].tail()
-#
-#beta_annual = betas[betas.index.month == 12]
-#beta_annual.index = pd.DatetimeIndex(beta_annual.index).year
-##   
-##new_data =benchmarks.iloc[:, 2:]
