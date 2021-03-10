@@ -15,6 +15,7 @@ setup(
     # Required Dependencies
     install_requires=['sklearn',
                       'plotly',
+                      'pyfinance'
                       ],
     
     # Optional Dependencies
