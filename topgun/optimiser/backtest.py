@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-# '''
-# TopGun Backtest Class
-# @author: David McNay & Muntu Mdwara
+"""
 
-# '''
+TopGun Backtest Class
+@author: David McNay & Muntu Mdwara
+
+
+"""
 # %% IMPORTs CELL
 
 # Default Imports
