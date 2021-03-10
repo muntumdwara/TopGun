@@ -14,13 +14,10 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 from scipy.stats import kurtosis, skew, norm
-<<<<<<< HEAD
-=======
-import math
+
+# Rolling Regression
 import statsmodels.api as sm
 from statsmodels.regression.rolling import RollingOLS
->>>>>>> 36c26c54153c8c83f2dca1b4c65dcfb5edfbcac8
-#from pyfinance.ols import PandasRollingOLS
 
 # Plotly for charting
 import plotly.express as px
@@ -220,7 +217,7 @@ class BacktestAnalytics(object):
                - self.Rf
 
         """
-       
+        
         # Benchamrk
         # Pull from bmkrtns if provided
         # Pull from bmkrtns if index provided; set as vector of 0 otherwise
@@ -264,53 +261,36 @@ class BacktestAnalytics(object):
         self.omega = self.omega_ratio(threshold=0.0)
         self.downside_risk = self.semivolatility()
       
-
         # rolling period analysis
         for t in [12]:
 
-            alpha = 0.05  # Define the confidence level for rolling CVAR & VaR 
-
             # 12m returns for data & risk free index
-            irtn = cr.pct_change(t)
-
             # excess return taken by subtracting the benchmark
+            irtn = cr.pct_change(t)
             irtn_xs = irtn.subtract(irtn.iloc[:, 1], axis='rows')
             
             # average rolling  return 
-
             iMean = self.rtns.rolling(window=t).mean()
 
-               # rolling volatility
+            # rolling volatility & downside vol
             iVol = self.rtns.rolling(window=t).std() * np.sqrt(self.freq)
-
-            # rolling downside volatility
-
             iDownside = self.rtns[self.rtns < 0].fillna(0).rolling(window=t).std(ddof=0)
 
-               # Ex-Post Tracking Error [std(Rp-Rb)]
+            # Ex-Post Tracking Error [std(Rp-Rb)]
             iTE = self.xsrtns.rolling(t).std() * np.sqrt(self.freq)
 
-            # Sharpe Ratio [(Rp-Rb)/vol]
+            # Sharpe Ratio [(Rp-Rb)/vol] & Sortino Ratio
             # Remember Rf at position 0
             iSharpe = irtn.subtract(irtn.iloc[:, 0], axis='rows').divide(iVol, axis='rows')
-            
-
-            # Rolling Beta            
-            #iBeta = self.rolling_beta(window=t)
-
-
-            # Rolling Sortino Ratio
             iSortino = irtn.subtract(irtn.iloc[:, 0], axis='rows').divide( iDownside, axis='rows')
+            
+            # Rolling Beta  & hence Treynor ratio          
+            iBeta = self.rolling_beta(window=t)
+            iTreynor = irtn.subtract(irtn.iloc[:, 0], axis='rows').divide(iBeta, axis='rows')
 
-
-            # Rolling Treynor ratio 
-            #iTreynor = irtn.subtract(irtn.iloc[:, 0], axis='rows').divide(iBeta, axis='rows')
-
-
-            # Rolling Value at risk 
+            # Rolling Value at Risk & CVaR
+            alpha = 0.05  # Define the confidence level for rolling CVAR & VaR 
             iVaR = norm.ppf(1-alpha)*(iVol/np.sqrt(self.freq)) - iMean
-
-            # Rolling CVar 
             iCVaR = alpha**-1*norm.pdf(norm.ppf(alpha))*(iVol/np.sqrt(self.freq)) - iMean
 
             # save ith data to dictionary
@@ -321,19 +301,19 @@ class BacktestAnalytics(object):
                                    te=iTE,
                                    sharpe=iSharpe,
                                    sortino=iSortino,
-                                   #beta =iBeta,
-                                   #treynor = iTreynor,
+                                   beta =iBeta,
+                                   treynor = iTreynor,
                                    VaR = iVaR,
                                    CVaR = iCVaR
                                    )
 
-           # Run summary table & annualised summary and ingest
+        # Run summary table & annualised summary and ingest
         self.summary = self.backtest_summary()
         self.summary_pa = self.per_annum()
 
-           # Extended Correlation Matrix
-           # Use BMK, PORT, PORT_XS_RTNS & the bmkrtns indices to form corr matrix
-           # Some minor adjustments to remove Rf from 1st column
+        # Extended Correlation Matrix
+        # Use BMK, PORT, PORT_XS_RTNS & the bmkrtns indices to form corr matrix
+        # Some minor adjustments to remove Rf from 1st column
         rtns_wide = pd.concat([self.rtns.iloc[:,1:], self.xsrtns.iloc[:, 2:]], axis=1)
         rtns_wide.columns = list(self.xsrtns.columns)[1:] + list(self.xsrtns.columns + '_XS')[2:]
         rtns_wide = pd.concat([rtns_wide, self.bmkrtns], axis=1).dropna()
@@ -525,72 +505,56 @@ class BacktestAnalytics(object):
         # Return the sum of the different to the power of order
         return omega
     
-    
-<<<<<<< HEAD
-    # def rolling_beta(self, window=12):
-    #     """
-    #     calculate the rolling betas against specific benchmark
-    #     :param window: the rolling window 
-    #     """
-    #     # Define the depenedent variable : In our case it will be the Benchmark
-    #     y = self.rtns.iloc[:,0:]
-        
-    #     # Definde the independed variables  that will excludes risk free rate and benchmark columns
-        
-    #     X = self.rtns.iloc[:,1]
-    #     # create dictionarty to the  rolling betas
-    #     rol_beta ={}
-    #     # loop through the colums of the indepedent variables
-    #     for col in y.columns:
-    #         rol_beta[col] = pd.DataFrame(PandasRollingOLS(y=y[col], x=X, window=window).beta)
-   
-    #     #adding the key as a column to each DataFrame
-    #     for key, df in rol_beta.items():
-    #         # create a column called "key name"
-    #         df['key_name'] = key
-    #     # make a list just using the values in the dictionary
-    #     lst = list(rol_beta.values())
-    #     df = pd.concat(lst)
-    #     name = df.index.name
-    #     # unstack the dataframe 
-    #     rolling_betas = df.pivot(index=name, columns='key_name', values='feature1')
-
-    #     return rolling_betas
-=======
     def rolling_beta(self, window=12):
         """
         calculate the rolling betas against specific benchmark
         :param window: the rolling window 
         """
         # Define the dependent variable : In our case it will be the Benchmark
-        endog_variable = self.rtns.iloc[:,0:]
+        endog_var = self.rtns.iloc[:, 0:]
         
         # Define the independent  variable  
-        exog_variable = sm.add_constant(self.rtns.iloc[:,1]) # Calculate the beta against a given  market/benchmark
-        # create dictionarty to the  rolling betas
-        rol_beta ={}
+        exog_var = sm.add_constant(self.rtns.iloc[:,1]) # Calculate the beta against a given  market/benchmark
+        
         # loop through the colums of the indepedent variables
-        for col in endog_variable.columns:
-            rol_beta[col] = pd.DataFrame(RollingOLS(endog_variable[col], exog_variable, window=window).fit().params) # This function run the rolling ols for specific defined rolling window
-   
-        #adding the key as a column to each DataFrame
-        for key, df in rol_beta.items():
-            # create a column called "key name"
-            df['key_name'] = key
+        beta_dict ={}    # dummy dict for rolling betas
+        for col in endog_var.columns:
+            
+            # This function runs rolling ols for defined rolling window
+            dx = pd.DataFrame(RollingOLS(endog_var[col],
+                                         exog_var,
+                                         window=window).fit().params) 
+            
+            dx['key'] = str(col)    # add key name column
+            beta_dict[col] = dx     # append to dictionary
+        
+        # # adding the key as a column to each DataFrame
+        # for key, df in rol_beta.items():
+        #     # create a column called "key name"
+        #     df['key_name'] = key
+        
         # make a list just using the values in the dictionary
-        lst = list(rol_beta.values())
-        df = pd.concat(lst) # create one new dataframe of the all the dataframe inside dictionary 
-        df_new =df.drop(df.columns[0], axis=1) # remove constant column from the rolling regression analysis. It will always be the first column
-        df_new=df_new.reset_index() # Reset the index 
-        key =df_new['key_name'].tolist() # store Column names in a list . This is done so that pivot keeps the orginal order of columns 
-        key = list(dict.fromkeys(key))
+        #lst = list(rol_beta.values())
+        #df = pd.concat(lst) # create one new dataframe of the all the dataframe inside dictionary 
+        #df_new =df.drop(df.columns[0], axis=1) # remove constant column from the rolling regression analysis. It will always be the first column
+        #df_new=df_new.reset_index() # Reset the index 
+        #key =df_new['key_name'].tolist() # store Column names in a list . This is done so that pivot keeps the orginal order of columns 
+        #key = list(dict.fromkeys(key))
+        
         # unstack the dataframe 
-        rolling_betas = df_new.pivot(index='index', columns='key_name', values='BMK').reindex(columns=key)
+        #roll_beta = df_new.pivot(index='index', columns='key_name', values='BMK').reindex(columns=key)
+        
+        # New DataFrame which stacks all the dataframes inside the dictionary
+        # we can drop the constant column for roll regresison; always column 0
+        df = pd.concat(list(beta_dict.values())).drop(columns={'const'}).reset_index()
+        
+        # pivot output so index == Dates & columns are [Rf, BMK, Strategies+]
+        # reindex so output order is the same as input dataframe column order
+        roll_beta = (df.pivot(index='Dates', columns='key', values='BMK').
+                     reindex(columns=list(self.rtns.columns)))
 
-        return rolling_betas
->>>>>>> 36c26c54153c8c83f2dca1b4c65dcfb5edfbcac8
-            
-            
+        return roll_beta
+
     def backtest_summary(self):
         """ Summary Table for the Whole Sample Period 
         
@@ -608,61 +572,43 @@ class BacktestAnalytics(object):
         df['TE'] = self.xsrtns.std() * np.sqrt(self.freq)
         df['IR'] = (df.TR - df.TR[1]) / df.TE
         
-        # Sharpe Ratio & Risk-Adjusted-Return
-        #Rf = (self.Rf_cum_rtn[-1]/100)**(self.freq/len(self.cum_rtn)) - 1       
-                    
+        # Risk adjusted return metrics; Sharpe, RaR and Sortino
         df['Sharpe'] = (df.TR - df.TR[0]) / df.Vol
         df['RaR'] = df.TR / df.Vol
-        
+        df['Sortino'] = ((self.cum_xs_rtn.iloc[-1,:]/100)**(self.freq/len(self.cum_xs_rtn)) - 1)/df.Downside_Vol
         
         # Calculates Average Return 
         df['Avg Return'] = self.rtns[self.rtns != 0].dropna().mean()
         
-                         
-        # calculates the average winning return/trade return for a period
+        # calculates the average win/loss return/trade return for a period
         df['avg_win'] = self.rtns[self.rtns > 0].dropna().mean()
-        
-        # calculates the average loss return/trade return for a period
         df['avg_loss'] = self.rtns[self.rtns < 0].mean()
         
         # measures the payoff ratio (average win/average loss)
         df['Payoff'] = df.avg_win/abs(df.avg_loss)
         
-        # Average drawdown over the period
+        # Drawdown Metrics over full period
+        # drawdown, xs-drawdowns, average drawdown period & xs-period (in days)
         df['avg_drawdown'] = self.drawdown.mean()
-        
-        # Average excess drawdown over the period
-        
         df['avg_XS_drawdown'] = self.xs_drawdown.mean()
-
-        # average Drawdown period 
         df['avg_drawdown_days']=self.drawdown_breakdown(alpha=False)['length'].mean() 
-        
-        # average Excess Drawdown period 
         df['avg_XS_drawdown_days']=self.drawdown_breakdown(alpha=True)['length'].mean() 
             
-        # Measure the skewness of the returns
+        # Measure the skewness & kurtosis of the returns
         df['Skew'] = self.rtns.skew()
-        
-        # Measurement  of the "tailedness"
         df['Kurtosis'] = self.rtns.kurt()
             
-        
         #Tail risk Measurements
         df['Historic_VaR'] = -1*self.historical_var
         df['Historic_CVaR']= -1*self.Historic_CVaR
         df['Modified_VaR'] = -1*self.modified_var
         
-        # calculates the sortino ratio of access returns
-        df['Sortino'] = ((self.cum_xs_rtn.iloc[-1,:]/100)**(self.freq/len(self.cum_xs_rtn)) - 1)/df.Downside_Vol
-        
         # Treynor ratio determines how much excess return was generated for each unit of systematic risk taken on by a portfolio
-        df['Treynor_Ratio'] = (df.TR - df.TR[0]) /df.Beta
+        df['Treynor_Ratio'] = (df.TR - df.TR[0]) / df.Beta
         
         #  measures the ratio between the right (95%) and left tail (5%)
         df['tail_ratio']=abs(self.rtns.quantile(0.95) / self.rtns.quantile(0.05))
         
-                   
         # Drawdown Analysis
         df['Max_Drawdown'] = self.drawdown.min(axis=0)
         df['Max_XS_DD'] = self.xs_drawdown.min(axis=0)
@@ -676,6 +622,7 @@ class BacktestAnalytics(object):
         
         #  measures the profit ratio (win ratio / loss ratio)
         df['profit_factor'] = df.Hitrate/(1 - df.Hitrate)
+        
         # measures how fast the strategy recovers from drawdowns
         df['recovery_factor'] = (self.cum_rtn.iloc[-1,:]/100)/abs(df.Max_Drawdown)
         
@@ -685,6 +632,7 @@ class BacktestAnalytics(object):
         # Omega Ratio
         df['Omega_ratio'] =  self.omega
         df['Modified_Sharpe_Ratio']= (df.TR - df.TR[0])/abs(df.Modified_VaR)
+        
         # Calmar ratio
         df['Calmar Ratio'] = df.TR / abs(df.Max_Drawdown)
         
@@ -1017,7 +965,6 @@ class BacktestAnalytics(object):
                                          binary=True,
                                          source=False, y_src=-0.15)
             
-            
             ## TABLE
             # Calc the average annual across backtest things
             # use crosstab again to break down by year and month
@@ -1301,6 +1248,13 @@ class BacktestAnalytics(object):
                                   benchmark=False, height=350,
                                   source=True, y_src=-0.15)
         
+        plots['sortino'] = self.plot_index(
+                                self.rolling[12]['sortino'],              
+                                title='Rolling Sortino: 12m',
+                                yfmt=['.1f', '.2f'], ytitle='Sortino',
+                                benchmark=False, height=350,
+                                source=True, y_src=-0.15)
+        
         plots['roll_rar'] = self.plot_index(
                                  self.rolling[12]['xsrtn'] / self.rolling[12]['vol'],
                                  title='Risk Adjusted Return: 12m',
@@ -1315,30 +1269,19 @@ class BacktestAnalytics(object):
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)
         
-        
-        
-        # plots['beta'] = self.plot_index(
-        #                         self.rolling[12]['beta'],              
-        #                         title='Rolling Beta: 12m',
-        #                         yfmt=['.1f', '.2f'], ytitle='Beta',
-        #                         benchmark=False, height=350,
-        #                         source=True, y_src=-0.15)
-        
-        
-        
-        plots['sortino'] = self.plot_index(
-                                self.rolling[12]['sortino'],              
-                                title='Rolling Sortino: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='Sortino',
+        plots['beta'] = self.plot_index(
+                                self.rolling[12]['beta'],              
+                                title='Rolling Beta: 12m',
+                                yfmt=['.1f', '.2f'], ytitle='Beta',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)
         
-        # plots['treynor'] = self.plot_index(
-        #                         self.rolling[12]['treynor'],              
-        #                         title='Rolling Treynor Ratio: 12m',
-        #                         yfmt=['.1f', '.2f'], ytitle='Treynor',
-        #                         benchmark=False, height=350,
-        #                         source=True, y_src=-0.15)
+        plots['treynor'] = self.plot_index(
+                                self.rolling[12]['treynor'],              
+                                title='Rolling Treynor Ratio: 12m',
+                                yfmt=['.1f', '.2f'], ytitle='Treynor',
+                                benchmark=False, height=350,
+                                source=True, y_src=-0.15)
         
         
         plots['VaR'] = self.plot_index(
@@ -1355,11 +1298,7 @@ class BacktestAnalytics(object):
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)   
         
-             
-        
-              
-            
-            
+
         # Correlation
         plots['correl_wide'] = self.plot_correl(self.corr)
         plots['correl_animation'] = self.plot_correl_animation(subset=True, years=1)
@@ -1454,11 +1393,9 @@ class BacktestAnalytics(object):
 
         df = self.backtest_summary()
         
-        
-       
         format_list = ['Payoff','profit_factor',
                        'Beta','TE','Skew','Kurtosis','avg_drawdown_days','avg_XS_drawdown_days','recovery_factor',
-                        'tail_ratio','Sharpe','Modified_Sharpe_Ratio','IR','RaR','Calmar Ratio','Sortino','Treynor_Ratio','Omega_ratio']
+                       'tail_ratio','Sharpe','Modified_Sharpe_Ratio','IR','RaR','Calmar Ratio','Sortino','Treynor_Ratio','Omega_ratio']
 #        # Create list to format the numbesr to percentage 
 #        percentage_list = ['TR','Avg Return','avg_win','avg_loss','xs_mean','xs_worst','xs_best','Hitrate',
 #                           'Vol','Downside_Vol','TE','Historic_VaR','Historic_CVaR','Modified_VaR','Max_Drawdown','Max_XS_DD','avg_drawdown','avg_XS_drawdown']
@@ -1627,11 +1564,11 @@ class BacktestAnalytics(object):
         md.append("\n \n ")
         md.append(self.plots['roll_ir'])
         md.append(self.plots['roll_rar'])
-        #md.append(self.plots['beta'])
+        md.append(self.plots['beta'])
         #md.append(self.pretty_panda_annual('Beta').render())
         md.append(self.plots['sortino'])
         md.append(self.pretty_panda_annual('sortino').render())
-        #md.append(self.plots['treynor'])
+        md.append(self.plots['treynor'])
         #md.append(self.pretty_panda_annual('treynor').render())
         
         
@@ -1716,14 +1653,10 @@ def test_code():
     
     bt.big_bang()
     
+    from .reporting import Reporting
+    md = bt.big_bang(title="TEST MM1")
+    Reporting().md2html(md=md, title='test MM1')
+    
     return bt
 
 #bt = test_code()
-
-#md = bt.big_bang(title="TEST MM1")
-#from topgun.reporting import Reporting
-#Reporting().md2html(md=md, title='test MM1')
-
-#print(df)
-#x = bt.rolling
-
