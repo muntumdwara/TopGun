@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-TopGun Backtest Class
+# '''
+# TopGun Backtest Class
+# @author: David McNay & Muntu Mdwara
 
-@author: David McNay & Muntu Mdwara
-
-"""
-
+# '''
 # %% IMPORTs CELL
 
 # Default Imports
@@ -528,7 +526,10 @@ class BacktestAnalytics(object):
         
         # pivot output so index == Dates & columns are [Rf, BMK, Strategies+]
         # reindex so output order is the same as input dataframe column order
-        roll_beta = (df.pivot(index='Dates', columns='key', values='BMK').
+        # NB/ Pandas changed around v1.2 that reset_index() REMOVES original
+        # column name; we change our pivot to index='index'
+        # could be a source of future errors here
+        roll_beta = (df.pivot(index='index', columns='key', values='BMK').
                      reindex(columns=list(self.rtns.columns)))
 
         return roll_beta
