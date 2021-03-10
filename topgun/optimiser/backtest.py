@@ -557,7 +557,7 @@ class BacktestAnalytics(object):
         key =df_new['key_name'].tolist() # store Column names in a list . This is done so that pivot keeps the orginal order of columns 
         key = list(dict.fromkeys(key))
         # unstack the dataframe 
-        rolling_betas = df_new.pivot(index='index', columns='key_name', values='BMK')
+        rolling_betas = df_new.pivot(index='index', columns='key_name', values='BMK').reindex(columns=key)
 
         return rolling_betas
             
