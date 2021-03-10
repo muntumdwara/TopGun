@@ -535,16 +535,16 @@ class BacktestAnalytics(object):
         :param window: the rolling window 
         """
         # Define the depenedent variable : In our case it will be the Benchmark
-        y = self.rtns.iloc[:,0:]
+        endog_variable = self.rtns.iloc[:,0:]
         
         # Definde the independed variables  that will excludes risk free rate and benchmark columns
         
-        X = self.rtns.iloc[:,1]
+        exog_variable = self.rtns.iloc[:,1] # Calculate the beta against the market/benchmark
         # create dictionarty to the  rolling betas
         rol_beta ={}
         # loop through the colums of the indepedent variables
-        for col in y.columns:
-            rol_beta[col] = pd.DataFrame(PandasRollingOLS(y=y[col], x=X, window=window).beta)
+        for col in endog_variable.columns:
+            rol_beta[col] = pd.DataFrame(RollingOLS(endog_variable[col], exog_variable, window=window).fit().params)
    
         #adding the key as a column to each DataFrame
         for key, df in rol_beta.items():
@@ -553,9 +553,11 @@ class BacktestAnalytics(object):
         # make a list just using the values in the dictionary
         lst = list(rol_beta.values())
         df = pd.concat(lst)
-        name = df.index.name
+        df_new=df.reset_index()
+        key =df_new['key_name'].tolist() # store Column names in a list . This is done so that pivot keeps the orginal order of columns 
+        key = list(dict.fromkeys(key))
         # unstack the dataframe 
-        rolling_betas = df.pivot(index=name, columns='key_name', values='feature1')
+        rolling_betas = df_new.pivot(index='index', columns='key_name', values='BMK')
 
         return rolling_betas
             
