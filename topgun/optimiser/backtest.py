@@ -15,7 +15,9 @@ import pandas as pd
 import scipy.stats
 from scipy.stats import kurtosis, skew, norm
 import math
-from pyfinance.ols import PandasRollingOLS
+import statsmodels.api as sm
+from statsmodels.regression.rolling import RollingOLS
+#from pyfinance.ols import PandasRollingOLS
 
 # Plotly for charting
 import plotly.express as px
@@ -534,17 +536,16 @@ class BacktestAnalytics(object):
         calculate the rolling betas against specific benchmark
         :param window: the rolling window 
         """
-        # Define the depenedent variable : In our case it will be the Benchmark
+        # Define the dependent variable : In our case it will be the Benchmark
         endog_variable = self.rtns.iloc[:,0:]
         
-        # Definde the independed variables  that will excludes risk free rate and benchmark columns
-        
-        exog_variable = self.rtns.iloc[:,1] # Calculate the beta against the market/benchmark
+        # Define the independent  variable  
+        exog_variable = sm.add_constant(self.rtns.iloc[:,1]) # Calculate the beta against a given  market/benchmark
         # create dictionarty to the  rolling betas
         rol_beta ={}
         # loop through the colums of the indepedent variables
         for col in endog_variable.columns:
-            rol_beta[col] = pd.DataFrame(RollingOLS(endog_variable[col], exog_variable, window=window).fit().params)
+            rol_beta[col] = pd.DataFrame(RollingOLS(endog_variable[col], exog_variable, window=window).fit().params) # This function run the rolling ols for specific defined rolling window
    
         #adding the key as a column to each DataFrame
         for key, df in rol_beta.items():
@@ -552,8 +553,9 @@ class BacktestAnalytics(object):
             df['key_name'] = key
         # make a list just using the values in the dictionary
         lst = list(rol_beta.values())
-        df = pd.concat(lst)
-        df_new=df.reset_index()
+        df = pd.concat(lst) # create one new dataframe of the all the dataframe inside dictionary 
+        df_new =df.drop(df.columns[0], axis=1) # remove constant column from the rolling regression analysis. It will always be the first column
+        df_new=df_new.reset_index() # Reset the index 
         key =df_new['key_name'].tolist() # store Column names in a list . This is done so that pivot keeps the orginal order of columns 
         key = list(dict.fromkeys(key))
         # unstack the dataframe 
