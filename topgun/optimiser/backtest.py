@@ -1653,10 +1653,10 @@ def test_code():
     
     bt.big_bang()
     
-    from .reporting import Reporting
+    from topgun.reporting import Reporting
     md = bt.big_bang(title="TEST MM1")
     Reporting().md2html(md=md, title='test MM1')
     
     return bt
 
-#bt = test_code()
+bt = test_code()
