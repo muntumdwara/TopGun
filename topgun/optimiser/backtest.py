@@ -2,9 +2,8 @@
 """
 TopGun Backtest Class
 
-@author: David McNay & 
+@author: David McNay & Muntu Mdwara
 
-Adjustment made by Muntu
 """
 
 # %% IMPORTs CELL
@@ -54,19 +53,10 @@ class BacktestAnalytics(object):
             * builds & saves drawdown series and analyses individual drawdowns
             * creates wider correlation matrix inc. xs_rtns
         
-        plot_master():
-            * creates dictionary of useful plots
-            
-        pretty_panda():
-            * applies basic styling to a pandas table - this could move
-            * bespoke sub funcs extend this; these funcs start "pretty_panda_xxx"
-            
-    REPORTING:
-    In all cases we produce a templated markdown script with Plotly plots
-    already embedded as HTML - these can be fed to report_writer or anything
-    which turns markdown to a static html/pdf.
-        - markdown_doc() is primary function for generating markdown. REQUIRES
-            plot_master() to have been run but will prettify dataframe itself.
+        big_bang(title):
+            * will run_backtest then generate full markdown report
+            * calls seperate BacktestMarkdwonReport() class
+            * saves markdown document as self.markdown_report
         
     DEVELOPMENT:
         - dynamic plots for correlation wrt time
@@ -74,7 +64,7 @@ class BacktestAnalytics(object):
         - PCA based analysis
         - basic checking that input benchmarks or Rf in bmkrtns columns
 
-    Author: David J McNay
+    Author: David J McNay with Muntu Mdwara
     """
 
     def __init__(self, portrtns, bmkrtns, 
@@ -531,23 +521,7 @@ class BacktestAnalytics(object):
             
             dx['key'] = str(col)    # add key name column
             beta_dict[col] = dx     # append to dictionary
-        
-        # # adding the key as a column to each DataFrame
-        # for key, df in rol_beta.items():
-        #     # create a column called "key name"
-        #     df['key_name'] = key
-        
-        # make a list just using the values in the dictionary
-        #lst = list(rol_beta.values())
-        #df = pd.concat(lst) # create one new dataframe of the all the dataframe inside dictionary 
-        #df_new =df.drop(df.columns[0], axis=1) # remove constant column from the rolling regression analysis. It will always be the first column
-        #df_new=df_new.reset_index() # Reset the index 
-        #key =df_new['key_name'].tolist() # store Column names in a list . This is done so that pivot keeps the orginal order of columns 
-        #key = list(dict.fromkeys(key))
-        
-        # unstack the dataframe 
-        #roll_beta = df_new.pivot(index='index', columns='key_name', values='BMK').reindex(columns=key)
-        
+                
         # New DataFrame which stacks all the dataframes inside the dictionary
         # we can drop the constant column for roll regresison; always column 0
         df = pd.concat(list(beta_dict.values())).drop(columns={'const'}).reset_index()
@@ -917,96 +891,6 @@ class BacktestAnalytics(object):
             fig = self._px_addsource(fig, y=y_src)
         
         return fig
-
-    # def plot_hitrates(self,
-    #                   min_count=3,
-    #                   show=False,
-    #                   plotly2html=True, plotlyjs='cdn',
-    #                   plot_height=450, plot_width=850):
-        
-    #     """ Combined Function Charts & Annual Table
-        
-    #     Charts are the Year x Month, binary, hit-or-miss heatmap and
-    #     Table is the annualised hit rate per year - in a styled dataframe
-        
-    #     IMPORTANT:
-    #         requires bactest functions have to be run because needs
-    #         self.xsrtns & self.rtns dataframes to exist
-    #         uses self.plot_hitrates() function
-        
-    #     INPUTS:
-    #         min_count: 3(default) is min. months req to get a per-year number
-            
-    #     OUTPUT:
-    #         dict() with key 'annual' for styled df & others will be port name
-    #         i.e. {'annual':styled_df, 'PORT1':plotly_fig}
-        
-    #     """
-        
-    #     plots = dict()        # dummy dictionary for plotly & dataframe
-    #     df = pd.DataFrame()   # dummy dataframe for table
-        
-    #     # iterate through each portfolios alpha
-    #     # could be done as a matrix but complexity isn't worth the speed
-    #     # remember to remove risk-free column zero
-    #     for i, p in enumerate(self.xsrtns.iloc[:,1:]):
-            
-    #         if i == 0:
-    #             continue
-            
-    #         ## PLOTLY
-    #         # Get the Year x Month Hitrate Plot
-    #         plots[p] = self.plot_hitrate(self.xsrtns[p],
-    #                                       title="Hit Rate Heatmap: {}".format(p),
-    #                                       binary=True,
-    #                                       source=False, y_src=-0.15)
-            
-    #         ## TABLE
-    #         # Calc the average annual across backtest things
-    #         # use crosstab again to break down by year and month
-    #         # then we can sum across the months
-    #         ix = self.xsrtns.loc[:, p]
-    #         ix = pd.crosstab(index=ix.index.year,
-    #                           columns=ix.index.strftime("%b"),
-    #                           values=ix.values,
-    #                           aggfunc='sum',
-    #                           rownames=['years'],
-    #                           colnames=['months'])
-    
-    #         # Map excess returns to hit or miss
-    #         ix = ix.applymap(lambda x: 1 if x >= 0 else x)
-    #         ix = ix.applymap(lambda x: -1 if x <= 0 else x)
-    
-    #         # Hit rate by month & rename result series
-    #         ihr = ix[ix==1].sum(axis=1) / ix.count(axis=1)
-            
-    #         # May not want to distort data if we don't have a minimum no obs
-    #         # by default we use 3-months
-    #         if min_count > 0:
-    #             ihr[~(ix.count(axis=1) >= min_count)] = np.nan
-    #         ihr.name = p
-    
-    #         df = pd.concat([df, ihr.to_frame()], axis=1)
-        
-    #     if show:
-    #         for k in plots:
-    #             plots[k].show()
-        
-    #     if plotly2html:
-    #         for k, v in plots.items():
-    #             plots[k] = v.to_html(full_html=False,
-    #                                   include_plotlyjs=plotlyjs,
-    #                                   default_height=plot_height,
-    #                                   default_width=plot_width,
-    #                                   )
-                  
-    #     plots['annual'] = self.pretty_panda(df.reset_index())\
-    #             .format(formatter="{:.0f}", subset=pd.IndexSlice[:, df.columns[0]])\
-    #             .format(formatter="{:.1%}", subset=pd.IndexSlice[:, df.columns[0:]])\
-    #             .background_gradient('RdYlGn', vmin=0.2, vmax=0.8, subset=pd.IndexSlice[:, df.columns[0:]])\
-    #             .highlight_null(null_color='white')\
-        
-    #     return plots
     
     def plot_correl(self, cor=None, title='Correlation Matrix', aspect='auto',
                     colorscale='Tealrose', reversescale=False, **kwargs):
@@ -1133,485 +1017,8 @@ class BacktestAnalytics(object):
         return fig
 
     
-#     def plot_master(self, plotly2html=True, plotlyjs='cdn',
-#                     plot_height=450, plot_width=850):
-#         """ Aggregation Function that runs ALL plots
-        
-#         These are saved in a big dictionary self.plots
-        
-#         INPUTS:
-#             all related to if we want to save as HTML for output
-#             this is required for markdown but less useful if used in an app
-#         """
-        
-#         plots = dict()   # dummy dictionary to hold plots
-        
-#         # Total Return & Excess Return
-#         plots['tr'] = self.plot_index(self.cum_rtn,
-#                                       title='Cumulative Returns',
-#                                       ytitle='Index Level', 
-#                                       risk_free=True,
-#                                       source=True, y_src=-0.125)
-        
-#         plots['xsrtn'] = self.plot_index(self.cum_xs_rtn,
-#                                       title='Excess Returns',
-#                                       ytitle='Excess Returns',
-#                                       benchmark=False,
-#                                       source=True, y_src=-0.125)
-        
-#         # Return Distributions
-#         plots['kde_rtns'] = self.plot_ridgeline(
-#                                     self.rtns,
-#                                     title='Ridgeline KDE Distributions: Returns',
-#                                     source=True, y_src=-0.125)
-        
-#         plots['kde_alpha'] = self.plot_ridgeline(
-#                                     self.xsrtns.iloc[:, 1:],
-#                                     title='Ridgeline KDE Distributions: Excess Returns',
-#                                     source=True, y_src=-0.125)
-        
-        
-#         # Regression Charts
-#         plots['regression_rtn'] = self.plot_regression(
-#                                             alpha=False,
-#                                             title='Return Regression: Port Returns',
-#                                             source=True, y_src=-0.125)
-# #        
-#         plots['regression_alpha'] = self.plot_regression(
-#                                             alpha=True,
-#                                             title='Return Regression: Excess Returns',
-#                                             source=True, y_src=-0.125)
-        
-#         plots['histogram'] = self.plot_histo(self.xsrtns,
-#                                     title='Excess Return Distribution',
-#                                     source=True, y_src=-0.125)
-        
-        
-#         # Drawdown Charts
-#         plots['drawdown'] = self.plot_index(self.drawdown,
-#                            title='Drawdown of Returns',
-#                            yfmt=['.1%', '.2%'], ytitle='Drawdown',
-#                            benchmark=True,
-#                            source=True, y_src=-0.125)
-        
-#         plots['xs_drawdown'] = self.plot_index(self.xs_drawdown,
-#                            title='Drawdown of Excess Returns',
-#                            yfmt=['.1%', '.2%'], ytitle='Drawdown',
-#                            benchmark=False,
-#                            source=True, y_src=-0.125)
-        
-#         # Rolling Plots
-#         # Rolling Period Charts
-#         plots['roll_rtn'] = self.plot_index(self.rolling[12]['rtn'],
-#                                             title='Rolling Return: 12m',
-#                                             yfmt=['.0%', '.2%'],
-#                                             ytitle='Return',
-#                                             height=350,
-#                                             source=True, y_src=-0.15)
-        
-#         plots['roll_xsrtn'] = self.plot_index(self.rolling[12]['xsrtn'],
-#                                             title='Rolling Excess Return: 12m',
-#                                             yfmt=['.0%', '.2%'],
-#                                             ytitle='Alpha',
-#                                             benchmark=False, height=350,
-#                                             source=True, y_src=-0.15)
-        
-#         plots['roll_vol'] = self.plot_index(self.rolling[12]['vol'],
-#                                             title='Rolling Volatility: 12m',
-#                                             yfmt=['.0%', '.2%'],
-#                                             ytitle='Volatility',
-#                                             height=350,
-#                                             source=True, y_src=-0.15)
-        
-#         plots['roll_downside_vol'] = self.plot_index(self.rolling[12]['downside_vol'],
-#                                             title='Rolling Downside Volatility: 12m',
-#                                             yfmt=['.0%', '.2%'],
-#                                             ytitle='Downside Volatility',
-#                                             height=350,
-#                                             source=True, y_src=-0.15)        
-        
-#         plots['roll_te'] = self.plot_index(
-#                                  self.rolling[12]['te'],
-#                                  title='Rolling ex-Post TE: 12m',
-#                                  yfmt=['.1%', '.2%'], ytitle='Tracking Error',
-#                                  benchmark=False, height=350,
-#                                  source=True, y_src=-0.15)
 
-#         plots['roll_sharpe'] = self.plot_index(
-#                                   self.rolling[12]['sharpe'],
-#                                   title='Sharpe Ratio: 12m',
-#                                   yfmt=['.1f', '.2f'], ytitle='Sharpe Ratio',
-#                                   benchmark=False, height=350,
-#                                   source=True, y_src=-0.15)
-        
-#         plots['sortino'] = self.plot_index(
-#                                 self.rolling[12]['sortino'],              
-#                                 title='Rolling Sortino: 12m',
-#                                 yfmt=['.1f', '.2f'], ytitle='Sortino',
-#                                 benchmark=False, height=350,
-#                                 source=True, y_src=-0.15)
-        
-#         plots['roll_rar'] = self.plot_index(
-#                                  self.rolling[12]['xsrtn'] / self.rolling[12]['vol'],
-#                                  title='Risk Adjusted Return: 12m',
-#                                  yfmt=['.1f', '.2f'], ytitle='Information Ratio',
-#                                  benchmark=False, height=350,
-#                                  source=True, y_src=-0.15)
-
-#         plots['roll_ir'] = self.plot_index(
-#                                 self.rolling[12]['xsrtn'] / self.rolling[12]['te'],              
-#                                 title='Rolling Information Ratio: 12m',
-#                                 yfmt=['.1f', '.2f'], ytitle='IR',
-#                                 benchmark=False, height=350,
-#                                 source=True, y_src=-0.15)
-        
-#         plots['beta'] = self.plot_index(
-#                                 self.rolling[12]['beta'],              
-#                                 title='Rolling Beta: 12m',
-#                                 yfmt=['.1f', '.2f'], ytitle='Beta',
-#                                 benchmark=False, height=350,
-#                                 source=True, y_src=-0.15)
-        
-#         plots['treynor'] = self.plot_index(
-#                                 self.rolling[12]['treynor'],              
-#                                 title='Rolling Treynor Ratio: 12m',
-#                                 yfmt=['.1f', '.2f'], ytitle='Treynor',
-#                                 benchmark=False, height=350,
-#                                 source=True, y_src=-0.15)
-        
-        
-#         plots['VaR'] = self.plot_index(
-#                                 self.rolling[12]['VaR'],              
-#                                 title='Rolling Value-at-Risk: 12m',
-#                                 yfmt=['.1f', '.2f'], ytitle='VaR',
-#                                 benchmark=False, height=350,
-#                                 source=True, y_src=-0.15)   
-            
-#         plots['CVaR'] = self.plot_index(
-#                                 self.rolling[12]['CVaR'],              
-#                                 title='Rolling Expected Shortfall: 12m',
-#                                 yfmt=['.1f', '.2f'], ytitle='CVaR',
-#                                 benchmark=False, height=350,
-#                                 source=True, y_src=-0.15)   
-        
-
-#         # Correlation
-#         plots['correl_wide'] = self.plot_correl(self.corr)
-#         plots['correl_animation'] = self.plot_correl_animation(subset=True, years=1)
-        
-#         # Convert to HTML
-#         if plotly2html:
-#             for k, v in plots.items():
-#                 plots[k] = v.to_html(full_html=False,
-#                                      include_plotlyjs=plotlyjs,
-#                                      default_height=plot_height,
-#                                      default_width=plot_width,
-#                                      )   
-#         # Hitrate Plots
-#         # These come after we've already converted most to plotly
-#         # that is because this is an embedded dictionary & we've already
-#         # converted the plotly
-#         plots['hitrate'] = self.plot_hitrates(show=False,
-#                                               plotly2html=plotly2html,
-#                                               plotlyjs=plotlyjs,
-#                                               plot_height=300,
-#                                               plot_width=750)
-# #        
-#         self.plots = plots
-        
-#         return plots
-
-# %% REPORTING
-
-#     def pretty_panda(self, df):
-#         """ Styler for the Back-Test Summary Table
-        
-#         This is the basic styler which applies some default styling to a df.
-
-#         This shit is tedious - look at the following links if confused
-#             https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html
-#             https://pbpython.com/styling-pandas.html
-#             https://towardsdatascience.com/style-pandas-dataframe-like-a-master-6b02bf6468b0
-        
-#         """
-        
-#         # When we reset_index() the index becomes the first column
-#         # by default we style that so need the column name as an indexor
-#         faux_index = df.columns[0]
-        
-#         ## DataFrame Styler Default for Headers & Captions
-#         # Sort "td" with .set_properties because it's easer to override
-#         styles = [dict(selector="th",
-#                        props=[("font-family", "Garamond"),
-#                               ('padding', "5px 5px"),
-#                               ("font-size", "15px"),
-#                               ("background-color", "black"),
-#                               ("color", "white"),
-#                               ("text-align", "center"),
-#                               ('border', '1px solid black')]),
-
-#                   dict(selector="caption",
-#                        props=[("text-align", "right"),
-#                               ("caption-side", "bottom"),
-#                               ("font-size", "85%"),
-#                               ("color", 'grey')]),] 
-        
-#         df = df.style.hide_index()\
-#                .set_table_styles(styles)\
-#                .set_caption('Source: STANLIB Multi-Strategy')\
-#                .set_table_attributes('style="border-collapse:collapse"')\
-#                .set_precision(3)\
-#                .highlight_null(null_color='white')\
-#                .set_properties(**{"font-family": "Garamond",
-#                                   "font-size": "14px",
-#                                   "text-align": "center",
-#                                   "border": "1px solid black",
-#                                   "padding": "5px 5px",
-#                                   "min-width": "70px"})\
-#                .applymap(lambda x: 'color: white' if x== 0 else 'color: black')\
-#                .set_properties(subset=[faux_index],
-#                                **{'font-weight':'bold',
-#                                   'color':'white',
-#                                   'background-color':'teal',
-#                                   "text-align": "justify",
-#                                   'min-width':'115px'})\
-                   
-#         return df
-    
-#     def pretty_panda_summary(self):
-#         """ Styler for the Back-Test Summary Table
-
-#         This shit is tedious - look at the following links if confused
-#             https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html
-#             https://pbpython.com/styling-pandas.html
-#             https://towardsdatascience.com/style-pandas-dataframe-like-a-master-6b02bf6468b0
-#         """
-
-#         df = self.backtest_summary()
-        
-#         format_list = ['Payoff','profit_factor',
-#                        'Beta','TE','Skew','Kurtosis','avg_drawdown_days','avg_XS_drawdown_days','recovery_factor',
-#                        'tail_ratio','Sharpe','Modified_Sharpe_Ratio','IR','RaR','Calmar Ratio','Sortino','Treynor_Ratio','Omega_ratio']
-# #        # Create list to format the numbesr to percentage 
-# #        percentage_list = ['TR','Avg Return','avg_win','avg_loss','xs_mean','xs_worst','xs_best','Hitrate',
-# #                           'Vol','Downside_Vol','TE','Historic_VaR','Historic_CVaR','Modified_VaR','Max_Drawdown','Max_XS_DD','avg_drawdown','avg_XS_drawdown']
-        
-        
-#         # duplicate the index in the dataframe
-#         # we don't just hide because we want to show & reference the index
-#         m = df.index
-#         m.name = 'Metric'
-#         x = pd.concat([m.to_frame(), df], axis=1).fillna(0)
-        
-#         x = self.pretty_panda(x)
-        
-#         ## Generally set to 0.1%; few things as 0.02; zeros have white text
-#         x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])\
-#              .format(formatter="{:.2f}", subset=pd.IndexSlice[format_list, x.columns[1:]])\
-             
-        
-#         ## Conditional Format Bits
-#         # These Include the Benchmark
-#         y = [['TR', 'Sharpe', 'Modified_Sharpe_Ratio','RaR', 'Max_Drawdown','Historic_VaR','Historic_CVaR','Modified_VaR'], x.columns[1:]]
-#         x = x.highlight_max(color='lightseagreen', subset=pd.IndexSlice[y[0], y[1]], axis=1)
-#         x = x.highlight_min(color='crimson', subset=pd.IndexSlice[y[0], y[1]], axis=1)
-        
-#         # These only make sense if there is more than one port being tested
-#         if len(df.columns) > 2:
-#             y = [['IR', 'Hitrate'], x.columns[2:]]
-#             x = x.highlight_max(color='lightseagreen', subset=pd.IndexSlice[y[0], y[1]], axis=1)
-#             x = x.highlight_min(color='crimson', subset=pd.IndexSlice[y[0], y[1]], axis=1)
-
-#         return x
-    
-#     def pretty_panda_drawdown(self, alpha=True):
-#         """ Styling for the Annualised Drawdown Tables """
-        
-#         # standard now - pick from dataframe based on if we want exccess rtns
-#         # Sort by drawdown & pick only the last however many
-#         x = self.xs_drawdown_table if alpha else self.drawdown_table
-#         x = x.sort_values(by='drawdown', ascending=False).tail(10)
-        
-#         # useful for indexing - the formating in pandas can't take NaT
-#         # so need to find the index of potential end dates that won't have ended
-#         idxna = ~x['recovery'].isna()
-        
-#         # general stuff
-#         x = self.pretty_panda(x.reset_index())
-        
-#         return x.format(dict(start='{:%b-%y}', trough='{:%b-%y}', drawdown='{:.1%}'))\
-#                 .format(formatter="{:%b-%y}", subset=pd.IndexSlice[x.index[idxna], ['end']])\
-#                 .background_gradient('RdYlGn', subset='drawdown')
-    
-#     def pretty_panda_annual(self, key='rtn'):
-#         """ Styling for Tables of Annualised Metrics
-        
-#         These are calc'd by self.per_annum() which is itself in self.run_backtest()
-#         Tables are stored in a dict() called self.summary_pa
-        
-#         Each table needs stubtly different styling
-        
-#         INPUT:
-#             key: refers to the key from self.summary_pa
-#         """
-        
-#         pa = self.summary_pa
-        
-#         # subtle differences depending on if we want Rb or not
-#         # also subtle difference in if is .2% of .2f
-#         if key in ['rtn']:            
-#             x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
-#             x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
-#             x = x.background_gradient('RdYlGn', subset=pd.IndexSlice[:, x.columns[1:]],)
-#         elif key in ['vol']:            
-#             x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
-#             x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
-#             x = x.background_gradient('RdYlGn_r', subset=pd.IndexSlice[:, x.columns[1:]],)
-#         elif key in ['downside_vol']:            
-#             x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
-#             x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
-#             x = x.background_gradient('RdYlGn_r', subset=pd.IndexSlice[:, x.columns[1:]],)        
-#         elif key in ['sharpe']:
-#             x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
-#             x = x.format(formatter="{:.2f}", subset=pd.IndexSlice[:, x.columns[1:]])
-#             x = x.background_gradient('RdYlGn', vmin=-2, vmax=+3, subset=pd.IndexSlice[:, x.columns[1:]],)
-#         elif key in ['alpha']:
-#             x = self.pretty_panda(pa[key].dropna().iloc[:,2:].reset_index())
-#             x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
-#             x = x.background_gradient('RdYlGn',  vmin=-0.05, vmax=+0.05, subset=pd.IndexSlice[:, x.columns[1:]],)
-#         elif key in ['te']:
-#             x = self.pretty_panda(pa[key].dropna().iloc[:,2:].reset_index())
-#             x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
-#             x = x.background_gradient('RdYlGn_r', vmin=0, vmax=0.06, subset=pd.IndexSlice[:, x.columns[1:]],)
-#         elif key in ['ir']:
-#             x = self.pretty_panda(pa[key].dropna().iloc[:,3:].reset_index())
-#             x = x.format(formatter="{:.2f}", subset=pd.IndexSlice[:, x.columns[1:]])
-#         elif key in ['sortino']:
-#             x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
-#             x = x.format(formatter="{:.2f}", subset=pd.IndexSlice[:, x.columns[1:]])
-#             x = x.background_gradient('RdYlGn', vmin=-2, vmax=+3, subset=pd.IndexSlice[:, x.columns[1:]],)
-#         elif key in ['Beta']:
-#             x = self.pretty_panda(pa[key].dropna().iloc[:,2:].reset_index())
-#             x = x.format(formatter="{:.2f}", subset=pd.IndexSlice[:, x.columns[1:]])
-#             x = x.background_gradient('RdYlGn', vmin=-3, vmax=+3, subset=pd.IndexSlice[:, x.columns[1:]],)
-#         elif key in ['treynor']:
-#             x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
-#             x = x.format(formatter="{:.2f}", subset=pd.IndexSlice[:, x.columns[1:]])
-#             x = x.background_gradient('RdYlGn', vmin=-2, vmax=+3, subset=pd.IndexSlice[:, x.columns[1:]],)
-            
-#         return x
-    
-#     def markdown_doc(self, title="TEST"):
-#         """ Master Markdown file for full backtest report """
-            
-#         md = []     # dummy list container - convert to strings later
-    
-#         # Title
-#         md.append("# STANLIB Multi-Strategy Backtest")
-#         md.append("### Report: {}".format(title))
-#         md.append("Returns based backtest comparing portfolio(s) against the \
-#                   {} benchmark; risk-free return are proxied by the {} index. \
-#                   Data contains {} monthly observations running from \
-#                   {:%b-%y} to {:%b-%y}. \
-#                   \n \n".format(self.Rb, self.Rf,
-#                                 len(self.rtns.index),
-#                                 self.rtns.index[0],
-#                                 self.rtns.index[-1],))
-        
-#         md.append("## Summary")
-#         md.append(self.pretty_panda_summary().render())
-#         md.append("Annualised 'risk-free' return of the {} index over the \
-#                   period was {:.2%}. \n \n".format(self.Rf, self.Rf_obs_rtn))
-        
-#         ## Risk & Return
-#         md.append("## Portfolio Returns")
-#         md.append(self.plots['tr'])
-#         md.append(self.plots['xsrtn'])
-#         md.append(self.plots['roll_rtn'])
-#         md.append(self.pretty_panda_annual('rtn').render())
-#         md.append("\n \n ")
-#         md.append(self.plots['roll_xsrtn'])
-#         md.append(self.pretty_panda_annual('alpha').render())
-        
-#         ## Portfolio Risk & Drawdown
-#         md.append("## Portfolio Risk & Drawdowns")
-#         md.append(self.plots['roll_vol'])
-#         md.append(self.pretty_panda_annual('vol').render())
-#         md.append("\n \n ")
-#         md.append(self.plots['roll_downside_vol'])
-#         md.append(self.pretty_panda_annual('downside_vol').render())        
-        
-               
-#         md.append(self.plots['roll_te'])
-#         md.append(self.pretty_panda_annual('te').render())
-#         md.append("\n \n ")
-#         md.append(self.plots['xs_drawdown'])
-#         md.append(self.pretty_panda_drawdown(alpha=True).render())
-#         md.append(self.plots['drawdown'])
-#         md.append(self.pretty_panda_drawdown(alpha=False).render())
-        
-#         ## Rolling Risk Adjusted Measures
-#         md.append("## Risk Adjusted Returns - Rolling")
-#         md.append(self.plots['roll_sharpe'])
-#         md.append(self.pretty_panda_annual('sharpe').render())
-#         md.append("\n \n ")
-#         md.append(self.plots['roll_ir'])
-#         md.append(self.plots['roll_rar'])
-#         md.append(self.plots['beta'])
-#         md.append(self.pretty_panda_annual('Beta').render())
-#         md.append(self.plots['sortino'])
-#         md.append(self.pretty_panda_annual('sortino').render())
-#         md.append(self.plots['treynor'])
-#         md.append(self.pretty_panda_annual('treynor').render())
-        
-#         ## Rolling Risk Adjusted Measures
-#         md.append("## Tail-Risk - Rolling")
-#         md.append(self.plots['VaR'])
-#         md.append(self.plots['CVaR'])
-        
-#         ## Regression & Return Distributions
-#         md.append("## Return Distribution")
-#         md.append(self.plots['kde_rtns'])
-#         md.append(self.plots['kde_alpha'])
-#         md.append(self.plots['histogram'])
-#         md.append("Visualising return or alpha regressions adds colour to CAPM Beta. \
-#                   Steeper regression lines indicate higher Beta whilst R<sup>2</sup> gives \
-#                   an impression of the correlation; look for non-linearity \
-#                   that may be missed in headline metrics.")
-#         md.append(self.plots['regression_rtn'])
-#         md.append(self.plots['regression_alpha'])
-              
-#         # Hitrate
-#         md.append("## Hit Rate Analysis")
-#         md.append("Here we aren't interested in the quantum of return, \
-#                    simply the binary outcome per month. Heatmaps will show \
-#                    month-by-month experience as either +1 or 0. \
-#                    For annualised analysis we look at the percentage monthly hit-rate \
-#                    over a calendar year; subject to a minimum of 3-observations. \n \n")
-        
-#         md.append(self.plots['hitrate']['annual'].render())
-        
-#         for p in self.plots['hitrate']:
-#             if p == 'annual':
-#                 continue
-#             md.append(self.plots['hitrate'][p])      
-        
-#         # Correlation Analysis
-#         md.append("## Correlation Review")
-#         md.append("We present the correlation matrix for the full sample period, \
-#                    showing both the Portfolio returns and the Alpha stream. \
-#                    Additionally we include a series of strategic asset classes \
-#                    relevant for multi-asset portfolios. \n ")
-#         md.append(self.plots['correl_wide'])
-#         md.append(self.plots['correl_animation'])
-#         md.append("\n \n")
-        
-#         return "\n \n".join(md)
-
-
-
-
-# %%
+# %% MARKDOWN CLASS
 
 class BacktestMarkdwonReport(object):
     """ Class exists for our HTML / Markdown Backtest Reports
@@ -1620,6 +1027,23 @@ class BacktestMarkdwonReport(object):
     the specific edits for building an HTML report get quite long and cumbersome
     we are splitting into this seperate class.
     
+    Designed to be called from within the Backtest Class but can be run standalone
+    
+    Functions:
+        plot_master():
+            * creates dictionary of useful plots
+            
+        pretty_panda():
+            * applies basic styling to a pandas table - this could move
+            * bespoke sub funcs extend this; these funcs start "pretty_panda_xxx"
+            
+    REPORTING:
+    In all cases we produce a templated markdown script with Plotly plots
+    already embedded as HTML - these can be fed to report_writer or anything
+    which turns markdown to a static html/pdf.
+    
+        - markdown_doc() is primary function for generating markdown. REQUIRES
+            plot_master() to have been run but will prettify dataframe itself.
     
     """    
     
@@ -2231,4 +1655,4 @@ def test_code():
     
     return bt
 
-bt = test_code()
+#bt = test_code()
