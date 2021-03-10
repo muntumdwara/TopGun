@@ -307,7 +307,10 @@ class BacktestAnalytics(object):
                                    CVaR = iCVaR
                                    )
 
-        # Run summary table & annualised summary and ingest
+        ## Run summary table & annualised summary and ingest
+        # summary is a dataframe with lots of metrics over the whole period
+        # annualised is a dict of metrics, where values are dfs with ann summary
+        # dataframe has the years as index and strategies in columns
         self.summary = self.backtest_summary()
         self.summary_pa = self.per_annum()
 
@@ -651,9 +654,6 @@ class BacktestAnalytics(object):
         # Requires only the returns dataframe
         # Rf in [0] and Rb in [1]
         x = self.rtns
-        
-        #beta=self.rolling_beta(window=12)
-        
         y = self.rtns[self.rtns < 0].fillna(0) # only requires return dataframe that holds negative returns
         
         pa = dict.fromkeys(['rtn', 'alpha', 'xscash', 'vol','downside_vol', 'te', 'sharpe', 'ir','sortino','Beta','treynor'])
@@ -670,20 +670,15 @@ class BacktestAnalytics(object):
         rtn.index = yrs    # relabel indices to years (from timestamp)
         pa['rtn'] = rtn
         
-        # Volatility - fairly simple
+        # Volatility & downside vol - fairly simple
         pa['vol'] = x.groupby(x.index.year).std() * np.sqrt(12)
-        
-        # Downside Volatility
-        
         pa['downside_vol'] = y.groupby(y.index.year).std() * np.sqrt(12)
         
         # Beta : Used the Rolling beta to extract the Betas at the end of each year
-        #pa['Beta'] = beta[beta.index.isin(idx)]
-        #pa['Beta'].index = pd.DatetimeIndex(pa['Beta'].index).year
+        beta=self.rolling_beta(window=12)
+        pa['Beta'] = beta[beta.index.isin(idx)]
+        pa['Beta'].index = pd.DatetimeIndex(pa['Beta'].index).year
         
-        
-            
-                   
         # Alpha & Excess-Cash Return
         # Remember Rf in posn 0 & Rb in posn 1
         pa['xscash'] = rtn.subtract(rtn.iloc[:,0], axis='rows')
@@ -699,7 +694,7 @@ class BacktestAnalytics(object):
         pa['sharpe'] = pa['xscash'] / pa['vol']
         pa['ir'] = pa['alpha'] / pa['te']
         pa['sortino'] = pa['xscash'] / pa['downside_vol']
-        #pa['treynor'] = pa['xscash'] / pa['Beta']
+        pa['treynor'] = pa['xscash'] / pa['Beta']
         
         self.summary_pa = pa
         return pa
@@ -1503,14 +1498,11 @@ class BacktestAnalytics(object):
             x = x.format(formatter="{:.2f}", subset=pd.IndexSlice[:, x.columns[1:]])
             x = x.background_gradient('RdYlGn', vmin=-2, vmax=+3, subset=pd.IndexSlice[:, x.columns[1:]],)
             
-              
-        
         return x
     
     def markdown_doc(self, title="TEST"):
         """ Master Markdown file for full backtest report """
-        
-        
+            
         md = []     # dummy list container - convert to strings later
     
         # Title
@@ -1565,12 +1557,11 @@ class BacktestAnalytics(object):
         md.append(self.plots['roll_ir'])
         md.append(self.plots['roll_rar'])
         md.append(self.plots['beta'])
-        #md.append(self.pretty_panda_annual('Beta').render())
+        md.append(self.pretty_panda_annual('Beta').render())
         md.append(self.plots['sortino'])
         md.append(self.pretty_panda_annual('sortino').render())
         md.append(self.plots['treynor'])
-        #md.append(self.pretty_panda_annual('treynor').render())
-        
+        md.append(self.pretty_panda_annual('treynor').render())
         
         ## Rolling Risk Adjusted Measures
         md.append("## Tail-Risk - Rolling")
@@ -1588,8 +1579,8 @@ class BacktestAnalytics(object):
                   that may be missed in headline metrics.")
         md.append(self.plots['regression_rtn'])
         md.append(self.plots['regression_alpha'])
-#              
-#        # Hitrate
+              
+        # Hitrate
         md.append("## Hit Rate Analysis")
         md.append("Here we aren't interested in the quantum of return, \
                    simply the binary outcome per month. Heatmaps will show \
@@ -1603,7 +1594,7 @@ class BacktestAnalytics(object):
             if p == 'annual':
                 continue
             md.append(self.plots['hitrate'][p])      
-##        
+        
         # Correlation Analysis
         md.append("## Correlation Review")
         md.append("We present the correlation matrix for the full sample period, \
@@ -1615,6 +1606,34 @@ class BacktestAnalytics(object):
         md.append("\n \n")
         
         return "\n \n".join(md)
+
+
+
+
+
+
+class BackTestMarkdwonReport(object):
+    
+    def __init__(self, backtest):
+        
+        return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # %% TEST CODE
@@ -1659,4 +1678,4 @@ def test_code():
     
     return bt
 
-bt = test_code()
+#bt = test_code()
