@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
+# '''
+# TopGun Backtest Class
+# @author: David McNay & Muntu Mdwara
 
-TopGun Backtest Class
-@author: David McNay & Muntu Mdwara
-
-
-"""
+# '''
 # %% IMPORTs CELL
 
 # Default Imports
@@ -634,7 +632,7 @@ class BacktestAnalytics(object):
         x = self.rtns
         y = self.rtns[self.rtns < 0].fillna(0) # only requires return dataframe that holds negative returns
         
-        pa = dict.fromkeys(['rtn', 'alpha', 'xscash', 'vol','downside_vol', 'te', 'sharpe', 'ir','sortino','Beta','treynor'])
+        pa = dict.fromkeys(['rtn', 'alpha', 'xscash', 'vol','downside_vol', 'te', 'sharpe', 'ir','sortino','Beta','treynor','VaR','CVaR'])
         
         # create group object which has years as keys
         # find index of last month; can't just do annual or we miss YTD
@@ -673,6 +671,21 @@ class BacktestAnalytics(object):
         pa['ir'] = pa['alpha'] / pa['te']
         pa['sortino'] = pa['xscash'] / pa['downside_vol']
         pa['treynor'] = pa['xscash'] / pa['Beta']
+        
+        # Tail Risk 
+        # Value-at-Risk
+        VaR = self.rolling[12]['VaR']
+        pa['VaR'] = VaR[VaR.index.isin(idx)]
+        pa['VaR'].index = pd.DatetimeIndex(pa['VaR'].index).year
+        
+        # Conditional Value-at-Risk
+        CVaR = self.rolling[12]['CVaR']
+        pa['CVaR'] = CVaR[CVaR.index.isin(idx)]
+        pa['CVaR'].index = pd.DatetimeIndex(pa['CVaR'].index).year     
+        
+        
+        
+        
         
         self.summary_pa = pa
         return pa
@@ -1400,7 +1413,7 @@ class BacktestMarkdwonReport(object):
         df = self.bt.backtest_summary()
         
         format_list = ['Payoff','profit_factor',
-                       'Beta','TE','Skew','Kurtosis','avg_drawdown_days','avg_XS_drawdown_days','recovery_factor',
+                       'Beta','Skew','Kurtosis','avg_drawdown_days','avg_XS_drawdown_days','recovery_factor',
                        'tail_ratio','Sharpe','Modified_Sharpe_Ratio','IR','RaR','Calmar Ratio','Sortino','Treynor_Ratio','Omega_ratio']
 #        # Create list to format the numbesr to percentage 
 #        percentage_list = ['TR','Avg Return','avg_win','avg_loss','xs_mean','xs_worst','xs_best','Hitrate',
@@ -1421,7 +1434,7 @@ class BacktestMarkdwonReport(object):
         
         ## Conditional Format Bits
         # These Include the Benchmark
-        y = [['TR', 'Sharpe', 'Modified_Sharpe_Ratio','RaR', 'Max_Drawdown','Historic_VaR','Historic_CVaR','Modified_VaR'], x.columns[1:]]
+        y = [['TR','Avg Return','avg_win','avg_loss','xs_mean','xs_worst','xs_best','Sharpe', 'Modified_Sharpe_Ratio','RaR', 'Max_Drawdown','Historic_VaR','Historic_CVaR','Modified_VaR'], x.columns[1:]]
         x = x.highlight_max(color='lightseagreen', subset=pd.IndexSlice[y[0], y[1]], axis=1)
         x = x.highlight_min(color='crimson', subset=pd.IndexSlice[y[0], y[1]], axis=1)
         
@@ -1507,6 +1520,14 @@ class BacktestMarkdwonReport(object):
             x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
             x = x.format(formatter="{:.2f}", subset=pd.IndexSlice[:, x.columns[1:]])
             x = x.background_gradient('RdYlGn', vmin=-2, vmax=+3, subset=pd.IndexSlice[:, x.columns[1:]],)
+        elif key in ['VaR']:            
+            x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
+            x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
+            x = x.background_gradient('RdYlGn_r', subset=pd.IndexSlice[:, x.columns[1:]],)
+        elif key in ['CVaR']:            
+            x = self.pretty_panda(pa[key].dropna().iloc[:,1:].reset_index())
+            x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])
+            x = x.background_gradient('RdYlGn_r', subset=pd.IndexSlice[:, x.columns[1:]],)
             
         return x
     
@@ -1576,7 +1597,9 @@ class BacktestMarkdwonReport(object):
         ## Rolling Risk Adjusted Measures
         md.append("## Tail-Risk - Rolling")
         md.append(self.plots['VaR'])
+        md.append(self.pretty_panda_annual('VaR').render())
         md.append(self.plots['CVaR'])
+        md.append(self.pretty_panda_annual('CVaR').render())       
         
         ## Regression & Return Distributions
         md.append("## Return Distribution")
@@ -1657,5 +1680,4 @@ def test_code():
     Reporting().md2html(md=bt.markdown_report, title='test MM1')
     
     return bt
-
-#bt = test_code()
+bt = test_code()
