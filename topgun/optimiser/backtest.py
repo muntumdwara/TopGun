@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
-# '''
-# TopGun Backtest Class
-# @author: David McNay & Muntu Mdwara
+"""
 
-# '''
+TopGun Backtest Class
+@author: David McNay & Muntu Mdwara
+
+
+"""
+
 # %% IMPORTs CELL
 
 # Default Imports
@@ -534,7 +537,7 @@ class BacktestAnalytics(object):
         except:
             roll_beta = (df.pivot(index='Dates', columns='key', values='BMK').
                          reindex(columns=list(self.rtns.columns)))
-
+            
         return roll_beta
 
     def backtest_summary(self):
@@ -685,10 +688,6 @@ class BacktestAnalytics(object):
         CVaR = self.rolling[12]['CVaR']
         pa['CVaR'] = CVaR[CVaR.index.isin(idx)]
         pa['CVaR'].index = pd.DatetimeIndex(pa['CVaR'].index).year     
-        
-        
-        
-        
         
         self.summary_pa = pa
         return pa
@@ -1438,6 +1437,7 @@ class BacktestMarkdwonReport(object):
         ## Conditional Format Bits
         # These Include the Benchmark
         y = [['TR','Avg Return','avg_win','avg_loss','xs_mean','xs_worst','xs_best','Sharpe', 'Modified_Sharpe_Ratio','RaR', 'Max_Drawdown','Historic_VaR','Historic_CVaR','Modified_VaR'], x.columns[1:]]
+
         x = x.highlight_max(color='lightseagreen', subset=pd.IndexSlice[y[0], y[1]], axis=1)
         x = x.highlight_min(color='crimson', subset=pd.IndexSlice[y[0], y[1]], axis=1)
         
@@ -1603,6 +1603,7 @@ class BacktestMarkdwonReport(object):
         md.append(self.pretty_panda_annual('VaR').render())
         md.append(self.plots['CVaR'])
         md.append(self.pretty_panda_annual('CVaR').render())       
+
         
         ## Regression & Return Distributions
         md.append("## Return Distribution")
@@ -1644,7 +1645,7 @@ class BacktestMarkdwonReport(object):
         return "\n \n".join(md)
 
 # %% TEST CODE
-  
+
 # def test_code():
 #     """ Code uses BACKTEST.xlsm which has timeseries data in it """
     
