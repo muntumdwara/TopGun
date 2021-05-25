@@ -15,6 +15,13 @@ import pandas as pd
 import scipy.stats
 from scipy.stats import kurtosis, skew, norm
 
+# Import Peformance Analytics package from R with couple of interesting functions
+from rpy2.robjects.packages import importr
+pfa = importr("PerformanceAnalytics")    
+from rpy2.robjects import numpy2ri, pandas2ri
+numpy2ri.activate()
+pandas2ri.activate()
+
 # Rolling Regression
 import statsmodels.api as sm
 from statsmodels.regression.rolling import RollingOLS
@@ -529,6 +536,12 @@ class BacktestAnalytics(object):
         
         # pivot output so index == Dates & columns are [Rf, BMK, Strategies+]
         # reindex so output order is the same as input dataframe column order
+        # NB/ Pandas changed around v1.2 that reset_index() REMOVES original
+        # column name; we change our pivot to index='index'
+        # could be a source of future errors here
+        roll_beta = (df.pivot(index='Dates', columns='key', values='BMK').
+                     reindex(columns=list(self.rtns.columns)))
+
         # NB/ Pandas changed ~v1.2 so reset_index() REMOVES original col name
         # We add error handling to try index='index' & index='Dates' in pivot
         try:
@@ -574,11 +587,18 @@ class BacktestAnalytics(object):
         
         # Drawdown Metrics over full period
         # drawdown, xs-drawdowns, average drawdown period & xs-period (in days)
-        df['avg_drawdown'] = self.drawdown.mean()
-        df['avg_XS_drawdown'] = self.xs_drawdown.mean()
-        df['avg_drawdown_days']=self.drawdown_breakdown(alpha=False)['length'].mean() 
-        df['avg_XS_drawdown_days']=self.drawdown_breakdown(alpha=True)['length'].mean() 
-            
+        #df['avg_drawdown'] = self.drawdown.mean()
+        #df['avg_XS_drawdown'] = self.xs_drawdown.mean()
+        #df['avg_drawdown_days']=self.drawdown_breakdown(alpha=False)['length'].mean() 
+        #df['avg_XS_drawdown_days']=self.drawdown_breakdown(alpha=True)['length'].mean() 
+        
+        df['avg_drawdown'] = pfa.AverageDrawdown(self.rtns)[0]
+        df['avg_XS_drawdown'] = pfa.AverageDrawdown(self.xsrtns)[0]
+        df['avg_drawdown_days']= pfa.AverageLength(self.rtns)[0] 
+        df['avg_XS_drawdown_days']= pfa.AverageLength(self.xsrtns)[0] 
+        
+        
+                    
         # Measure the skewness & kurtosis of the returns
         df['Skew'] = self.rtns.skew()
         df['Kurtosis'] = self.rtns.kurt()
@@ -597,7 +617,7 @@ class BacktestAnalytics(object):
         # Drawdown Analysis
         df['Max_Drawdown'] = self.drawdown.min(axis=0)
         df['Max_XS_DD'] = self.xs_drawdown.min(axis=0)
-        df['Hitrate'] = self.xsrtns[self.xsrtns > 0].count() / self.rtns.count()
+        df['Hitrate'] = self.rtns[self.rtns > 0].count() / self.rtns.count()
         df['xs_mean'] = self.xsrtns.mean()
         df['xs_worst'] = self.xsrtns.min()
         df['xs_best'] = self.xsrtns.max()
@@ -1644,6 +1664,7 @@ class BacktestMarkdwonReport(object):
         
         return "\n \n".join(md)
 
+
 # %% TEST CODE
 
 # def test_code():
@@ -1685,27 +1706,83 @@ class BacktestMarkdwonReport(object):
     
 #     return bt
 
-def test_code():
+#def test_code():
 
-    import xlwings as xlw
-    import pandas as pd
+#    import xlwings as xlw
+#    import pandas as pd
     
     # import workbook and pull timeseries (which includes test ports)
-    wb = xlw.Book('BACKTEST.xlsm')
-    ts = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:].pct_change()
-    ts.index = pd.to_datetime(ts.index)
-    ts.index = ts.index + pd.offsets.MonthEnd(0)
+#    wb = xlw.Book('BACKTEST.xlsm')
+#    ts = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:].pct_change()
+#    ts.index = pd.to_datetime(ts.index)
+#    ts.index = ts.index + pd.offsets.MonthEnd(0)
     
     # pull test ports
-    rtns = ts.iloc[:, :2].copy()
+#    rtns = ts.iloc[:, :2].copy()
     
     # backtest
-    bt = BacktestAnalytics(rtns, ts, bmks_as_rtns=True, benchmark='MXUS', Rf='Rf')
-    md = bt.big_bang(title="TEST MM 1")
+#    bt = BacktestAnalytics(rtns, ts, bmks_as_rtns=True, benchmark='MXUS', Rf='Rf')
+#    md = bt.big_bang(title="TEST MM 1")
     
     #from topgun.reporting import Reporting
     #Reporting().md2html(md=bt.markdown_report, title='test MM1')
     
-    return md
+#    return md
+
+#bt = test_code()
+
+
+#     # index data from timeseries sheet
+#     benchmarks = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:]
+#     benchmarks.index = pd.to_datetime(benchmarks.index)
+    
+#     # Extract the Core and the Enhanced Strategies from the ports
+#     # then splice to get a return series
+#     E = wb.sheets['Enhanced'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+#     C = wb.sheets['Core'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+#     E.index = E.index + pd.offsets.MonthEnd(0)
+#     C.index = C.index + pd.offsets.MonthEnd(0)
+#     E.name = 'Enhanced'
+#     C.name = 'Core'
+#     rtns = pd.concat([E, C], axis=1).dropna()    # strategy returns
+    
+#     # Add a blended portfolio that is a mix of strategy E & C
+#     x = 0.5
+#     rtns['E50'] = rtns['Enhanced'] * x + rtns['Core'] * (1 - x)
+    
+#     ### NOW WE TEST
+#     bt = BacktestAnalytics(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX', Rf='STEFI')
+    
+#     #bt.run_backtest()
+#     #bt.plot_master()
+#     bt.big_bang()
+    
+#     # produce report
+#     Reporting().md2html(md=bt.markdown_report, title='test MM1')
+    
+#     return bt
+
+#def test_code():
+
+#    import xlwings as xlw
+#    import pandas as pd
+    
+    # import workbook and pull timeseries (which includes test ports)
+#    wb = xlw.Book('BACKTEST.xlsm')
+#    ts = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:].pct_change()
+#    ts.index = pd.to_datetime(ts.index)
+#    ts.index = ts.index + pd.offsets.MonthEnd(0)
+    
+    # pull test ports
+#    rtns = ts.iloc[:, :2].copy()
+    
+    # backtest
+#    bt = BacktestAnalytics(rtns, ts, bmks_as_rtns=True, benchmark='MXUS', Rf='Rf')
+#    md = bt.big_bang(title="TEST MM 1")
+    
+    #from topgun.reporting import Reporting
+    #Reporting().md2html(md=bt.markdown_report, title='test MM1')
+    
+#    return md
 
 #bt = test_code()
