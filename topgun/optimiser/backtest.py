@@ -1158,28 +1158,28 @@ class BacktestMarkdwonReport(object):
         # Rolling Period Charts
         plots['roll_rtn'] = self.bt.plot_index(self.bt.rolling[12]['rtn'],
                                             title='Rolling Return: 12m',
-                                            yfmt=['.0%', '.2%'],
+                                            yfmt=['.1%', '.2%'],
                                             ytitle='Return',
                                             height=350,
                                             source=True, y_src=-0.15)
         
         plots['roll_xsrtn'] = self.bt.plot_index(self.bt.rolling[12]['xsrtn'],
                                             title='Rolling Excess Return: 12m',
-                                            yfmt=['.0%', '.2%'],
+                                            yfmt=['.1%', '.2%'],
                                             ytitle='Alpha',
                                             benchmark=False, height=350,
                                             source=True, y_src=-0.15)
         
         plots['roll_vol'] = self.bt.plot_index(self.bt.rolling[12]['vol'],
                                             title='Rolling Volatility: 12m',
-                                            yfmt=['.0%', '.2%'],
+                                            yfmt=['.1%', '.2%'],
                                             ytitle='Volatility',
                                             height=350,
                                             source=True, y_src=-0.15)
         
         plots['roll_downside_vol'] = self.bt.plot_index(self.bt.rolling[12]['downside_vol'],
                                             title='Rolling Downside Volatility: 12m',
-                                            yfmt=['.0%', '.2%'],
+                                            yfmt=['.1%', '.2%'],
                                             ytitle='Downside Volatility',
                                             height=350,
                                             source=True, y_src=-0.15)        
@@ -1194,42 +1194,42 @@ class BacktestMarkdwonReport(object):
         plots['roll_sharpe'] = self.bt.plot_index(
                                   self.bt.rolling[12]['sharpe'],
                                   title='Sharpe Ratio: 12m',
-                                  yfmt=['.1f', '.2f'], ytitle='Sharpe Ratio',
+                                  yfmt=['.2f', '.2f'], ytitle='Sharpe Ratio',
                                   benchmark=False, height=350,
                                   source=True, y_src=-0.15)
         
         plots['sortino'] = self.bt.plot_index(
                                 self.bt.rolling[12]['sortino'],              
                                 title='Rolling Sortino: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='Sortino',
+                                yfmt=['.2f', '.2f'], ytitle='Sortino',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)
         
         plots['roll_rar'] = self.bt.plot_index(
                                   self.bt.rolling[12]['xsrtn'] / self.bt.rolling[12]['vol'],
                                   title='Risk Adjusted Return: 12m',
-                                  yfmt=['.1f', '.2f'], ytitle='Information Ratio',
+                                  yfmt=['.2f', '.2f'], ytitle='Information Ratio',
                                   benchmark=False, height=350,
                                   source=True, y_src=-0.15)
 
         plots['roll_ir'] = self.bt.plot_index(
                                 self.bt.rolling[12]['xsrtn'] / self.bt.rolling[12]['te'],              
                                 title='Rolling Information Ratio: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='IR',
+                                yfmt=['.2f', '.2f'], ytitle='IR',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)
         
         plots['beta'] = self.bt.plot_index(
                                 self.bt.rolling[12]['beta'],              
                                 title='Rolling Beta: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='Beta',
+                                yfmt=['.2f', '.2f'], ytitle='Beta',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)
         
         plots['treynor'] = self.bt.plot_index(
                                 self.bt.rolling[12]['treynor'],              
                                 title='Rolling Treynor Ratio: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='Treynor',
+                                yfmt=['.2f', '.2f'], ytitle='Treynor',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)
         
@@ -1237,14 +1237,14 @@ class BacktestMarkdwonReport(object):
         plots['VaR'] = self.bt.plot_index(
                                 self.bt.rolling[12]['VaR'],              
                                 title='Rolling Value-at-Risk: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='VaR',
+                                yfmt=['.1%', '.2%'], ytitle='VaR',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)   
             
         plots['CVaR'] = self.bt.plot_index(
                                 self.bt.rolling[12]['CVaR'],              
                                 title='Rolling Expected Shortfall: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='CVaR',
+                                yfmt=['.1%', '.2%'], ytitle='CVaR',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)   
         
