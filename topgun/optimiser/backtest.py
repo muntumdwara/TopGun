@@ -15,6 +15,13 @@ import pandas as pd
 import scipy.stats
 from scipy.stats import kurtosis, skew, norm
 
+# Import Peformance Analytics package from R with couple of interesting functions
+from rpy2.robjects.packages import importr
+pfa = importr("PerformanceAnalytics")    
+from rpy2.robjects import numpy2ri, pandas2ri
+numpy2ri.activate()
+pandas2ri.activate()
+
 # Rolling Regression
 import statsmodels.api as sm
 from statsmodels.regression.rolling import RollingOLS
@@ -529,6 +536,12 @@ class BacktestAnalytics(object):
         
         # pivot output so index == Dates & columns are [Rf, BMK, Strategies+]
         # reindex so output order is the same as input dataframe column order
+        # NB/ Pandas changed around v1.2 that reset_index() REMOVES original
+        # column name; we change our pivot to index='index'
+        # could be a source of future errors here
+        roll_beta = (df.pivot(index='Dates', columns='key', values='BMK').
+                     reindex(columns=list(self.rtns.columns)))
+
         # NB/ Pandas changed ~v1.2 so reset_index() REMOVES original col name
         # We add error handling to try index='index' & index='Dates' in pivot
         try:
@@ -574,11 +587,18 @@ class BacktestAnalytics(object):
         
         # Drawdown Metrics over full period
         # drawdown, xs-drawdowns, average drawdown period & xs-period (in days)
-        df['avg_drawdown'] = self.drawdown.mean()
-        df['avg_XS_drawdown'] = self.xs_drawdown.mean()
-        df['avg_drawdown_days']=self.drawdown_breakdown(alpha=False)['length'].mean() 
-        df['avg_XS_drawdown_days']=self.drawdown_breakdown(alpha=True)['length'].mean() 
-            
+        #df['avg_drawdown'] = self.drawdown.mean()
+        #df['avg_XS_drawdown'] = self.xs_drawdown.mean()
+        #df['avg_drawdown_days']=self.drawdown_breakdown(alpha=False)['length'].mean() 
+        #df['avg_XS_drawdown_days']=self.drawdown_breakdown(alpha=True)['length'].mean() 
+        
+        df['avg_drawdown'] = pfa.AverageDrawdown(self.rtns)[0]
+        df['avg_XS_drawdown'] = pfa.AverageDrawdown(self.xsrtns)[0]
+        df['avg_drawdown_days']= pfa.AverageLength(self.rtns)[0] 
+        df['avg_XS_drawdown_days']= pfa.AverageLength(self.xsrtns)[0] 
+        
+        
+                    
         # Measure the skewness & kurtosis of the returns
         df['Skew'] = self.rtns.skew()
         df['Kurtosis'] = self.rtns.kurt()
@@ -597,7 +617,7 @@ class BacktestAnalytics(object):
         # Drawdown Analysis
         df['Max_Drawdown'] = self.drawdown.min(axis=0)
         df['Max_XS_DD'] = self.xs_drawdown.min(axis=0)
-        df['Hitrate'] = self.xsrtns[self.xsrtns > 0].count() / self.rtns.count()
+        df['Hitrate'] = self.rtns[self.rtns > 0].count() / self.rtns.count()
         df['xs_mean'] = self.xsrtns.mean()
         df['xs_worst'] = self.xsrtns.min()
         df['xs_best'] = self.xsrtns.max()
@@ -1138,28 +1158,28 @@ class BacktestMarkdwonReport(object):
         # Rolling Period Charts
         plots['roll_rtn'] = self.bt.plot_index(self.bt.rolling[12]['rtn'],
                                             title='Rolling Return: 12m',
-                                            yfmt=['.0%', '.2%'],
+                                            yfmt=['.1%', '.2%'],
                                             ytitle='Return',
                                             height=350,
                                             source=True, y_src=-0.15)
         
         plots['roll_xsrtn'] = self.bt.plot_index(self.bt.rolling[12]['xsrtn'],
                                             title='Rolling Excess Return: 12m',
-                                            yfmt=['.0%', '.2%'],
+                                            yfmt=['.1%', '.2%'],
                                             ytitle='Alpha',
                                             benchmark=False, height=350,
                                             source=True, y_src=-0.15)
         
         plots['roll_vol'] = self.bt.plot_index(self.bt.rolling[12]['vol'],
                                             title='Rolling Volatility: 12m',
-                                            yfmt=['.0%', '.2%'],
+                                            yfmt=['.1%', '.2%'],
                                             ytitle='Volatility',
                                             height=350,
                                             source=True, y_src=-0.15)
         
         plots['roll_downside_vol'] = self.bt.plot_index(self.bt.rolling[12]['downside_vol'],
                                             title='Rolling Downside Volatility: 12m',
-                                            yfmt=['.0%', '.2%'],
+                                            yfmt=['.1%', '.2%'],
                                             ytitle='Downside Volatility',
                                             height=350,
                                             source=True, y_src=-0.15)        
@@ -1174,42 +1194,42 @@ class BacktestMarkdwonReport(object):
         plots['roll_sharpe'] = self.bt.plot_index(
                                   self.bt.rolling[12]['sharpe'],
                                   title='Sharpe Ratio: 12m',
-                                  yfmt=['.1f', '.2f'], ytitle='Sharpe Ratio',
+                                  yfmt=['.2f', '.2f'], ytitle='Sharpe Ratio',
                                   benchmark=False, height=350,
                                   source=True, y_src=-0.15)
         
         plots['sortino'] = self.bt.plot_index(
                                 self.bt.rolling[12]['sortino'],              
                                 title='Rolling Sortino: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='Sortino',
+                                yfmt=['.2f', '.2f'], ytitle='Sortino',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)
         
         plots['roll_rar'] = self.bt.plot_index(
                                   self.bt.rolling[12]['xsrtn'] / self.bt.rolling[12]['vol'],
                                   title='Risk Adjusted Return: 12m',
-                                  yfmt=['.1f', '.2f'], ytitle='Information Ratio',
+                                  yfmt=['.2f', '.2f'], ytitle='Information Ratio',
                                   benchmark=False, height=350,
                                   source=True, y_src=-0.15)
 
         plots['roll_ir'] = self.bt.plot_index(
                                 self.bt.rolling[12]['xsrtn'] / self.bt.rolling[12]['te'],              
                                 title='Rolling Information Ratio: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='IR',
+                                yfmt=['.2f', '.2f'], ytitle='IR',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)
         
         plots['beta'] = self.bt.plot_index(
                                 self.bt.rolling[12]['beta'],              
                                 title='Rolling Beta: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='Beta',
+                                yfmt=['.2f', '.2f'], ytitle='Beta',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)
         
         plots['treynor'] = self.bt.plot_index(
                                 self.bt.rolling[12]['treynor'],              
                                 title='Rolling Treynor Ratio: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='Treynor',
+                                yfmt=['.2f', '.2f'], ytitle='Treynor',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)
         
@@ -1217,14 +1237,14 @@ class BacktestMarkdwonReport(object):
         plots['VaR'] = self.bt.plot_index(
                                 self.bt.rolling[12]['VaR'],              
                                 title='Rolling Value-at-Risk: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='VaR',
+                                yfmt=['.1%', '.2%'], ytitle='VaR',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)   
             
         plots['CVaR'] = self.bt.plot_index(
                                 self.bt.rolling[12]['CVaR'],              
                                 title='Rolling Expected Shortfall: 12m',
-                                yfmt=['.1f', '.2f'], ytitle='CVaR',
+                                yfmt=['.1%', '.2%'], ytitle='CVaR',
                                 benchmark=False, height=350,
                                 source=True, y_src=-0.15)   
         
@@ -1644,6 +1664,7 @@ class BacktestMarkdwonReport(object):
         
         return "\n \n".join(md)
 
+
 # %% TEST CODE
 
 # def test_code():
@@ -1685,27 +1706,83 @@ class BacktestMarkdwonReport(object):
     
 #     return bt
 
-def test_code():
+#def test_code():
 
-    import xlwings as xlw
-    import pandas as pd
+#    import xlwings as xlw
+#    import pandas as pd
     
     # import workbook and pull timeseries (which includes test ports)
-    wb = xlw.Book('BACKTEST.xlsm')
-    ts = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:].pct_change()
-    ts.index = pd.to_datetime(ts.index)
-    ts.index = ts.index + pd.offsets.MonthEnd(0)
+#    wb = xlw.Book('BACKTEST.xlsm')
+#    ts = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:].pct_change()
+#    ts.index = pd.to_datetime(ts.index)
+#    ts.index = ts.index + pd.offsets.MonthEnd(0)
     
     # pull test ports
-    rtns = ts.iloc[:, :2].copy()
+#    rtns = ts.iloc[:, :2].copy()
     
     # backtest
-    bt = BacktestAnalytics(rtns, ts, bmks_as_rtns=True, benchmark='MXUS', Rf='Rf')
-    md = bt.big_bang(title="TEST MM 1")
+#    bt = BacktestAnalytics(rtns, ts, bmks_as_rtns=True, benchmark='MXUS', Rf='Rf')
+#    md = bt.big_bang(title="TEST MM 1")
     
     #from topgun.reporting import Reporting
     #Reporting().md2html(md=bt.markdown_report, title='test MM1')
     
-    return md
+#    return md
+
+#bt = test_code()
+
+
+#     # index data from timeseries sheet
+#     benchmarks = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:]
+#     benchmarks.index = pd.to_datetime(benchmarks.index)
+    
+#     # Extract the Core and the Enhanced Strategies from the ports
+#     # then splice to get a return series
+#     E = wb.sheets['Enhanced'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+#     C = wb.sheets['Core'].range('A1').options(pd.DataFrame, expand='table').value.iloc[:,1]
+#     E.index = E.index + pd.offsets.MonthEnd(0)
+#     C.index = C.index + pd.offsets.MonthEnd(0)
+#     E.name = 'Enhanced'
+#     C.name = 'Core'
+#     rtns = pd.concat([E, C], axis=1).dropna()    # strategy returns
+    
+#     # Add a blended portfolio that is a mix of strategy E & C
+#     x = 0.5
+#     rtns['E50'] = rtns['Enhanced'] * x + rtns['Core'] * (1 - x)
+    
+#     ### NOW WE TEST
+#     bt = BacktestAnalytics(rtns, benchmarks, bmks_as_rtns=False, benchmark='SWIX', Rf='STEFI')
+    
+#     #bt.run_backtest()
+#     #bt.plot_master()
+#     bt.big_bang()
+    
+#     # produce report
+#     Reporting().md2html(md=bt.markdown_report, title='test MM1')
+    
+#     return bt
+
+#def test_code():
+
+#    import xlwings as xlw
+#    import pandas as pd
+    
+    # import workbook and pull timeseries (which includes test ports)
+#    wb = xlw.Book('BACKTEST.xlsm')
+#    ts = wb.sheets['TIMESERIES'].range('D1').options(pd.DataFrame, expand='table').value.iloc[3:,:].pct_change()
+#    ts.index = pd.to_datetime(ts.index)
+#    ts.index = ts.index + pd.offsets.MonthEnd(0)
+    
+    # pull test ports
+#    rtns = ts.iloc[:, :2].copy()
+    
+    # backtest
+#    bt = BacktestAnalytics(rtns, ts, bmks_as_rtns=True, benchmark='MXUS', Rf='Rf')
+#    md = bt.big_bang(title="TEST MM 1")
+    
+    #from topgun.reporting import Reporting
+    #Reporting().md2html(md=bt.markdown_report, title='test MM1')
+    
+#    return md
 
 #bt = test_code()
