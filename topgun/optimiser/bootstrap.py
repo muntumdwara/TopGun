@@ -310,6 +310,9 @@ class Bootstrap(object):
         f = kwargs['f'] if 'f' in kwargs else self.f
         psims = kwargs['psims'] if 'psims' in kwargs else self.psims
         
+        # reindex historical data for current asset universe
+        hist = hist.reindex(columns=w.index)
+        
         ## OPTIONAL INPUTS
         alpha = np.zeros(len(w)) if 'alpha' not in kwargs else kwargs['alpha']
         te = np.zeros(len(w)) if 'te' not in kwargs else kwargs['te']
@@ -435,6 +438,7 @@ class Bootstrap(object):
             w = w.to_frame()
             
         wa = np.array(w)                          # wgts to arrays for matrix algebra
+        cor = cor.reindex(index=w.index, columns=w.index)
         vcv = np.diag(vol) @ cor @ np.diag(vol)   # covariance matrix
         v = np.sqrt(np.diag(wa.T @ vcv @ wa))     # portfolio volatility
         
@@ -1233,6 +1237,7 @@ class Bootstrap(object):
         mu = self.mu if mu is None else mu
         vol = self.vol if vol is None else vol
         cor = self.cor if cor is None else cor
+        cor = cor.reindex(index=w.index, columns=w.index)
                 
         # Basics
         idx = w.sum(axis=1) != 0                  # assets with portfolio positions
@@ -1757,7 +1762,7 @@ def unit_test(write_report=True, plots_individual=False):
     
     """
     
-    from topgun.reporting import Reporting
+    #from topgun.reporting import Reporting
     
     ### Setup a Range of 4 Dummy Portfolios (RP1-4) & Dummy Returns
     # Returns are a random normal distribution with 20-years of weekly data
@@ -1793,9 +1798,9 @@ def unit_test(write_report=True, plots_individual=False):
         
     ### Now we test all the things - remember to test both frontier & port
     # by making sure the charts work we cover
-    #   self.emperical()
-    #   self.port_stats()
-    #   self.sim_stats()
+    #bs.emperical()
+    #bs.port_stats()
+    #bs.sim_stats()
     
     # render plotly plots to new tab on browser
     pio.renderers.default='browser'
@@ -1806,9 +1811,9 @@ def unit_test(write_report=True, plots_individual=False):
     
     # reports - go open this file
     # if the report looks correct then everything is probably working
-    if write_report:
-        md = bs.markdown_master()
-        Reporting().md2html(md=md, title='test')
+    # if write_report:
+    #     md = bs.markdown_master()
+    #     Reporting().md2html(md=md, title='test')
     
     # Create dummy plot for each type to see if it looks sensible
     if plots_individual:
@@ -1834,4 +1839,61 @@ def unit_test(write_report=True, plots_individual=False):
     return bs
 
 #bs = unit_test(write_report=True)
+
+# %%
+
+def bootstrap_report_smash(title='TEST', 
+                            active=False,
+                            path="./bootstrap_reports/",
+                            n=100,
+                            reports=True):
     
+    """ End-to-End Emperical Stochastic Modelling
+    
+    Function:
+        1. Pulls Data Required for MC Simulation from Excel Workbook
+        2. Runs Stochastic Modelling across all portfolios
+        3. Generates styled HTML reports & saves to folder
+        
+    INPUTS:
+        XLWINGS CURRENTLY HARDCODED BUT EASY TO EDIT
+    
+    """
+    
+    ### Set up excel wings connection
+    import xlwings as xlw
+    wb = xlw.Book('Viper.xlsm')
+    pullxlw = lambda a, b: wb.sheets[a].range(b).options(pd.DataFrame, expand='table').value
+
+    ## Pull bootstrap data from Excel
+    mc = pullxlw('viper', 'A1')    # Monte-Carlo Input Table & Weights
+    wgts = pullxlw('viper', 'K1')  # pull wgts cols (return tgts at the bottom)
+    rtns = pullxlw('STATIC RTNS', 'B4').reset_index()
+
+    ## Manipulate
+    mu, vol = mc['ExRtn'], mc['Vol']
+    alpha, te = mc['ALPHA'], mc['TE']
+
+    # Order matters for these
+    tgts = wgts.iloc[-1,:]         # vector of return targets
+    wgts = wgts.iloc[:-1,:]        # now strip return tgt from wgts
+    
+    ### setup bootstrap class
+    bs = Bootstrap(wgts=wgts, mu=mu, vol=vol, hist=rtns, nsims=n, psims=260, f=52)
+    
+    if active:
+        bs.alpha = alpha
+        bs.te = te
+    
+    if reports:
+    
+        # run emperical monte-carlo class
+        _ = bs.empirical_frontier()
+        _ = bs.plot_collection_all()
+
+        # produce reports
+        md = bs.markdown_master(title=title)
+        
+    return bs, md
+
+#x = bootstrap_report_smash()
