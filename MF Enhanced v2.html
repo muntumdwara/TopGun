@@ -1,0 +1,1676 @@
+
+            <!DOCTYPE html><html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                <style>
+            body {background-color: white;
+                          width: 850px;
+                          max-width: 95%;
+                          margin: auto;
+                          font-family: Garamond;
+                          }
+                    
+            h1 {color: teal; margin-left: 20px; margin-right: 20px;}
+            h2 {color: teal; margin-left: 20px;}
+            h3 {color: darkslategray; margin-left: 20px;}
+            p {margin: 20px}
+            
+            table {margin: 0 auto; align-self: center}
+            
+            </style>
+                <title>MF Enhanced v2</title>
+            </head>
+            <body>
+                <h1>STANLIB Multi-Strategy Backtest</h1>
+<h3>Report: MF Enhanced Strategy - Fairtree UT</h3>
+<p>Returns based backtest comparing portfolio(s) against the                   SWIX benchmark; risk-free return are proxied by the STEFI index.                   Data contains 112 monthly observations running from                   Jul-11 to Oct-20.                   </p>
+<h2>Summary</h2>
+<style  type="text/css" >
+    #T_cc986_ th {
+          font-family: Garamond;
+          padding: 5px 5px;
+          font-size: 15px;
+          background-color: black;
+          color: white;
+          text-align: center;
+          border: 1px solid black;
+    }    #T_cc986_ caption {
+          text-align: right;
+          caption-side: bottom;
+          font-size: 85%;
+          color: grey;
+    }#T_cc986_row0_col0,#T_cc986_row1_col0,#T_cc986_row2_col0,#T_cc986_row3_col0,#T_cc986_row4_col0,#T_cc986_row5_col0,#T_cc986_row6_col0,#T_cc986_row7_col0,#T_cc986_row8_col0,#T_cc986_row9_col0,#T_cc986_row10_col0,#T_cc986_row11_col0,#T_cc986_row12_col0,#T_cc986_row13_col0,#T_cc986_row14_col0,#T_cc986_row15_col0,#T_cc986_row16_col0,#T_cc986_row17_col0,#T_cc986_row18_col0,#T_cc986_row19_col0,#T_cc986_row20_col0,#T_cc986_row21_col0,#T_cc986_row22_col0,#T_cc986_row23_col0,#T_cc986_row24_col0,#T_cc986_row25_col0,#T_cc986_row26_col0,#T_cc986_row27_col0,#T_cc986_row28_col0,#T_cc986_row29_col0,#T_cc986_row30_col0,#T_cc986_row31_col0,#T_cc986_row32_col0,#T_cc986_row33_col0,#T_cc986_row34_col0,#T_cc986_row35_col0{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            font-weight:  bold;
+            color:  white;
+            background-color:  teal;
+            text-align:  justify;
+            min-width:  115px;
+        }#T_cc986_row0_col1,#T_cc986_row6_col1,#T_cc986_row7_col1,#T_cc986_row18_col2,#T_cc986_row19_col2,#T_cc986_row20_col2,#T_cc986_row24_col2,#T_cc986_row34_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  crimson;
+        }#T_cc986_row0_col2,#T_cc986_row6_col2,#T_cc986_row7_col2,#T_cc986_row18_col1,#T_cc986_row19_col1,#T_cc986_row20_col1,#T_cc986_row24_col1,#T_cc986_row34_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  lightseagreen;
+        }#T_cc986_row1_col1,#T_cc986_row1_col2,#T_cc986_row2_col1,#T_cc986_row2_col2,#T_cc986_row3_col1,#T_cc986_row3_col2,#T_cc986_row4_col2,#T_cc986_row5_col2,#T_cc986_row8_col1,#T_cc986_row8_col2,#T_cc986_row9_col1,#T_cc986_row9_col2,#T_cc986_row10_col1,#T_cc986_row10_col2,#T_cc986_row11_col1,#T_cc986_row11_col2,#T_cc986_row12_col1,#T_cc986_row12_col2,#T_cc986_row13_col2,#T_cc986_row14_col1,#T_cc986_row14_col2,#T_cc986_row15_col1,#T_cc986_row15_col2,#T_cc986_row16_col1,#T_cc986_row16_col2,#T_cc986_row17_col1,#T_cc986_row17_col2,#T_cc986_row21_col2,#T_cc986_row22_col1,#T_cc986_row22_col2,#T_cc986_row23_col1,#T_cc986_row23_col2,#T_cc986_row25_col2,#T_cc986_row26_col2,#T_cc986_row27_col2,#T_cc986_row28_col2,#T_cc986_row29_col2,#T_cc986_row30_col1,#T_cc986_row30_col2,#T_cc986_row31_col2,#T_cc986_row32_col1,#T_cc986_row32_col2,#T_cc986_row33_col1,#T_cc986_row33_col2,#T_cc986_row35_col1,#T_cc986_row35_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+        }#T_cc986_row4_col1,#T_cc986_row5_col1,#T_cc986_row13_col1,#T_cc986_row21_col1,#T_cc986_row25_col1,#T_cc986_row26_col1,#T_cc986_row27_col1,#T_cc986_row28_col1,#T_cc986_row29_col1,#T_cc986_row31_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  white;
+        }</style>
+
+<table id="T_cc986_" style="border-collapse:collapse"><caption>Source: STANLIB Multi-Strategy</caption><thead>    <tr>        <th class="col_heading level0 col0" >Metric</th>        <th class="col_heading level0 col1" >BMK</th>        <th class="col_heading level0 col2" >Enhanced</th>    </tr></thead><tbody>
+                <tr>
+                                <td id="T_cc986_row0_col0" class="data row0 col0" >TR</td>
+                        <td id="T_cc986_row0_col1" class="data row0 col1" >7.3%</td>
+                        <td id="T_cc986_row0_col2" class="data row0 col2" >11.2%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row1_col0" class="data row1 col0" >Vol</td>
+                        <td id="T_cc986_row1_col1" class="data row1 col1" >13.1%</td>
+                        <td id="T_cc986_row1_col2" class="data row1 col2" >15.2%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row2_col0" class="data row2 col0" >Downside_Vol</td>
+                        <td id="T_cc986_row2_col1" class="data row2 col1" >9.4%</td>
+                        <td id="T_cc986_row2_col2" class="data row2 col2" >12.3%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row3_col0" class="data row3 col0" >Beta</td>
+                        <td id="T_cc986_row3_col1" class="data row3 col1" >1.00</td>
+                        <td id="T_cc986_row3_col2" class="data row3 col2" >1.11</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row4_col0" class="data row4 col0" >TE</td>
+                        <td id="T_cc986_row4_col1" class="data row4 col1" >0.0%</td>
+                        <td id="T_cc986_row4_col2" class="data row4 col2" >4.9%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row5_col0" class="data row5 col0" >IR</td>
+                        <td id="T_cc986_row5_col1" class="data row5 col1" >0.00</td>
+                        <td id="T_cc986_row5_col2" class="data row5 col2" >0.81</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row6_col0" class="data row6 col0" >Sharpe</td>
+                        <td id="T_cc986_row6_col1" class="data row6 col1" >0.06</td>
+                        <td id="T_cc986_row6_col2" class="data row6 col2" >0.32</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row7_col0" class="data row7 col0" >RaR</td>
+                        <td id="T_cc986_row7_col1" class="data row7 col1" >0.56</td>
+                        <td id="T_cc986_row7_col2" class="data row7 col2" >0.74</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row8_col0" class="data row8 col0" >Avg Return</td>
+                        <td id="T_cc986_row8_col1" class="data row8 col1" >0.7%</td>
+                        <td id="T_cc986_row8_col2" class="data row8 col2" >1.0%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row9_col0" class="data row9 col0" >avg_win</td>
+                        <td id="T_cc986_row9_col1" class="data row9 col1" >3.1%</td>
+                        <td id="T_cc986_row9_col2" class="data row9 col2" >3.7%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row10_col0" class="data row10 col0" >avg_loss</td>
+                        <td id="T_cc986_row10_col1" class="data row10 col1" >-2.8%</td>
+                        <td id="T_cc986_row10_col2" class="data row10 col2" >-2.8%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row11_col0" class="data row11 col0" >Payoff</td>
+                        <td id="T_cc986_row11_col1" class="data row11 col1" >1.09</td>
+                        <td id="T_cc986_row11_col2" class="data row11 col2" >1.30</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row12_col0" class="data row12 col0" >avg_drawdown</td>
+                        <td id="T_cc986_row12_col1" class="data row12 col1" >-4.0%</td>
+                        <td id="T_cc986_row12_col2" class="data row12 col2" >-3.3%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row13_col0" class="data row13 col0" >avg_XS_drawdown</td>
+                        <td id="T_cc986_row13_col1" class="data row13 col1" >0.0%</td>
+                        <td id="T_cc986_row13_col2" class="data row13 col2" >-1.4%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row14_col0" class="data row14 col0" >avg_drawdown_days</td>
+                        <td id="T_cc986_row14_col1" class="data row14 col1" >4.71</td>
+                        <td id="T_cc986_row14_col2" class="data row14 col2" >4.71</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row15_col0" class="data row15 col0" >avg_XS_drawdown_days</td>
+                        <td id="T_cc986_row15_col1" class="data row15 col1" >8.09</td>
+                        <td id="T_cc986_row15_col2" class="data row15 col2" >8.09</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row16_col0" class="data row16 col0" >Skew</td>
+                        <td id="T_cc986_row16_col1" class="data row16 col1" >-0.54</td>
+                        <td id="T_cc986_row16_col2" class="data row16 col2" >-1.05</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row17_col0" class="data row17 col0" >Kurtosis</td>
+                        <td id="T_cc986_row17_col1" class="data row17 col1" >4.30</td>
+                        <td id="T_cc986_row17_col2" class="data row17 col2" >8.82</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row18_col0" class="data row18 col0" >Historic_VaR</td>
+                        <td id="T_cc986_row18_col1" class="data row18 col1" >-5.5%</td>
+                        <td id="T_cc986_row18_col2" class="data row18 col2" >-6.2%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row19_col0" class="data row19 col0" >Historic_CVaR</td>
+                        <td id="T_cc986_row19_col1" class="data row19 col1" >-7.1%</td>
+                        <td id="T_cc986_row19_col2" class="data row19 col2" >-8.0%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row20_col0" class="data row20 col0" >Modified_VaR</td>
+                        <td id="T_cc986_row20_col1" class="data row20 col1" >-6.0%</td>
+                        <td id="T_cc986_row20_col2" class="data row20 col2" >-6.9%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row21_col0" class="data row21 col0" >Sortino</td>
+                        <td id="T_cc986_row21_col1" class="data row21 col1" >0.00</td>
+                        <td id="T_cc986_row21_col2" class="data row21 col2" >0.52</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row22_col0" class="data row22 col0" >Treynor_Ratio</td>
+                        <td id="T_cc986_row22_col1" class="data row22 col1" >0.01</td>
+                        <td id="T_cc986_row22_col2" class="data row22 col2" >0.04</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row23_col0" class="data row23 col0" >tail_ratio</td>
+                        <td id="T_cc986_row23_col1" class="data row23 col1" >1.38</td>
+                        <td id="T_cc986_row23_col2" class="data row23 col2" >1.50</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row24_col0" class="data row24 col0" >Max_Drawdown</td>
+                        <td id="T_cc986_row24_col1" class="data row24 col1" >-30.2%</td>
+                        <td id="T_cc986_row24_col2" class="data row24 col2" >-33.3%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row25_col0" class="data row25 col0" >Max_XS_DD</td>
+                        <td id="T_cc986_row25_col1" class="data row25 col1" >0.0%</td>
+                        <td id="T_cc986_row25_col2" class="data row25 col2" >-7.9%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row26_col0" class="data row26 col0" >Hitrate</td>
+                        <td id="T_cc986_row26_col1" class="data row26 col1" >0.0%</td>
+                        <td id="T_cc986_row26_col2" class="data row26 col2" >64.3%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row27_col0" class="data row27 col0" >xs_mean</td>
+                        <td id="T_cc986_row27_col1" class="data row27 col1" >0.0%</td>
+                        <td id="T_cc986_row27_col2" class="data row27 col2" >0.3%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row28_col0" class="data row28 col0" >xs_worst</td>
+                        <td id="T_cc986_row28_col1" class="data row28 col1" >0.0%</td>
+                        <td id="T_cc986_row28_col2" class="data row28 col2" >-6.5%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row29_col0" class="data row29 col0" >xs_best</td>
+                        <td id="T_cc986_row29_col1" class="data row29 col1" >0.0%</td>
+                        <td id="T_cc986_row29_col2" class="data row29 col2" >6.3%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row30_col0" class="data row30 col0" >risk_of_ruin</td>
+                        <td id="T_cc986_row30_col1" class="data row30 col1" >100.0%</td>
+                        <td id="T_cc986_row30_col2" class="data row30 col2" >0.0%</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row31_col0" class="data row31 col0" >profit_factor</td>
+                        <td id="T_cc986_row31_col1" class="data row31 col1" >0.00</td>
+                        <td id="T_cc986_row31_col2" class="data row31 col2" >1.80</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row32_col0" class="data row32 col0" >recovery_factor</td>
+                        <td id="T_cc986_row32_col1" class="data row32 col1" >6.38</td>
+                        <td id="T_cc986_row32_col2" class="data row32 col2" >8.10</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row33_col0" class="data row33 col0" >Omega_ratio</td>
+                        <td id="T_cc986_row33_col1" class="data row33 col1" >1.59</td>
+                        <td id="T_cc986_row33_col2" class="data row33 col2" >1.87</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row34_col0" class="data row34 col0" >Modified_Sharpe_Ratio</td>
+                        <td id="T_cc986_row34_col1" class="data row34 col1" >-0.14</td>
+                        <td id="T_cc986_row34_col2" class="data row34 col2" >-0.69</td>
+            </tr>
+            <tr>
+                                <td id="T_cc986_row35_col0" class="data row35 col0" >Calmar Ratio</td>
+                        <td id="T_cc986_row35_col1" class="data row35 col1" >0.24</td>
+                        <td id="T_cc986_row35_col2" class="data row35 col2" >0.34</td>
+            </tr>
+    </tbody></table>
+
+<p>Annualised 'risk-free' return of the STEFI index over the                   period was 6.44%. </p>
+<h2>Portfolio Returns</h2>
+<style  type="text/css" >
+    #T_427df_ th {
+          font-family: Garamond;
+          padding: 5px 5px;
+          font-size: 15px;
+          background-color: black;
+          color: white;
+          text-align: center;
+          border: 1px solid black;
+    }    #T_427df_ caption {
+          text-align: right;
+          caption-side: bottom;
+          font-size: 85%;
+          color: grey;
+    }#T_427df_row0_col0,#T_427df_row1_col0,#T_427df_row2_col0,#T_427df_row3_col0,#T_427df_row4_col0,#T_427df_row5_col0,#T_427df_row6_col0,#T_427df_row7_col0,#T_427df_row8_col0{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            font-weight:  bold;
+            color:  white;
+            background-color:  teal;
+            text-align:  justify;
+            min-width:  115px;
+        }#T_427df_row0_col1,#T_427df_row0_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #006837;
+            color:  #f1f1f1;
+        }#T_427df_row1_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #63bc62;
+            color:  #000000;
+        }#T_427df_row1_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #82c966;
+            color:  #000000;
+        }#T_427df_row2_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #afdd70;
+            color:  #000000;
+        }#T_427df_row2_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #d9ef8b;
+            color:  #000000;
+        }#T_427df_row3_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fed884;
+            color:  #000000;
+        }#T_427df_row3_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #feea9b;
+            color:  #000000;
+        }#T_427df_row4_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #feec9f;
+            color:  #000000;
+        }#T_427df_row4_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fdbf6f;
+            color:  #000000;
+        }#T_427df_row5_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #a2d76a;
+            color:  #000000;
+        }#T_427df_row5_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #bde379;
+            color:  #000000;
+        }#T_427df_row6_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #c41e27;
+            color:  #f1f1f1;
+        }#T_427df_row6_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #f47044;
+            color:  #000000;
+        }#T_427df_row7_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fff8b4;
+            color:  #000000;
+        }#T_427df_row7_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fece7c;
+            color:  #000000;
+        }#T_427df_row8_col1,#T_427df_row8_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #a50026;
+            color:  #f1f1f1;
+        }</style>
+
+<table id="T_427df_" style="border-collapse:collapse"><caption>Source: STANLIB Multi-Strategy</caption><thead>    <tr>        <th class="col_heading level0 col0" >index</th>        <th class="col_heading level0 col1" >BMK</th>        <th class="col_heading level0 col2" >Enhanced</th>    </tr></thead><tbody>
+                <tr>
+                                <td id="T_427df_row0_col0" class="data row0 col0" >2012</td>
+                        <td id="T_427df_row0_col1" class="data row0 col1" >29.1%</td>
+                        <td id="T_427df_row0_col2" class="data row0 col2" >38.6%</td>
+            </tr>
+            <tr>
+                                <td id="T_427df_row1_col0" class="data row1 col0" >2013</td>
+                        <td id="T_427df_row1_col1" class="data row1 col1" >20.7%</td>
+                        <td id="T_427df_row1_col2" class="data row1 col2" >26.0%</td>
+            </tr>
+            <tr>
+                                <td id="T_427df_row2_col0" class="data row2 col0" >2014</td>
+                        <td id="T_427df_row2_col1" class="data row2 col1" >15.4%</td>
+                        <td id="T_427df_row2_col2" class="data row2 col2" >17.9%</td>
+            </tr>
+            <tr>
+                                <td id="T_427df_row3_col0" class="data row3 col0" >2015</td>
+                        <td id="T_427df_row3_col1" class="data row3 col1" >2.8%</td>
+                        <td id="T_427df_row3_col2" class="data row3 col2" >9.3%</td>
+            </tr>
+            <tr>
+                                <td id="T_427df_row4_col0" class="data row4 col0" >2016</td>
+                        <td id="T_427df_row4_col1" class="data row4 col1" >5.2%</td>
+                        <td id="T_427df_row4_col2" class="data row4 col2" >4.3%</td>
+            </tr>
+            <tr>
+                                <td id="T_427df_row5_col0" class="data row5 col0" >2017</td>
+                        <td id="T_427df_row5_col1" class="data row5 col1" >16.5%</td>
+                        <td id="T_427df_row5_col2" class="data row5 col2" >20.8%</td>
+            </tr>
+            <tr>
+                                <td id="T_427df_row6_col0" class="data row6 col0" >2018</td>
+                        <td id="T_427df_row6_col1" class="data row6 col1" >-10.9%</td>
+                        <td id="T_427df_row6_col2" class="data row6 col2" >-2.4%</td>
+            </tr>
+            <tr>
+                                <td id="T_427df_row7_col0" class="data row7 col0" >2019</td>
+                        <td id="T_427df_row7_col1" class="data row7 col1" >6.8%</td>
+                        <td id="T_427df_row7_col2" class="data row7 col2" >5.9%</td>
+            </tr>
+            <tr>
+                                <td id="T_427df_row8_col0" class="data row8 col0" >2020</td>
+                        <td id="T_427df_row8_col1" class="data row8 col1" >-13.6%</td>
+                        <td id="T_427df_row8_col2" class="data row8 col2" >-12.9%</td>
+            </tr>
+    </tbody></table>
+
+<h2>Portfolio Risk &amp; Drawdowns</h2>
+<style  type="text/css" >
+    #T_2a202_ th {
+          font-family: Garamond;
+          padding: 5px 5px;
+          font-size: 15px;
+          background-color: black;
+          color: white;
+          text-align: center;
+          border: 1px solid black;
+    }    #T_2a202_ caption {
+          text-align: right;
+          caption-side: bottom;
+          font-size: 85%;
+          color: grey;
+    }#T_2a202_row0_col0,#T_2a202_row1_col0,#T_2a202_row2_col0,#T_2a202_row3_col0,#T_2a202_row4_col0,#T_2a202_row5_col0,#T_2a202_row6_col0,#T_2a202_row7_col0,#T_2a202_row8_col0,#T_2a202_row9_col0{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            font-weight:  bold;
+            color:  white;
+            background-color:  teal;
+            text-align:  justify;
+            min-width:  115px;
+        }#T_2a202_row0_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #9bd469;
+            color:  #000000;
+        }#T_2a202_row0_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #73c264;
+            color:  #000000;
+        }#T_2a202_row1_col1,#T_2a202_row1_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #006837;
+            color:  #f1f1f1;
+        }#T_2a202_row2_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #57b65f;
+            color:  #000000;
+        }#T_2a202_row2_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #279f53;
+            color:  #000000;
+        }#T_2a202_row3_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #0a7b41;
+            color:  #f1f1f1;
+        }#T_2a202_row3_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #2da155;
+            color:  #000000;
+        }#T_2a202_row4_col1,#T_2a202_row4_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #7dc765;
+            color:  #000000;
+        }#T_2a202_row5_col1,#T_2a202_row6_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #36a657;
+            color:  #000000;
+        }#T_2a202_row5_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #17934e;
+            color:  #000000;
+        }#T_2a202_row6_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #219c52;
+            color:  #000000;
+        }#T_2a202_row7_col1,#T_2a202_row8_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #45ad5b;
+            color:  #000000;
+        }#T_2a202_row7_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #1e9a51;
+            color:  #000000;
+        }#T_2a202_row8_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #48ae5c;
+            color:  #000000;
+        }#T_2a202_row9_col1,#T_2a202_row9_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #a50026;
+            color:  #f1f1f1;
+        }</style>
+
+<table id="T_2a202_" style="border-collapse:collapse"><caption>Source: STANLIB Multi-Strategy</caption><thead>    <tr>        <th class="col_heading level0 col0" >index</th>        <th class="col_heading level0 col1" >BMK</th>        <th class="col_heading level0 col2" >Enhanced</th>    </tr></thead><tbody>
+                <tr>
+                                <td id="T_2a202_row0_col0" class="data row0 col0" >2011</td>
+                        <td id="T_2a202_row0_col1" class="data row0 col1" >13.4%</td>
+                        <td id="T_2a202_row0_col2" class="data row0 col2" >13.8%</td>
+            </tr>
+            <tr>
+                                <td id="T_2a202_row1_col0" class="data row1 col0" >2012</td>
+                        <td id="T_2a202_row1_col1" class="data row1 col1" >7.2%</td>
+                        <td id="T_2a202_row1_col2" class="data row1 col2" >7.2%</td>
+            </tr>
+            <tr>
+                                <td id="T_2a202_row2_col0" class="data row2 col0" >2013</td>
+                        <td id="T_2a202_row2_col1" class="data row2 col1" >11.2%</td>
+                        <td id="T_2a202_row2_col2" class="data row2 col2" >10.7%</td>
+            </tr>
+            <tr>
+                                <td id="T_2a202_row3_col0" class="data row3 col0" >2014</td>
+                        <td id="T_2a202_row3_col1" class="data row3 col1" >8.1%</td>
+                        <td id="T_2a202_row3_col2" class="data row3 col2" >11.1%</td>
+            </tr>
+            <tr>
+                                <td id="T_2a202_row4_col0" class="data row4 col0" >2015</td>
+                        <td id="T_2a202_row4_col1" class="data row4 col1" >12.4%</td>
+                        <td id="T_2a202_row4_col2" class="data row4 col2" >14.3%</td>
+            </tr>
+            <tr>
+                                <td id="T_2a202_row5_col0" class="data row5 col0" >2016</td>
+                        <td id="T_2a202_row5_col1" class="data row5 col1" >10.2%</td>
+                        <td id="T_2a202_row5_col2" class="data row5 col2" >10.0%</td>
+            </tr>
+            <tr>
+                                <td id="T_2a202_row6_col0" class="data row6 col0" >2017</td>
+                        <td id="T_2a202_row6_col1" class="data row6 col1" >9.6%</td>
+                        <td id="T_2a202_row6_col2" class="data row6 col2" >11.4%</td>
+            </tr>
+            <tr>
+                                <td id="T_2a202_row7_col0" class="data row7 col0" >2018</td>
+                        <td id="T_2a202_row7_col1" class="data row7 col1" >10.6%</td>
+                        <td id="T_2a202_row7_col2" class="data row7 col2" >10.4%</td>
+            </tr>
+            <tr>
+                                <td id="T_2a202_row8_col0" class="data row8 col0" >2019</td>
+                        <td id="T_2a202_row8_col1" class="data row8 col1" >10.6%</td>
+                        <td id="T_2a202_row8_col2" class="data row8 col2" >12.1%</td>
+            </tr>
+            <tr>
+                                <td id="T_2a202_row9_col0" class="data row9 col0" >2020</td>
+                        <td id="T_2a202_row9_col1" class="data row9 col1" >29.3%</td>
+                        <td id="T_2a202_row9_col2" class="data row9 col2" >37.3%</td>
+            </tr>
+    </tbody></table>
+
+<style  type="text/css" >
+    #T_30aa7_ th {
+          font-family: Garamond;
+          padding: 5px 5px;
+          font-size: 15px;
+          background-color: black;
+          color: white;
+          text-align: center;
+          border: 1px solid black;
+    }    #T_30aa7_ caption {
+          text-align: right;
+          caption-side: bottom;
+          font-size: 85%;
+          color: grey;
+    }#T_30aa7_row0_col0,#T_30aa7_row1_col0,#T_30aa7_row2_col0,#T_30aa7_row3_col0,#T_30aa7_row4_col0,#T_30aa7_row5_col0,#T_30aa7_row6_col0,#T_30aa7_row7_col0,#T_30aa7_row8_col0,#T_30aa7_row9_col0{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            font-weight:  bold;
+            color:  white;
+            background-color:  teal;
+            text-align:  justify;
+            min-width:  115px;
+        }#T_30aa7_row0_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #eef8a8;
+            color:  #000000;
+        }#T_30aa7_row1_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #c7e77f;
+            color:  #000000;
+        }#T_30aa7_row2_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fffbb8;
+            color:  #000000;
+        }#T_30aa7_row3_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fdc574;
+            color:  #000000;
+        }#T_30aa7_row4_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fee593;
+            color:  #000000;
+        }#T_30aa7_row5_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #f1f9ac;
+            color:  #000000;
+        }#T_30aa7_row6_col1,#T_30aa7_row9_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #a50026;
+            color:  #f1f1f1;
+        }#T_30aa7_row7_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #e95538;
+            color:  #000000;
+        }#T_30aa7_row8_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fdc776;
+            color:  #000000;
+        }</style>
+
+<table id="T_30aa7_" style="border-collapse:collapse"><caption>Source: STANLIB Multi-Strategy</caption><thead>    <tr>        <th class="col_heading level0 col0" >index</th>        <th class="col_heading level0 col1" >Enhanced</th>    </tr></thead><tbody>
+                <tr>
+                                <td id="T_30aa7_row0_col0" class="data row0 col0" >2011</td>
+                        <td id="T_30aa7_row0_col1" class="data row0 col1" >2.7%</td>
+            </tr>
+            <tr>
+                                <td id="T_30aa7_row1_col0" class="data row1 col0" >2012</td>
+                        <td id="T_30aa7_row1_col1" class="data row1 col1" >2.2%</td>
+            </tr>
+            <tr>
+                                <td id="T_30aa7_row2_col0" class="data row2 col0" >2013</td>
+                        <td id="T_30aa7_row2_col1" class="data row2 col1" >3.1%</td>
+            </tr>
+            <tr>
+                                <td id="T_30aa7_row3_col0" class="data row3 col0" >2014</td>
+                        <td id="T_30aa7_row3_col1" class="data row3 col1" >3.9%</td>
+            </tr>
+            <tr>
+                                <td id="T_30aa7_row4_col0" class="data row4 col0" >2015</td>
+                        <td id="T_30aa7_row4_col1" class="data row4 col1" >3.5%</td>
+            </tr>
+            <tr>
+                                <td id="T_30aa7_row5_col0" class="data row5 col0" >2016</td>
+                        <td id="T_30aa7_row5_col1" class="data row5 col1" >2.8%</td>
+            </tr>
+            <tr>
+                                <td id="T_30aa7_row6_col0" class="data row6 col0" >2017</td>
+                        <td id="T_30aa7_row6_col1" class="data row6 col1" >6.9%</td>
+            </tr>
+            <tr>
+                                <td id="T_30aa7_row7_col0" class="data row7 col0" >2018</td>
+                        <td id="T_30aa7_row7_col1" class="data row7 col1" >5.0%</td>
+            </tr>
+            <tr>
+                                <td id="T_30aa7_row8_col0" class="data row8 col0" >2019</td>
+                        <td id="T_30aa7_row8_col1" class="data row8 col1" >3.9%</td>
+            </tr>
+            <tr>
+                                <td id="T_30aa7_row9_col0" class="data row9 col0" >2020</td>
+                        <td id="T_30aa7_row9_col1" class="data row9 col1" >10.3%</td>
+            </tr>
+    </tbody></table>
+
+<style  type="text/css" >
+    #T_e8377_ th {
+          font-family: Garamond;
+          padding: 5px 5px;
+          font-size: 15px;
+          background-color: black;
+          color: white;
+          text-align: center;
+          border: 1px solid black;
+    }    #T_e8377_ caption {
+          text-align: right;
+          caption-side: bottom;
+          font-size: 85%;
+          color: grey;
+    }#T_e8377_row0_col0,#T_e8377_row1_col0,#T_e8377_row2_col0,#T_e8377_row3_col0,#T_e8377_row4_col0,#T_e8377_row5_col0,#T_e8377_row6_col0,#T_e8377_row7_col0,#T_e8377_row8_col0,#T_e8377_row9_col0{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            font-weight:  bold;
+            color:  white;
+            background-color:  teal;
+            text-align:  justify;
+            min-width:  115px;
+        }#T_e8377_row0_col1,#T_e8377_row0_col2,#T_e8377_row0_col3,#T_e8377_row0_col4,#T_e8377_row0_col5,#T_e8377_row0_col6,#T_e8377_row1_col1,#T_e8377_row1_col2,#T_e8377_row1_col3,#T_e8377_row1_col4,#T_e8377_row1_col5,#T_e8377_row1_col6,#T_e8377_row2_col1,#T_e8377_row2_col2,#T_e8377_row2_col3,#T_e8377_row2_col4,#T_e8377_row2_col5,#T_e8377_row2_col6,#T_e8377_row3_col1,#T_e8377_row3_col2,#T_e8377_row3_col3,#T_e8377_row3_col4,#T_e8377_row3_col5,#T_e8377_row3_col6,#T_e8377_row4_col1,#T_e8377_row4_col2,#T_e8377_row4_col3,#T_e8377_row4_col4,#T_e8377_row4_col5,#T_e8377_row4_col6,#T_e8377_row5_col1,#T_e8377_row5_col2,#T_e8377_row5_col3,#T_e8377_row5_col4,#T_e8377_row5_col5,#T_e8377_row5_col6,#T_e8377_row6_col1,#T_e8377_row6_col2,#T_e8377_row6_col3,#T_e8377_row6_col4,#T_e8377_row6_col5,#T_e8377_row6_col6,#T_e8377_row7_col1,#T_e8377_row7_col2,#T_e8377_row7_col3,#T_e8377_row7_col4,#T_e8377_row7_col5,#T_e8377_row7_col6,#T_e8377_row8_col1,#T_e8377_row8_col2,#T_e8377_row8_col3,#T_e8377_row8_col4,#T_e8377_row8_col5,#T_e8377_row8_col6,#T_e8377_row9_col1,#T_e8377_row9_col3,#T_e8377_row9_col4,#T_e8377_row9_col5{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+        }#T_e8377_row0_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #006837;
+            color:  #f1f1f1;
+        }#T_e8377_row1_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #016a38;
+            color:  #f1f1f1;
+        }#T_e8377_row2_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #0b7d42;
+            color:  #f1f1f1;
+        }#T_e8377_row3_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #0d8044;
+            color:  #f1f1f1;
+        }#T_e8377_row4_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #1b9950;
+            color:  #000000;
+        }#T_e8377_row5_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #84ca66;
+            color:  #000000;
+        }#T_e8377_row6_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #9dd569;
+            color:  #000000;
+        }#T_e8377_row7_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #cbe982;
+            color:  #000000;
+        }#T_e8377_row8_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fca85e;
+            color:  #000000;
+        }#T_e8377_row9_col2,#T_e8377_row9_col6{
+            background-color:  white;
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+        }#T_e8377_row9_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #a50026;
+            color:  #f1f1f1;
+        }</style>
+
+<table id="T_e8377_" style="border-collapse:collapse"><caption>Source: STANLIB Multi-Strategy</caption><thead>    <tr>        <th class="col_heading level0 col0" >index</th>        <th class="col_heading level0 col1" >start</th>        <th class="col_heading level0 col2" >end</th>        <th class="col_heading level0 col3" >trough</th>        <th class="col_heading level0 col4" >length</th>        <th class="col_heading level0 col5" >fall</th>        <th class="col_heading level0 col6" >recovery</th>        <th class="col_heading level0 col7" >drawdown</th>    </tr></thead><tbody>
+                <tr>
+                                <td id="T_e8377_row0_col0" class="data row0 col0" >Enhanced</td>
+                        <td id="T_e8377_row0_col1" class="data row0 col1" >Sep-12</td>
+                        <td id="T_e8377_row0_col2" class="data row0 col2" >Oct-12</td>
+                        <td id="T_e8377_row0_col3" class="data row0 col3" >Sep-12</td>
+                        <td id="T_e8377_row0_col4" class="data row0 col4" >2</td>
+                        <td id="T_e8377_row0_col5" class="data row0 col5" >1</td>
+                        <td id="T_e8377_row0_col6" class="data row0 col6" >2</td>
+                        <td id="T_e8377_row0_col7" class="data row0 col7" >-0.2%</td>
+            </tr>
+            <tr>
+                                <td id="T_e8377_row1_col0" class="data row1 col0" >Enhanced</td>
+                        <td id="T_e8377_row1_col1" class="data row1 col1" >Dec-14</td>
+                        <td id="T_e8377_row1_col2" class="data row1 col2" >Jan-15</td>
+                        <td id="T_e8377_row1_col3" class="data row1 col3" >Dec-14</td>
+                        <td id="T_e8377_row1_col4" class="data row1 col4" >2</td>
+                        <td id="T_e8377_row1_col5" class="data row1 col5" >1</td>
+                        <td id="T_e8377_row1_col6" class="data row1 col6" >2</td>
+                        <td id="T_e8377_row1_col7" class="data row1 col7" >-0.3%</td>
+            </tr>
+            <tr>
+                                <td id="T_e8377_row2_col0" class="data row2 col0" >Enhanced</td>
+                        <td id="T_e8377_row2_col1" class="data row2 col1" >Apr-12</td>
+                        <td id="T_e8377_row2_col2" class="data row2 col2" >Jun-12</td>
+                        <td id="T_e8377_row2_col3" class="data row2 col3" >Apr-12</td>
+                        <td id="T_e8377_row2_col4" class="data row2 col4" >3</td>
+                        <td id="T_e8377_row2_col5" class="data row2 col5" >1</td>
+                        <td id="T_e8377_row2_col6" class="data row2 col6" >3</td>
+                        <td id="T_e8377_row2_col7" class="data row2 col7" >-0.6%</td>
+            </tr>
+            <tr>
+                                <td id="T_e8377_row3_col0" class="data row3 col0" >Enhanced</td>
+                        <td id="T_e8377_row3_col1" class="data row3 col1" >Mar-15</td>
+                        <td id="T_e8377_row3_col2" class="data row3 col2" >Jul-15</td>
+                        <td id="T_e8377_row3_col3" class="data row3 col3" >Mar-15</td>
+                        <td id="T_e8377_row3_col4" class="data row3 col4" >5</td>
+                        <td id="T_e8377_row3_col5" class="data row3 col5" >1</td>
+                        <td id="T_e8377_row3_col6" class="data row3 col6" >5</td>
+                        <td id="T_e8377_row3_col7" class="data row3 col7" >-0.6%</td>
+            </tr>
+            <tr>
+                                <td id="T_e8377_row4_col0" class="data row4 col0" >Enhanced</td>
+                        <td id="T_e8377_row4_col1" class="data row4 col1" >Sep-11</td>
+                        <td id="T_e8377_row4_col2" class="data row4 col2" >Dec-11</td>
+                        <td id="T_e8377_row4_col3" class="data row4 col3" >Sep-11</td>
+                        <td id="T_e8377_row4_col4" class="data row4 col4" >4</td>
+                        <td id="T_e8377_row4_col5" class="data row4 col5" >1</td>
+                        <td id="T_e8377_row4_col6" class="data row4 col6" >4</td>
+                        <td id="T_e8377_row4_col7" class="data row4 col7" >-1.0%</td>
+            </tr>
+            <tr>
+                                <td id="T_e8377_row5_col0" class="data row5 col0" >Enhanced</td>
+                        <td id="T_e8377_row5_col1" class="data row5 col1" >Feb-19</td>
+                        <td id="T_e8377_row5_col2" class="data row5 col2" >Jun-19</td>
+                        <td id="T_e8377_row5_col3" class="data row5 col3" >Mar-19</td>
+                        <td id="T_e8377_row5_col4" class="data row5 col4" >5</td>
+                        <td id="T_e8377_row5_col5" class="data row5 col5" >2</td>
+                        <td id="T_e8377_row5_col6" class="data row5 col6" >4</td>
+                        <td id="T_e8377_row5_col7" class="data row5 col7" >-2.1%</td>
+            </tr>
+            <tr>
+                                <td id="T_e8377_row6_col0" class="data row6 col0" >Enhanced</td>
+                        <td id="T_e8377_row6_col1" class="data row6 col1" >Apr-18</td>
+                        <td id="T_e8377_row6_col2" class="data row6 col2" >Oct-18</td>
+                        <td id="T_e8377_row6_col3" class="data row6 col3" >Jul-18</td>
+                        <td id="T_e8377_row6_col4" class="data row6 col4" >7</td>
+                        <td id="T_e8377_row6_col5" class="data row6 col5" >4</td>
+                        <td id="T_e8377_row6_col6" class="data row6 col6" >4</td>
+                        <td id="T_e8377_row6_col7" class="data row6 col7" >-2.4%</td>
+            </tr>
+            <tr>
+                                <td id="T_e8377_row7_col0" class="data row7 col0" >Enhanced</td>
+                        <td id="T_e8377_row7_col1" class="data row7 col1" >May-13</td>
+                        <td id="T_e8377_row7_col2" class="data row7 col2" >Oct-14</td>
+                        <td id="T_e8377_row7_col3" class="data row7 col3" >Jan-14</td>
+                        <td id="T_e8377_row7_col4" class="data row7 col4" >18</td>
+                        <td id="T_e8377_row7_col5" class="data row7 col5" >9</td>
+                        <td id="T_e8377_row7_col6" class="data row7 col6" >10</td>
+                        <td id="T_e8377_row7_col7" class="data row7 col7" >-3.1%</td>
+            </tr>
+            <tr>
+                                <td id="T_e8377_row8_col0" class="data row8 col0" >Enhanced</td>
+                        <td id="T_e8377_row8_col1" class="data row8 col1" >Dec-15</td>
+                        <td id="T_e8377_row8_col2" class="data row8 col2" >Dec-17</td>
+                        <td id="T_e8377_row8_col3" class="data row8 col3" >Oct-17</td>
+                        <td id="T_e8377_row8_col4" class="data row8 col4" >25</td>
+                        <td id="T_e8377_row8_col5" class="data row8 col5" >23</td>
+                        <td id="T_e8377_row8_col6" class="data row8 col6" >3</td>
+                        <td id="T_e8377_row8_col7" class="data row8 col7" >-5.6%</td>
+            </tr>
+            <tr>
+                                <td id="T_e8377_row9_col0" class="data row9 col0" >Enhanced</td>
+                        <td id="T_e8377_row9_col1" class="data row9 col1" >Jul-19</td>
+                        <td id="T_e8377_row9_col2" class="data row9 col2" >NaT</td>
+                        <td id="T_e8377_row9_col3" class="data row9 col3" >Mar-20</td>
+                        <td id="T_e8377_row9_col4" class="data row9 col4" >16</td>
+                        <td id="T_e8377_row9_col5" class="data row9 col5" >9</td>
+                        <td id="T_e8377_row9_col6" class="data row9 col6" >nan</td>
+                        <td id="T_e8377_row9_col7" class="data row9 col7" >-7.9%</td>
+            </tr>
+    </tbody></table>
+
+<style  type="text/css" >
+    #T_4194d_ th {
+          font-family: Garamond;
+          padding: 5px 5px;
+          font-size: 15px;
+          background-color: black;
+          color: white;
+          text-align: center;
+          border: 1px solid black;
+    }    #T_4194d_ caption {
+          text-align: right;
+          caption-side: bottom;
+          font-size: 85%;
+          color: grey;
+    }#T_4194d_row0_col0,#T_4194d_row1_col0,#T_4194d_row2_col0,#T_4194d_row3_col0,#T_4194d_row4_col0,#T_4194d_row5_col0,#T_4194d_row6_col0,#T_4194d_row7_col0,#T_4194d_row8_col0,#T_4194d_row9_col0{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            font-weight:  bold;
+            color:  white;
+            background-color:  teal;
+            text-align:  justify;
+            min-width:  115px;
+        }#T_4194d_row0_col1,#T_4194d_row0_col2,#T_4194d_row0_col3,#T_4194d_row0_col4,#T_4194d_row0_col5,#T_4194d_row0_col6,#T_4194d_row1_col1,#T_4194d_row1_col2,#T_4194d_row1_col3,#T_4194d_row1_col4,#T_4194d_row1_col5,#T_4194d_row1_col6,#T_4194d_row2_col1,#T_4194d_row2_col2,#T_4194d_row2_col3,#T_4194d_row2_col4,#T_4194d_row2_col5,#T_4194d_row2_col6,#T_4194d_row3_col1,#T_4194d_row3_col2,#T_4194d_row3_col3,#T_4194d_row3_col4,#T_4194d_row3_col5,#T_4194d_row3_col6,#T_4194d_row4_col1,#T_4194d_row4_col2,#T_4194d_row4_col3,#T_4194d_row4_col4,#T_4194d_row4_col5,#T_4194d_row4_col6,#T_4194d_row5_col1,#T_4194d_row5_col2,#T_4194d_row5_col3,#T_4194d_row5_col4,#T_4194d_row5_col5,#T_4194d_row5_col6,#T_4194d_row6_col1,#T_4194d_row6_col2,#T_4194d_row6_col3,#T_4194d_row6_col4,#T_4194d_row6_col5,#T_4194d_row6_col6,#T_4194d_row7_col1,#T_4194d_row7_col2,#T_4194d_row7_col3,#T_4194d_row7_col4,#T_4194d_row7_col5,#T_4194d_row7_col6,#T_4194d_row8_col1,#T_4194d_row8_col3,#T_4194d_row8_col4,#T_4194d_row8_col5,#T_4194d_row9_col1,#T_4194d_row9_col3,#T_4194d_row9_col4,#T_4194d_row9_col5{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+        }#T_4194d_row0_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #006837;
+            color:  #f1f1f1;
+        }#T_4194d_row1_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #08773f;
+            color:  #f1f1f1;
+        }#T_4194d_row2_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #0b7d42;
+            color:  #f1f1f1;
+        }#T_4194d_row3_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #0e8245;
+            color:  #f1f1f1;
+        }#T_4194d_row4_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #0f8446;
+            color:  #f1f1f1;
+        }#T_4194d_row5_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #219c52;
+            color:  #000000;
+        }#T_4194d_row6_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #48ae5c;
+            color:  #000000;
+        }#T_4194d_row7_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #4bb05c;
+            color:  #000000;
+        }#T_4194d_row8_col2,#T_4194d_row8_col6,#T_4194d_row9_col2,#T_4194d_row9_col6{
+            background-color:  white;
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+        }#T_4194d_row8_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #da362a;
+            color:  #f1f1f1;
+        }#T_4194d_row9_col7{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #a50026;
+            color:  #f1f1f1;
+        }</style>
+
+<table id="T_4194d_" style="border-collapse:collapse"><caption>Source: STANLIB Multi-Strategy</caption><thead>    <tr>        <th class="col_heading level0 col0" >index</th>        <th class="col_heading level0 col1" >start</th>        <th class="col_heading level0 col2" >end</th>        <th class="col_heading level0 col3" >trough</th>        <th class="col_heading level0 col4" >length</th>        <th class="col_heading level0 col5" >fall</th>        <th class="col_heading level0 col6" >recovery</th>        <th class="col_heading level0 col7" >drawdown</th>    </tr></thead><tbody>
+                <tr>
+                                <td id="T_4194d_row0_col0" class="data row0 col0" >Enhanced</td>
+                        <td id="T_4194d_row0_col1" class="data row0 col1" >May-17</td>
+                        <td id="T_4194d_row0_col2" class="data row0 col2" >Jul-17</td>
+                        <td id="T_4194d_row0_col3" class="data row0 col3" >Jun-17</td>
+                        <td id="T_4194d_row0_col4" class="data row0 col4" >3</td>
+                        <td id="T_4194d_row0_col5" class="data row0 col5" >2</td>
+                        <td id="T_4194d_row0_col6" class="data row0 col6" >2</td>
+                        <td id="T_4194d_row0_col7" class="data row0 col7" >-4.9%</td>
+            </tr>
+            <tr>
+                                <td id="T_4194d_row1_col0" class="data row1 col0" >Enhanced</td>
+                        <td id="T_4194d_row1_col1" class="data row1 col1" >Jan-14</td>
+                        <td id="T_4194d_row1_col2" class="data row1 col2" >Mar-14</td>
+                        <td id="T_4194d_row1_col3" class="data row1 col3" >Jan-14</td>
+                        <td id="T_4194d_row1_col4" class="data row1 col4" >3</td>
+                        <td id="T_4194d_row1_col5" class="data row1 col5" >1</td>
+                        <td id="T_4194d_row1_col6" class="data row1 col6" >3</td>
+                        <td id="T_4194d_row1_col7" class="data row1 col7" >-5.8%</td>
+            </tr>
+            <tr>
+                                <td id="T_4194d_row2_col0" class="data row2 col0" >Enhanced</td>
+                        <td id="T_4194d_row2_col1" class="data row2 col1" >May-15</td>
+                        <td id="T_4194d_row2_col2" class="data row2 col2" >Oct-15</td>
+                        <td id="T_4194d_row2_col3" class="data row2 col3" >Sep-15</td>
+                        <td id="T_4194d_row2_col4" class="data row2 col4" >6</td>
+                        <td id="T_4194d_row2_col5" class="data row2 col5" >5</td>
+                        <td id="T_4194d_row2_col6" class="data row2 col6" >2</td>
+                        <td id="T_4194d_row2_col7" class="data row2 col7" >-6.1%</td>
+            </tr>
+            <tr>
+                                <td id="T_4194d_row3_col0" class="data row3 col0" >BMK</td>
+                        <td id="T_4194d_row3_col1" class="data row3 col1" >Aug-16</td>
+                        <td id="T_4194d_row3_col2" class="data row3 col2" >Apr-17</td>
+                        <td id="T_4194d_row3_col3" class="data row3 col3" >Nov-16</td>
+                        <td id="T_4194d_row3_col4" class="data row3 col4" >9</td>
+                        <td id="T_4194d_row3_col5" class="data row3 col5" >4</td>
+                        <td id="T_4194d_row3_col6" class="data row3 col6" >6</td>
+                        <td id="T_4194d_row3_col7" class="data row3 col7" >-6.5%</td>
+            </tr>
+            <tr>
+                                <td id="T_4194d_row4_col0" class="data row4 col0" >Enhanced</td>
+                        <td id="T_4194d_row4_col1" class="data row4 col1" >Aug-16</td>
+                        <td id="T_4194d_row4_col2" class="data row4 col2" >Apr-17</td>
+                        <td id="T_4194d_row4_col3" class="data row4 col3" >Nov-16</td>
+                        <td id="T_4194d_row4_col4" class="data row4 col4" >9</td>
+                        <td id="T_4194d_row4_col5" class="data row4 col5" >4</td>
+                        <td id="T_4194d_row4_col6" class="data row4 col6" >6</td>
+                        <td id="T_4194d_row4_col7" class="data row4 col7" >-6.6%</td>
+            </tr>
+            <tr>
+                                <td id="T_4194d_row5_col0" class="data row5 col0" >Enhanced</td>
+                        <td id="T_4194d_row5_col1" class="data row5 col1" >Nov-15</td>
+                        <td id="T_4194d_row5_col2" class="data row5 col2" >Apr-16</td>
+                        <td id="T_4194d_row5_col3" class="data row5 col3" >Feb-16</td>
+                        <td id="T_4194d_row5_col4" class="data row5 col4" >6</td>
+                        <td id="T_4194d_row5_col5" class="data row5 col5" >4</td>
+                        <td id="T_4194d_row5_col6" class="data row5 col6" >3</td>
+                        <td id="T_4194d_row5_col7" class="data row5 col7" >-8.0%</td>
+            </tr>
+            <tr>
+                                <td id="T_4194d_row6_col0" class="data row6 col0" >Enhanced</td>
+                        <td id="T_4194d_row6_col1" class="data row6 col1" >May-18</td>
+                        <td id="T_4194d_row6_col2" class="data row6 col2" >Apr-19</td>
+                        <td id="T_4194d_row6_col3" class="data row6 col3" >Nov-18</td>
+                        <td id="T_4194d_row6_col4" class="data row6 col4" >12</td>
+                        <td id="T_4194d_row6_col5" class="data row6 col5" >7</td>
+                        <td id="T_4194d_row6_col6" class="data row6 col6" >6</td>
+                        <td id="T_4194d_row6_col7" class="data row6 col7" >-9.5%</td>
+            </tr>
+            <tr>
+                                <td id="T_4194d_row7_col0" class="data row7 col0" >BMK</td>
+                        <td id="T_4194d_row7_col1" class="data row7 col1" >May-15</td>
+                        <td id="T_4194d_row7_col2" class="data row7 col2" >Apr-16</td>
+                        <td id="T_4194d_row7_col3" class="data row7 col3" >Jan-16</td>
+                        <td id="T_4194d_row7_col4" class="data row7 col4" >12</td>
+                        <td id="T_4194d_row7_col5" class="data row7 col5" >9</td>
+                        <td id="T_4194d_row7_col6" class="data row7 col6" >4</td>
+                        <td id="T_4194d_row7_col7" class="data row7 col7" >-9.6%</td>
+            </tr>
+            <tr>
+                                <td id="T_4194d_row8_col0" class="data row8 col0" >BMK</td>
+                        <td id="T_4194d_row8_col1" class="data row8 col1" >Jan-18</td>
+                        <td id="T_4194d_row8_col2" class="data row8 col2" >NaT</td>
+                        <td id="T_4194d_row8_col3" class="data row8 col3" >Mar-20</td>
+                        <td id="T_4194d_row8_col4" class="data row8 col4" >34</td>
+                        <td id="T_4194d_row8_col5" class="data row8 col5" >27</td>
+                        <td id="T_4194d_row8_col6" class="data row8 col6" >nan</td>
+                        <td id="T_4194d_row8_col7" class="data row8 col7" >-30.2%</td>
+            </tr>
+            <tr>
+                                <td id="T_4194d_row9_col0" class="data row9 col0" >Enhanced</td>
+                        <td id="T_4194d_row9_col1" class="data row9 col1" >Jul-19</td>
+                        <td id="T_4194d_row9_col2" class="data row9 col2" >NaT</td>
+                        <td id="T_4194d_row9_col3" class="data row9 col3" >Mar-20</td>
+                        <td id="T_4194d_row9_col4" class="data row9 col4" >16</td>
+                        <td id="T_4194d_row9_col5" class="data row9 col5" >9</td>
+                        <td id="T_4194d_row9_col6" class="data row9 col6" >nan</td>
+                        <td id="T_4194d_row9_col7" class="data row9 col7" >-33.3%</td>
+            </tr>
+    </tbody></table>
+
+<h2>Risk Adjusted Returns - Rolling</h2>
+<style  type="text/css" >
+    #T_089a6_ th {
+          font-family: Garamond;
+          padding: 5px 5px;
+          font-size: 15px;
+          background-color: black;
+          color: white;
+          text-align: center;
+          border: 1px solid black;
+    }    #T_089a6_ caption {
+          text-align: right;
+          caption-side: bottom;
+          font-size: 85%;
+          color: grey;
+    }#T_089a6_row0_col0,#T_089a6_row1_col0,#T_089a6_row2_col0,#T_089a6_row3_col0,#T_089a6_row4_col0,#T_089a6_row5_col0,#T_089a6_row6_col0,#T_089a6_row7_col0,#T_089a6_row8_col0{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            font-weight:  bold;
+            color:  white;
+            background-color:  teal;
+            text-align:  justify;
+            min-width:  115px;
+        }#T_089a6_row0_col1,#T_089a6_row0_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #006837;
+            color:  #f1f1f1;
+        }#T_089a6_row1_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #b1de71;
+            color:  #000000;
+        }#T_089a6_row1_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #6ec064;
+            color:  #000000;
+        }#T_089a6_row2_col1,#T_089a6_row5_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #c7e77f;
+            color:  #000000;
+        }#T_089a6_row2_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #d1ec86;
+            color:  #000000;
+        }#T_089a6_row3_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fdc372;
+            color:  #000000;
+        }#T_089a6_row3_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #feec9f;
+            color:  #000000;
+        }#T_089a6_row4_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #feca79;
+            color:  #000000;
+        }#T_089a6_row4_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fdc171;
+            color:  #000000;
+        }#T_089a6_row5_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #ddf191;
+            color:  #000000;
+        }#T_089a6_row6_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #c01a27;
+            color:  #f1f1f1;
+        }#T_089a6_row6_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #f57547;
+            color:  #000000;
+        }#T_089a6_row7_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #feda86;
+            color:  #000000;
+        }#T_089a6_row7_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fed481;
+            color:  #000000;
+        }#T_089a6_row8_col1{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fb9d59;
+            color:  #000000;
+        }#T_089a6_row8_col2{
+            font-family:  Garamond;
+            font-size:  14px;
+            text-align:  center;
+            border:  1px solid black;
+            padding:  5px 5px;
+            min-width:  70px;
+            color:  black;
+            background-color:  #fdb163;
+            color:  #000000;
+        }</style>
+
+<table id="T_089a6_" style="border-collapse:collapse"><caption>Source: STANLIB Multi-Strategy</caption><thead>    <tr>        <th class="col_heading level0 col0" >index</th>        <th class="col_heading level0 col1" >BMK</th>        <th class="col_heading level0 col2" >Enhanced</th>    </tr></thead><tbody>
+                <tr>
+                                <td id="T_089a6_row0_col0" class="data row0 col0" >2012</td>
+                        <td id="T_089a6_row0_col1" class="data row0 col1" >3.29</td>
+                        <td id="T_089a6_row0_col2" class="data row0 col2" >4.58</td>
+            </tr>
+            <tr>
+                                <td id="T_089a6_row1_col0" class="data row1 col0" >2013</td>
+                        <td id="T_089a6_row1_col1" class="data row1 col1" >1.39</td>
+                        <td id="T_089a6_row1_col2" class="data row1 col2" >1.94</td>
+            </tr>
+            <tr>
+                                <td id="T_089a6_row2_col0" class="data row2 col0" >2014</td>
+                        <td id="T_089a6_row2_col1" class="data row2 col1" >1.18</td>
+                        <td id="T_089a6_row2_col2" class="data row2 col2" >1.08</td>
+            </tr>
+            <tr>
+                                <td id="T_089a6_row3_col0" class="data row3 col0" >2015</td>
+                        <td id="T_089a6_row3_col1" class="data row3 col1" >-0.30</td>
+                        <td id="T_089a6_row3_col2" class="data row3 col2" >0.20</td>
+            </tr>
+            <tr>
+                                <td id="T_089a6_row4_col0" class="data row4 col0" >2016</td>
+                        <td id="T_089a6_row4_col1" class="data row4 col1" >-0.22</td>
+                        <td id="T_089a6_row4_col2" class="data row4 col2" >-0.31</td>
+            </tr>
+            <tr>
+                                <td id="T_089a6_row5_col0" class="data row5 col0" >2017</td>
+                        <td id="T_089a6_row5_col1" class="data row5 col1" >0.94</td>
+                        <td id="T_089a6_row5_col2" class="data row5 col2" >1.17</td>
+            </tr>
+            <tr>
+                                <td id="T_089a6_row6_col0" class="data row6 col0" >2018</td>
+                        <td id="T_089a6_row6_col1" class="data row6 col1" >-1.72</td>
+                        <td id="T_089a6_row6_col2" class="data row6 col2" >-0.94</td>
+            </tr>
+            <tr>
+                                <td id="T_089a6_row7_col0" class="data row7 col0" >2019</td>
+                        <td id="T_089a6_row7_col1" class="data row7 col1" >-0.05</td>
+                        <td id="T_089a6_row7_col2" class="data row7 col2" >-0.11</td>
+            </tr>
+            <tr>
+                                <td id="T_089a6_row8_col0" class="data row8 col0" >2020</td>
+                        <td id="T_089a6_row8_col1" class="data row8 col1" >-0.63</td>
+                        <td id="T_089a6_row8_col2" class="data row8 col2" >-0.47</td>
+            </tr>
+    </tbody></table>
+
+<style  type="text/css" >
+    #T_b1a1a_ th {
+          font-family: Garamond;
+          padding: 5px 5px;
+          font-size: 15px;
+          background-color: black;
+          color: white;
+          text-align: center;
+          border: 1px solid black;
+    }    #T_b1a1a_ caption {
+          text-align: right;
+          caption-side: bottom;
+          font-size: 85%;
+          color: grey;
+    }</style>
+
+<table id="T_b1a1a_" style="border-collapse:collapse"><caption>Source: STANLIB Multi-Strategy</caption><thead>    <tr>        <th class="col_heading level0 col0" >index</th>        <th class="col_heading level0 col1" >BMK</th>        <th class="col_heading level0 col2" >Enhanced</th>    </tr></thead><tbody>
+        </tbody></table>
+
+<h2>Tail-Risk - Rolling</h2>
+<p>Visualising return or alpha regressions adds colour to CAPM Beta.                   Steeper regression lines indicate higher Beta whilst R<sup>2</sup> gives                   an impression of the correlation; look for non-linearity                   that may be missed in headline metrics.</p>
+<h2>Hit Rate Analysis</h2>
+<p>Here we aren't interested in the quantum of return,                    simply the binary outcome per month. Heatmaps will show                    month-by-month experience as either +1 or 0.                    For annualised analysis we look at the percentage monthly hit-rate                    over a calendar year; subject to a minimum of 3-observations. </p>
+<h2>Correlation Review</h2>
+<p>We present the correlation matrix for the full sample period,                    showing both the Portfolio returns and the Alpha stream.                    Additionally we include a series of strategic asset classes                    relevant for multi-asset portfolios. </p>
+                <br><br>
+                <h2>Appendix</h2>
+<p>Report generated on 05 March 2021</p>
+<h3>Disclaimers</h3>
+<p>This report is for information purposes only and                                only meant for use by the Multi-Strategy team.                                For more information contact David.</p>
+            </body></html>
