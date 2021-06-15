@@ -79,6 +79,7 @@ class Reporting(object):
             table {margin: 0 auto; align-self: center}
             
             """
+                       
             
             if isinstance(md, list):
                 md = "\n \n".join(md)
