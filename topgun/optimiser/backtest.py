@@ -14,6 +14,16 @@ import pandas as pd
 import scipy.stats
 from scipy.stats import kurtosis, skew, norm
 
+<<<<<<< Updated upstream
+=======
+# Import Peformance Analytics package from R with couple of interesting functions
+#from rpy2.robjects.packages import importr
+#pfa = importr("PerformanceAnalytics")    
+#from rpy2.robjects import numpy2ri, pandas2ri
+#numpy2ri.activate()
+#pandas2ri.activate()
+
+>>>>>>> Stashed changes
 # Rolling Regression
 import statsmodels.api as sm
 from statsmodels.regression.rolling import RollingOLS
@@ -574,7 +584,18 @@ class BacktestAnalytics(object):
         df['avg_XS_drawdown'] = self.xs_drawdown.mean()
         df['avg_drawdown_days']=self.drawdown_breakdown(alpha=False)['length'].mean() 
         df['avg_XS_drawdown_days']=self.drawdown_breakdown(alpha=True)['length'].mean() 
+<<<<<<< Updated upstream
             
+=======
+        
+        #df['avg_drawdown'] = pfa.AverageDrawdown(self.rtns)[0]
+        #df['avg_XS_drawdown'] = pfa.AverageDrawdown(self.xsrtns)[0]
+        #df['avg_drawdown_days']= pfa.AverageLength(self.rtns)[0] 
+        #df['avg_XS_drawdown_days']= pfa.AverageLength(self.xsrtns)[0] 
+        
+        
+                    
+>>>>>>> Stashed changes
         # Measure the skewness & kurtosis of the returns
         df['Skew'] = self.rtns.skew()
         df['Kurtosis'] = self.rtns.kurt()
@@ -619,8 +640,32 @@ class BacktestAnalytics(object):
         
         # Remove Risk Free Rate from summary table
         self.Rf_obs_rtn = df.loc['Rf', 'TR']
-        self.summary = df.T.iloc[:, 1:]
-        return self.summary
+        # create consolidated dataframe with all the risk metrics 
+        risk_metric = df.iloc[:, :]
+        #self.summary = df.T.iloc[:, 1:]
+        # We are going to create a subset of the dataframe  using the column names .We are going to split the main summary table into two tables , MAin Summary  & Appendix Summary
+        # Create Appendix summary list that contains the column names
+        appendix_list=['Avg Return','avg_win','avg_loss','Payoff','avg_drawdown','avg_XS_drawdown','avg_drawdown_days','avg_XS_drawdown_days','tail_ratio','RaR','Skew',
+                      'Kurtosis','Modified_VaR','xs_mean','xs_worst','xs_best','risk_of_ruin','profit_factor','recovery_factor','Modified_Sharpe_Ratio','Omega_ratio','Sortino','Treynor_Ratio']
+        
+        # create list that contains the  order of the summary table
+        summary_order = ['TR','Vol','Downside_Vol','Beta','Hitrate','Max_Drawdown','Max_XS_DD','Historic_VaR','Historic_CVaR','Sharpe','TE','IR','Calmar Ratio']
+        
+        # show only the main summary 
+        risk_summary = risk_metric[risk_metric.columns.difference(appendix_list)]
+        self.summary= risk_summary.reindex(columns=summary_order) # reorder the column names
+        
+        #Show only the Appendix Summary
+        self.summary_appendix = risk_metric[risk_metric.columns[risk_metric.columns.isin(appendix_list)]]  
+        
+        # Store these dataframes in dict
+        risk =dict() # create dummy dict 
+        
+        risk['summary']=self.summary
+        risk['summary_appendix']=self.summary_appendix
+        
+        
+        return risk
     
     
     def per_annum(self):
@@ -1390,18 +1435,26 @@ class BacktestMarkdwonReport(object):
     
     def pretty_panda_summary(self):
         """ Styler for the Back-Test Summary Table
-
+    
         This shit is tedious - look at the following links if confused
             https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html
             https://pbpython.com/styling-pandas.html
             https://towardsdatascience.com/style-pandas-dataframe-like-a-master-6b02bf6468b0
         """
-
-        df = self.bt.backtest_summary()
         
+<<<<<<< Updated upstream
         format_list = ['Payoff','profit_factor',
                        'Beta','TE','Skew','Kurtosis','avg_drawdown_days','avg_XS_drawdown_days','recovery_factor',
                        'tail_ratio','Sharpe','Modified_Sharpe_Ratio','IR','RaR','Calmar Ratio','Sortino','Treynor_Ratio','Omega_ratio']
+=======
+        dataframe = self.bt.backtest_summary()
+        
+        df = dataframe['summary'].T # access the summary dataframe in the dictionary 
+        df = df.iloc[:, 1:]  # Remove risk free rate 
+        #self.summary = df.T.iloc[:, 1:]
+        
+        format_list = ['Beta','Sharpe','IR','Calmar Ratio']
+>>>>>>> Stashed changes
 #        # Create list to format the numbesr to percentage 
 #        percentage_list = ['TR','Avg Return','avg_win','avg_loss','xs_mean','xs_worst','xs_best','Hitrate',
 #                           'Vol','Downside_Vol','TE','Historic_VaR','Historic_CVaR','Modified_VaR','Max_Drawdown','Max_XS_DD','avg_drawdown','avg_XS_drawdown']
@@ -1421,7 +1474,12 @@ class BacktestMarkdwonReport(object):
         
         ## Conditional Format Bits
         # These Include the Benchmark
+<<<<<<< Updated upstream
         y = [['TR', 'Sharpe', 'Modified_Sharpe_Ratio','RaR', 'Max_Drawdown','Historic_VaR','Historic_CVaR','Modified_VaR'], x.columns[1:]]
+=======
+        y = [['TR','Sharpe', 'Max_Drawdown','Historic_VaR','Historic_CVaR'], x.columns[1:]]
+
+>>>>>>> Stashed changes
         x = x.highlight_max(color='lightseagreen', subset=pd.IndexSlice[y[0], y[1]], axis=1)
         x = x.highlight_min(color='crimson', subset=pd.IndexSlice[y[0], y[1]], axis=1)
         
@@ -1430,6 +1488,56 @@ class BacktestMarkdwonReport(object):
             y = [['IR', 'Hitrate'], x.columns[2:]]
             x = x.highlight_max(color='lightseagreen', subset=pd.IndexSlice[y[0], y[1]], axis=1)
             x = x.highlight_min(color='crimson', subset=pd.IndexSlice[y[0], y[1]], axis=1)
+
+        return x
+
+    def pretty_panda_summary_appendix(self):
+        """ Styler for the Back-Test Summary Table
+        This shit is tedious - look at the following links if confused
+            https://pandas.pydata.org/pandas-docs/stable/user_guide/style.html
+            https://pbpython.com/styling-pandas.html
+            https://towardsdatascience.com/style-pandas-dataframe-like-a-master-6b02bf6468b0
+        """
+
+        dataframe = self.bt.backtest_summary()
+        
+        df = dataframe['summary_appendix'].T # access the summary dataframe in the dictionary 
+        
+        df = df.iloc[:, 1:]  # Remove risk free rate 
+        
+        format_list = ['Payoff','profit_factor',
+                       'Skew','Kurtosis','avg_drawdown_days','avg_XS_drawdown_days','recovery_factor',
+                       'tail_ratio','Modified_Sharpe_Ratio','RaR','Omega_ratio','Sortino','Treynor_Ratio']
+#        # Create list to format the numbesr to percentage 
+#        percentage_list = ['TR','Avg Return','avg_win','avg_loss','xs_mean','xs_worst','xs_best','Hitrate',
+#                           'Vol','Downside_Vol','TE','Historic_VaR','Historic_CVaR','Modified_VaR','Max_Drawdown','Max_XS_DD','avg_drawdown','avg_XS_drawdown']
+        
+        # duplicate the index in the dataframe
+        # we don't just hide because we want to show & reference the index
+        m = df.index
+        m.name = 'Metric'
+        x = pd.concat([m.to_frame(), df], axis=1).fillna(0)
+        
+        x = self.pretty_panda(x)
+        
+        ## Generally set to 0.1%; few things as 0.02; zeros have white text
+        x = x.format(formatter="{:.1%}", subset=pd.IndexSlice[:, x.columns[1:]])\
+             .format(formatter="{:.2f}", subset=pd.IndexSlice[format_list, x.columns[1:]])\
+             
+        
+        ## Conditional Format Bits
+        # These Include the Benchmark
+#        y = [['TR','Avg Return','avg_win','avg_loss','xs_mean','xs_worst','xs_best','Sharpe', 'Modified_Sharpe_Ratio','RaR', 'Max_Drawdown','Historic_VaR','Historic_CVaR','Modified_VaR'], x.columns[1:]]
+        y = [['Avg Return','avg_win','avg_loss','xs_mean','xs_worst','xs_best', 'Modified_Sharpe_Ratio','RaR','Modified_VaR'], x.columns[1:]]
+
+        x = x.highlight_max(color='lightseagreen', subset=pd.IndexSlice[y[0], y[1]], axis=1)
+        x = x.highlight_min(color='crimson', subset=pd.IndexSlice[y[0], y[1]], axis=1)
+        
+        # These only make sense if there is more than one port being tested
+        #if len(df.columns) > 2:
+        #    y = [['IR', 'Hitrate'], x.columns[2:]]
+        #    x = x.highlight_max(color='lightseagreen', subset=pd.IndexSlice[y[0], y[1]], axis=1)
+        #    x = x.highlight_min(color='crimson', subset=pd.IndexSlice[y[0], y[1]], axis=1)
 
         return x
     
@@ -1614,7 +1722,12 @@ class BacktestMarkdwonReport(object):
         md.append(self.plots['correl_wide'])
         md.append(self.plots['correl_animation'])
         md.append("\n \n")
-        
+        md.append("## Extra Risk Metrics")
+        md.append("We present extra risk metrics based on the backtest results, \
+                   showing comphrensive risk metrics to evaluate performance relative to benchmark \
+                   & various strategies. \n ")
+        md.append(self.pretty_panda_summary_appendix().render())
+        md.append("\n \n")     
         return "\n \n".join(md)
 
 # %% TEST CODE
