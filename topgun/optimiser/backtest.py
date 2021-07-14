@@ -15,10 +15,7 @@ import pandas as pd
 import scipy.stats
 from scipy.stats import kurtosis, skew, norm
 
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
 # Import Peformance Analytics package from R with couple of interesting functions
 from rpy2.robjects.packages import importr
 pfa = importr("PerformanceAnalytics")    
@@ -26,10 +23,7 @@ from rpy2.robjects import numpy2ri, pandas2ri
 numpy2ri.activate()
 pandas2ri.activate()
 
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
 # Rolling Regression
 import statsmodels.api as sm
 from statsmodels.regression.rolling import RollingOLS
@@ -596,18 +590,18 @@ class BacktestAnalytics(object):
         
         # Drawdown Metrics over full period
         # drawdown, xs-drawdowns, average drawdown period & xs-period (in days)
-<<<<<<< Updated upstream
+
         #df['avg_drawdown'] = self.drawdown.mean()
         #df['avg_XS_drawdown'] = self.xs_drawdown.mean()
         #df['avg_drawdown_days']=self.drawdown_breakdown(alpha=False)['length'].mean() 
         #df['avg_XS_drawdown_days']=self.drawdown_breakdown(alpha=True)['length'].mean() 
-=======
+
         df['avg_drawdown'] = self.drawdown.mean()
         df['avg_XS_drawdown'] = self.xs_drawdown.mean()
         df['avg_drawdown_days']=self.drawdown_breakdown(alpha=False)['length'].mean() 
         df['avg_XS_drawdown_days']=self.drawdown_breakdown(alpha=True)['length'].mean() 
 
->>>>>>> Stashed changes
+
         
         df['avg_drawdown'] = pfa.AverageDrawdown(self.rtns)[0]
         df['avg_XS_drawdown'] = pfa.AverageDrawdown(self.xsrtns)[0]
@@ -616,10 +610,9 @@ class BacktestAnalytics(object):
         
         
                     
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
+
+
         # Measure the skewness & kurtosis of the returns
         df['Skew'] = self.rtns.skew()
         df['Kurtosis'] = self.rtns.kurt()
@@ -1455,15 +1448,12 @@ class BacktestMarkdwonReport(object):
 
         df = self.bt.backtest_summary()
         
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
+
         format_list = ['Payoff','profit_factor',
                        'Beta','Skew','Kurtosis','avg_drawdown_days','avg_XS_drawdown_days','recovery_factor',
                        'tail_ratio','Sharpe','Modified_Sharpe_Ratio','IR','RaR','Calmar Ratio','Sortino','Treynor_Ratio','Omega_ratio']
-<<<<<<< Updated upstream
-=======
+
 
         dataframe = self.bt.backtest_summary()
         
@@ -1473,7 +1463,7 @@ class BacktestMarkdwonReport(object):
         
         format_list = ['Beta','Sharpe','IR','Calmar Ratio']
 
->>>>>>> Stashed changes
+
 #        # Create list to format the numbesr to percentage 
 #        percentage_list = ['TR','Avg Return','avg_win','avg_loss','xs_mean','xs_worst','xs_best','Hitrate',
 #                           'Vol','Downside_Vol','TE','Historic_VaR','Historic_CVaR','Modified_VaR','Max_Drawdown','Max_XS_DD','avg_drawdown','avg_XS_drawdown']
@@ -1493,17 +1483,17 @@ class BacktestMarkdwonReport(object):
         
         ## Conditional Format Bits
         # These Include the Benchmark
-<<<<<<< Updated upstream
+
         y = [['TR','Avg Return','avg_win','avg_loss','xs_mean','xs_worst','xs_best','Sharpe', 'Modified_Sharpe_Ratio','RaR', 'Max_Drawdown','Historic_VaR','Historic_CVaR','Modified_VaR'], x.columns[1:]]
 
-=======
+
 
         y = [['TR', 'Sharpe', 'Modified_Sharpe_Ratio','RaR', 'Max_Drawdown','Historic_VaR','Historic_CVaR','Modified_VaR'], x.columns[1:]]
 
         y = [['TR','Sharpe', 'Max_Drawdown','Historic_VaR','Historic_CVaR'], x.columns[1:]]
 
 
->>>>>>> Stashed changes
+
         x = x.highlight_max(color='lightseagreen', subset=pd.IndexSlice[y[0], y[1]], axis=1)
         x = x.highlight_min(color='crimson', subset=pd.IndexSlice[y[0], y[1]], axis=1)
         
